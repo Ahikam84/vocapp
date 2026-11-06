@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Exercise, { type ExerciseOutcome } from '../components/Exercise'
 import { ProgressBar } from '../components/common'
-import { db, type Deck, type ExerciseType, type Word } from '../lib/db'
+import { db, newId, type Deck, type ExerciseType, type Word } from '../lib/db'
 import { getSettings, type Settings } from '../lib/settings'
 import { DIFFICULT_LAPSES, gradeAnswer, recordReview } from '../lib/srs'
 import { ttsAvailable } from '../lib/tts'
@@ -66,7 +66,7 @@ export default function Review({ deck, mode }: { deck: Deck; mode: Mode }) {
     if (!queue) return
     const item = queue[pos]
     await db.reviews.add({
-      wordId: item.word.id, deckId: deck.id, mode, exercise: item.exercise,
+      id: newId(), wordId: item.word.id, deckId: deck.id, mode, exercise: item.exercise,
       correct: outcome.correct, responseMs: Math.round(outcome.responseMs), at: Date.now(),
     })
     if (!item.retry) {

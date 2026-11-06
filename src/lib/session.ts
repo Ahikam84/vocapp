@@ -21,7 +21,7 @@ export interface Step {
 export class LearnSession {
   items: LearnItem[] = []
   private waiting: Word[]
-  private lastWordId: number | null = null
+  private lastWordId: string | null = null
   private ladder: ExerciseType[]
 
   constructor(words: Word[], opts: { audio: boolean; choices: boolean }) {

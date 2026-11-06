@@ -9,7 +9,7 @@ export function startOfToday(): number {
 
 const DAY = 86400000
 
-export async function deckStats(deckId: number) {
+export async function deckStats(deckId: string) {
   const now = Date.now()
   const [total, progress, reviews] = await Promise.all([
     db.words.where('deckId').equals(deckId).count(),

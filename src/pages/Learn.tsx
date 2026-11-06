@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Exercise, { type ExerciseOutcome } from '../components/Exercise'
 import { ProgressBar, T } from '../components/common'
-import { db, type Deck, type Word } from '../lib/db'
+import { db, newId, type Deck, type Word } from '../lib/db'
 import { LearnSession, type Step } from '../lib/session'
 import { getSettings, type Settings } from '../lib/settings'
 import { markLearned } from '../lib/srs'
@@ -57,7 +57,7 @@ function LearnRound({ deck, onAgain }: { deck: Deck; onAgain: () => void }) {
     const { session } = loaded
     if (step.exercise !== 'intro')
       await db.reviews.add({
-        wordId: step.item.word.id, deckId: deck.id, mode: 'learn', exercise: step.exercise,
+        id: newId(), wordId: step.item.word.id, deckId: deck.id, mode: 'learn', exercise: step.exercise,
         correct: outcome.correct, responseMs: Math.round(outcome.responseMs), at: Date.now(),
       })
     if (session.answer(step.item, outcome.correct)) {

@@ -2,7 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { SpeakButton } from '../components/common'
-import { db, deleteWord, type Deck, type Word } from '../lib/db'
+import { db, deleteWord, newId, resetProgress as resetWordProgress, type Deck, type Word } from '../lib/db'
 import { normalize } from '../lib/answer'
 import { LANGUAGES, SPECIAL_CHARS } from '../lib/useDeck'
 
@@ -12,7 +12,7 @@ const EMPTY = { term: '', translations: '', altTerms: '', example: '', exampleTr
 
 export default function WordForm({ deck }: { deck: Deck }) {
   const { id } = useParams()
-  const wordId = id ? Number(id) : undefined
+  const wordId = id
   const navigate = useNavigate()
   const termRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState(EMPTY)
@@ -62,7 +62,7 @@ export default function WordForm({ deck }: { deck: Deck }) {
       createdAt: existing?.createdAt ?? Date.now(),
     }
     if (wordId) await db.words.update(wordId, data)
-    else await db.words.add(data as Word)
+    else await db.words.add({ ...data, id: newId() })
 
     if (addAnother) {
       setSaved(data.term)
@@ -79,7 +79,7 @@ export default function WordForm({ deck }: { deck: Deck }) {
   }
 
   async function resetProgress() {
-    if (wordId && confirm('לאפס את ההתקדמות של המילה? היא תחזור לרשימת המילים החדשות.')) await db.progress.delete(wordId)
+    if (wordId && confirm('לאפס את ההתקדמות של המילה? היא תחזור לרשימת המילים החדשות.')) await resetWordProgress(wordId)
   }
 
   const lang = LANGUAGES[deck.targetLang] ?? deck.targetLang

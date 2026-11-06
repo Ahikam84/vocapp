@@ -9,7 +9,7 @@ export interface Settings {
   /** Preferred voiceURI per language code; missing = pick the most natural one */
   voices: Record<string, string>
   speechRate: number
-  currentDeckId: number | null
+  currentDeckId: string | null
 }
 
 export const DEFAULT_SETTINGS: Settings = {

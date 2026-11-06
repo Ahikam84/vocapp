@@ -31,13 +31,13 @@ describe('parseWordList', () => {
 })
 
 describe('LearnSession', () => {
-  const words: Word[] = [1, 2, 3, 4, 5].map((id) => ({
-    id, deckId: 1, term: `w${id}`, translations: [`t${id}`], createdAt: 0,
+  const words: Word[] = ['1', '2', '3', '4', '5'].map((id) => ({
+    id, deckId: 'd', term: `w${id}`, translations: [`t${id}`], createdAt: 0,
   }))
 
   it('finishes every word and never repeats a word back-to-back when avoidable', () => {
     const s = new LearnSession(words, { audio: true, choices: true })
-    let last: number | null = null
+    let last: string | null = null
     let steps = 0
     for (let step = s.next(); step; step = s.next()) {
       const active = s.items.filter((i) => !i.done).length

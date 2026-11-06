@@ -24,13 +24,13 @@ export function gradeAnswer(opts: {
 }
 
 /** Called when a word finishes the learning session – creates its first schedule. */
-export async function markLearned(wordId: number, deckId: number, now = new Date()) {
+export async function markLearned(wordId: string, deckId: string, now = new Date()) {
   const card = scheduler.next(createEmptyCard(now), now, Rating.Good).card
   const progress: Progress = { wordId, deckId, learnedAt: now.getTime(), due: card.due.getTime(), lapses: 0, card }
   await db.progress.put(progress)
 }
 
-export async function recordReview(wordId: number, grade: Grade, now = new Date()) {
+export async function recordReview(wordId: string, grade: Grade, now = new Date()) {
   const progress = await db.progress.get(wordId)
   if (!progress) return
   const card = scheduler.next(reviveCard(progress.card), now, grade).card

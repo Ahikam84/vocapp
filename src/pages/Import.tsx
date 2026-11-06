@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { T } from '../components/common'
-import { db, type Deck, type Word } from '../lib/db'
+import { db, newId, type Deck } from '../lib/db'
 import { normalize } from '../lib/answer'
 import { parseWordList } from '../lib/importText'
 
@@ -31,7 +31,7 @@ export default function Import({ deck }: { deck: Deck }) {
       existing.add(key)
       return true
     })
-    await db.words.bulkAdd(fresh.map((p, i) => ({ ...p, deckId: deck.id, createdAt: now + i }) as Word))
+    await db.words.bulkAdd(fresh.map((p, i) => ({ ...p, id: newId(), deckId: deck.id, createdAt: now + i })))
     setSkipped(parsed.length - fresh.length)
     if (parsed.length === fresh.length) navigate('/words')
   }

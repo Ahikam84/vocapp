@@ -1,7 +1,8 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useState } from 'react'
-import { db, reviveCard, type Deck } from '../lib/db'
+import { db, importData, newId, type Deck } from '../lib/db'
 import { setSetting, useSettings } from '../lib/settings'
+import { SyncSection } from '../components/SyncSection'
 import { setTtsPreferences, speak, useVoices } from '../lib/tts'
 import { LANGUAGES } from '../lib/useDeck'
 
@@ -48,8 +49,8 @@ export default function SettingsPage({ deck }: { deck: Deck }) {
 
   async function addDeck() {
     if (!newDeck.name.trim()) return
-    const id = await db.decks.add({ name: newDeck.name.trim(), sourceLang: 'he', targetLang: newDeck.targetLang, createdAt: Date.now() })
-    await setSetting('currentDeckId', id as number)
+    const id = await db.decks.add({ id: newId(), name: newDeck.name.trim(), sourceLang: 'he', targetLang: newDeck.targetLang, createdAt: Date.now() })
+    await setSetting('currentDeckId', id)
     setNewDeck({ name: '', targetLang: 'ca' })
   }
 
@@ -75,15 +76,8 @@ export default function SettingsPage({ deck }: { deck: Deck }) {
   async function importBackup(file: File) {
     const data = JSON.parse(await file.text())
     if (data.app !== 'vocapp') return setMsg('הקובץ אינו גיבוי של VocApp')
-    if (!confirm('שחזור הגיבוי יחליף את כל הנתונים הנוכחיים. להמשיך?')) return
-    await db.transaction('rw', [db.decks, db.words, db.progress, db.reviews, db.settings], async () => {
-      await Promise.all([db.decks.clear(), db.words.clear(), db.progress.clear(), db.reviews.clear(), db.settings.clear()])
-      await db.decks.bulkAdd(data.decks)
-      await db.words.bulkAdd(data.words)
-      await db.progress.bulkAdd(data.progress.map((p: { card: never }) => ({ ...p, card: reviveCard(p.card) })))
-      await db.reviews.bulkAdd(data.reviews)
-      await db.settings.bulkAdd(data.settings)
-    })
+    if (!confirm('הנתונים מהגיבוי יתווספו לנתונים הקיימים (מילים זהות יתעדכנו). להמשיך?')) return
+    await importData(data)
     setMsg(`שוחזרו ${data.words.length} מילים`)
   }
 
@@ -160,8 +154,10 @@ export default function SettingsPage({ deck }: { deck: Deck }) {
         <button className="btn secondary" onClick={addDeck}>הוספה</button>
       </div>
 
+      <SyncSection />
+
       <h2>גיבוי</h2>
-      <p className="muted">הנתונים נשמרים רק בדפדפן הזה. מומלץ לגבות מדי פעם.</p>
+      <p className="muted">קובץ גיבוי מאפשר לשמור עותק של כל המילים וההתקדמות, גם בלי סנכרון.</p>
       <div className="row">
         <button className="btn secondary" onClick={exportBackup}>ייצוא גיבוי</button>
         <label className="btn secondary">

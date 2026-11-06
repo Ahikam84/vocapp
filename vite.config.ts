@@ -4,6 +4,8 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
   base: './',
+  // Supabase's default Site URL is http://localhost:3000, so email sign-in links land here.
+  server: { port: 3000, strictPort: true },
   plugins: [
     react(),
     VitePWA({
