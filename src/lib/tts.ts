@@ -17,15 +17,36 @@ function pickVoice(lang: string): SpeechSynthesisVoice | undefined {
   )
 }
 
+// Chrome can garbage-collect an utterance mid-speech (cutting it off and skipping onend),
+// so keep a reference to the one currently playing.
+let current: SpeechSynthesisUtterance | null = null
+let timer: ReturnType<typeof setTimeout> | undefined
+
 export function speak(text: string, lang: string, rate = 0.9) {
   if (typeof speechSynthesis === 'undefined') return
-  speechSynthesis.cancel()
   const u = new SpeechSynthesisUtterance(text)
   u.lang = LOCALES[lang] ?? lang
   u.rate = rate
   const voice = pickVoice(lang)
   if (voice) u.voice = voice
-  speechSynthesis.speak(u)
+  u.onerror = (e) => {
+    // Being cut off by the next word is expected, not a failure.
+    if (e.error !== 'interrupted' && e.error !== 'canceled') console.warn('TTS error:', e.error)
+  }
+  u.onend = () => {
+    if (current === u) current = null
+  }
+
+  clearTimeout(timer)
+  const busy = speechSynthesis.speaking || speechSynthesis.pending
+  if (busy) speechSynthesis.cancel()
+  // Chrome sometimes drops a speak() issued in the same tick as cancel(), and its
+  // engine can get stuck "paused" after the tab was idle – resume() unsticks it.
+  timer = setTimeout(() => {
+    current = u
+    speechSynthesis.resume()
+    speechSynthesis.speak(u)
+  }, busy ? 60 : 0)
 }
 
 if (typeof speechSynthesis !== 'undefined') speechSynthesis.getVoices()
