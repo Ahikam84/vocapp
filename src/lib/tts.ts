@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react'
+
 const LOCALES: Record<string, string> = { es: 'es-ES', ca: 'ca-ES', he: 'he-IL', en: 'en-US', fr: 'fr-FR' }
 
 export function ttsAvailable(lang: string): boolean {
@@ -7,14 +9,43 @@ export function ttsAvailable(lang: string): boolean {
   return voices.length === 0 || voices.some((v) => v.lang.toLowerCase().startsWith(lang))
 }
 
-function pickVoice(lang: string): SpeechSynthesisVoice | undefined {
+// User preferences, pushed in from settings so callers don't have to pass them around.
+let preferredVoices: Record<string, string> = {}
+let defaultRate = 0.9
+
+export function setTtsPreferences(voices: Record<string, string>, rate: number) {
+  preferredVoices = voices
+  defaultRate = rate
+}
+
+const NATURAL = /natural|neural|online|google|premium|enhanced/i
+
+/** Voices for a language, the most natural-sounding first. */
+export function voicesFor(lang: string): SpeechSynthesisVoice[] {
+  if (typeof speechSynthesis === 'undefined') return []
   const locale = LOCALES[lang] ?? lang
-  const voices = speechSynthesis.getVoices()
-  return (
-    voices.find((v) => v.lang === locale && /google|natural|online/i.test(v.name)) ??
-    voices.find((v) => v.lang === locale) ??
-    voices.find((v) => v.lang.toLowerCase().startsWith(lang))
-  )
+  const score = (v: SpeechSynthesisVoice) => (NATURAL.test(v.name) ? 0 : 2) + (v.lang === locale ? 0 : 1)
+  return speechSynthesis
+    .getVoices()
+    .filter((v) => v.lang.toLowerCase().startsWith(lang))
+    .sort((a, b) => score(a) - score(b) || a.name.localeCompare(b.name))
+}
+
+function pickVoice(lang: string): SpeechSynthesisVoice | undefined {
+  const voices = voicesFor(lang)
+  return voices.find((v) => v.voiceURI === preferredVoices[lang]) ?? voices[0]
+}
+
+export function useVoices(lang: string): SpeechSynthesisVoice[] {
+  const [voices, setVoices] = useState(() => voicesFor(lang))
+  useEffect(() => {
+    if (typeof speechSynthesis === 'undefined') return
+    const update = () => setVoices(voicesFor(lang))
+    update()
+    speechSynthesis.addEventListener('voiceschanged', update)
+    return () => speechSynthesis.removeEventListener('voiceschanged', update)
+  }, [lang])
+  return voices
 }
 
 // Chrome can garbage-collect an utterance mid-speech (cutting it off and skipping onend),
@@ -22,7 +53,7 @@ function pickVoice(lang: string): SpeechSynthesisVoice | undefined {
 let current: SpeechSynthesisUtterance | null = null
 let timer: ReturnType<typeof setTimeout> | undefined
 
-export function speak(text: string, lang: string, rate = 0.9) {
+export function speak(text: string, lang: string, rate = defaultRate) {
   if (typeof speechSynthesis === 'undefined') return
   const u = new SpeechSynthesisUtterance(text)
   u.lang = LOCALES[lang] ?? lang

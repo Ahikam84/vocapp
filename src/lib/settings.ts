@@ -6,6 +6,9 @@ export interface Settings {
   newPerDay: number
   reviewsPerSession: number
   autoPlayAudio: boolean
+  /** Preferred voiceURI per language code; missing = pick the most natural one */
+  voices: Record<string, string>
+  speechRate: number
   currentDeckId: number | null
 }
 
@@ -14,6 +17,8 @@ export const DEFAULT_SETTINGS: Settings = {
   newPerDay: 15,
   reviewsPerSession: 30,
   autoPlayAudio: true,
+  voices: {},
+  speechRate: 0.9,
   currentDeckId: null,
 }
 

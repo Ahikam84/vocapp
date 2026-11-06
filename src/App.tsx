@@ -1,4 +1,7 @@
+import { useEffect } from 'react'
 import { NavLink, Route, Routes } from 'react-router-dom'
+import { useSettings } from './lib/settings'
+import { setTtsPreferences } from './lib/tts'
 import { useDeck } from './lib/useDeck'
 import Home from './pages/Home'
 import Learn from './pages/Learn'
@@ -10,6 +13,10 @@ import SettingsPage from './pages/Settings'
 
 export default function App() {
   const deck = useDeck()
+  const settings = useSettings()
+  useEffect(() => {
+    if (settings) setTtsPreferences(settings.voices, settings.speechRate)
+  }, [settings])
   if (!deck) return null
 
   return (

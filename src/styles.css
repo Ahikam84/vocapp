@@ -210,3 +210,4 @@ input[type='number'] { width: 80px; }
 .center-page { text-align: center; padding-top: 40px; }
 .celebrate { font-size: 4rem; }
 .summary { list-style: none; padding: 0; line-height: 1.9; }
+input[type='range'] { width: 160px; padding: 0; accent-color: var(--primary); }

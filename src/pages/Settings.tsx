@@ -2,14 +2,39 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { useState } from 'react'
 import { db, reviveCard, type Deck } from '../lib/db'
 import { setSetting, useSettings } from '../lib/settings'
+import { setTtsPreferences, speak, useVoices } from '../lib/tts'
 import { LANGUAGES } from '../lib/useDeck'
+
+const SAMPLES: Record<string, string> = {
+  es: 'Hola, ¿qué tal? Me gusta aprender español.',
+  ca: "Hola, com estàs? M'agrada aprendre català.",
+  fr: "Bonjour, comment ça va ? J'aime apprendre le français.",
+  en: 'Hello, how are you? I enjoy learning English.',
+}
 
 export default function SettingsPage({ deck }: { deck: Deck }) {
   const settings = useSettings()
   const decks = useLiveQuery(() => db.decks.toArray())
   const [newDeck, setNewDeck] = useState({ name: '', targetLang: 'ca' })
   const [msg, setMsg] = useState<string | null>(null)
+  const voices = useVoices(deck.targetLang)
   if (!settings || !decks) return null
+
+  const lang = deck.targetLang
+  const sample = SAMPLES[lang] ?? 'Hola'
+  // Apply immediately so the preview uses the new choice before the setting round-trips through the DB.
+  async function chooseVoice(voiceURI: string) {
+    const next = { ...settings!.voices }
+    if (voiceURI) next[lang] = voiceURI
+    else delete next[lang]
+    setTtsPreferences(next, settings!.speechRate)
+    await setSetting('voices', next)
+    speak(sample, lang)
+  }
+  async function chooseRate(rate: number) {
+    setTtsPreferences(settings!.voices, rate)
+    await setSetting('speechRate', rate)
+  }
 
   const num = (key: 'wordsPerSession' | 'newPerDay' | 'reviewsPerSession', min: number, max: number) => (
     <input
@@ -74,6 +99,46 @@ export default function SettingsPage({ deck }: { deck: Deck }) {
         השמעה אוטומטית של המילים
         <input type="checkbox" checked={settings.autoPlayAudio} onChange={(e) => setSetting('autoPlayAudio', e.target.checked)} />
       </label>
+
+      <h2>הקראה ({LANGUAGES[lang] ?? lang})</h2>
+      {voices.length === 0 ? (
+        <p className="muted">לא נמצאו קולות לשפה הזו בדפדפן. נסה את Edge או Chrome.</p>
+      ) : (
+        <>
+          <label>
+            קול
+            <div className="row">
+              <select value={settings.voices[lang] ?? ''} onChange={(e) => chooseVoice(e.target.value)}>
+                <option value="">אוטומטי – {voices[0].name}</option>
+                {voices.map((v) => (
+                  <option key={v.voiceURI} value={v.voiceURI}>
+                    {v.name}
+                  </option>
+                ))}
+              </select>
+              <button type="button" className="btn secondary" onClick={() => speak(sample, lang)}>🔊 השמעה</button>
+            </div>
+          </label>
+          <label className="inline">
+            מהירות: {settings.speechRate.toFixed(2)}
+            <input
+              type="range"
+              min={0.6}
+              max={1.2}
+              step={0.05}
+              value={settings.speechRate}
+              onChange={(e) => chooseRate(Number(e.target.value))}
+              onMouseUp={() => speak(sample, lang)}
+              onTouchEnd={() => speak(sample, lang)}
+            />
+          </label>
+          {!voices.some((v) => /natural|neural|online|google|premium|enhanced/i.test(v.name)) && (
+            <p className="muted">
+              💡 הקולות כאן בסיסיים. ב-Microsoft Edge יש קולות "Natural" טבעיים יותר, וב-Chrome יש קול של Google.
+            </p>
+          )}
+        </>
+      )}
 
       <h2>קורסים</h2>
       <ul className="deck-list">
