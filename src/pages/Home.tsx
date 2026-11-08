@@ -65,9 +65,10 @@ export default function Home({ deck }: { deck: Deck }) {
       {stats.total === 0 && (
         <div className="card onboarding">
           <h2>ברוך הבא! 👋</h2>
-          <p>כדי להתחיל, הוסף כמה מילים בספרדית – אחת אחת או כרשימה.</p>
+          <p>כדי להתחיל, הוסף קורס מוכן, או מילים משלך – אחת אחת או כרשימה.</p>
           <div className="row">
-            <Link className="btn" to="/words/new">הוספת מילה</Link>
+            <Link className="btn" to="/settings#ready-courses">קורסים מוכנים</Link>
+            <Link className="btn secondary" to="/words/new">הוספת מילה</Link>
             <Link className="btn secondary" to="/import">ייבוא רשימה</Link>
           </div>
         </div>

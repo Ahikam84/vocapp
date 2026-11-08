@@ -1,6 +1,8 @@
+import { useLiveQuery } from 'dexie-react-hooks'
 import { useEffect } from 'react'
 import { NavLink, Route, Routes } from 'react-router-dom'
-import { useSettings } from './lib/settings'
+import { db } from './lib/db'
+import { setSetting, useSettings } from './lib/settings'
 import { setTtsPreferences } from './lib/tts'
 import { useDeck } from './lib/useDeck'
 import Home from './pages/Home'
@@ -14,6 +16,7 @@ import SettingsPage from './pages/Settings'
 export default function App() {
   const deck = useDeck()
   const settings = useSettings()
+  const decks = useLiveQuery(() => db.decks.toArray())
   useEffect(() => {
     if (settings) setTtsPreferences(settings.voices, settings.speechRate)
   }, [settings])
@@ -26,7 +29,15 @@ export default function App() {
           <img src="icon.svg" alt="" width={28} height={28} />
           VocApp
         </NavLink>
-        <span className="deck-name">{deck.name}</span>
+        {decks && decks.length > 1 ? (
+          <select className="deck-switch" value={deck.id} onChange={(e) => setSetting('currentDeckId', e.target.value)} aria-label="קורס נוכחי">
+            {decks.map((d) => (
+              <option key={d.id} value={d.id}>{d.name}</option>
+            ))}
+          </select>
+        ) : (
+          <span className="deck-name">{deck.name}</span>
+        )}
       </header>
 
       <main className="content">

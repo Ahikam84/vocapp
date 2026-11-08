@@ -2,6 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { useState } from 'react'
 import { db, importData, newId, type Deck } from '../lib/db'
 import { setSetting, useSettings } from '../lib/settings'
+import { ReadyCourses } from '../components/ReadyCourses'
 import { SyncSection } from '../components/SyncSection'
 import { setTtsPreferences, speak, useVoices } from '../lib/tts'
 import { LANGUAGES } from '../lib/useDeck'
@@ -134,7 +135,9 @@ export default function SettingsPage({ deck }: { deck: Deck }) {
         </>
       )}
 
-      <h2>קורסים</h2>
+      <ReadyCourses />
+
+      <h2>הקורסים שלי</h2>
       <ul className="deck-list">
         {decks.map((d) => (
           <li key={d.id} className={d.id === deck.id ? 'active' : ''} onClick={() => setSetting('currentDeckId', d.id)}>
