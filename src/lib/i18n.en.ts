@@ -240,6 +240,11 @@ export const EN: Record<string, string> = {
   'התנתקות': 'Sign out',
   'התחברות עם Google': 'Sign in with Google',
   'או במייל': 'or with email',
+  'התחברות במייל': 'Sign in with email instead',
+  'להתנתק? הקורסים וההתקדמות יימחקו מהמכשיר הזה וייטענו שוב כשתתחבר.':
+    "Sign out? Your courses and progress will be removed from this device and come back when you sign in again.",
+  'לא הצלחנו לשמור בענן את השינויים האחרונים ({message}). להתנתק בכל זאת? השינויים האלה יאבדו.':
+    "Couldn't save your latest changes to the cloud ({message}). Sign out anyway? Those changes will be lost.",
 
   // Studying several courses together
   'לקורס': 'Into course',

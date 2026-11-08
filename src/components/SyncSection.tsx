@@ -1,7 +1,9 @@
 import { Cloud } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { t, uiLocale } from '../lib/i18n'
-import { isGoogleEnabled, sendLoginCode, signInWithGoogle, signOut, syncNow, useSyncStatus, verifyLoginCode } from '../lib/sync'
+import {
+  isGoogleEnabled, sendLoginCode, signInWithGoogle, signOut, syncNow, UnsyncedChangesError, useSyncStatus, verifyLoginCode,
+} from '../lib/sync'
 
 /** Google's multi-colour "G", as their sign-in button guidelines ask. */
 const GoogleLogo = () => (
@@ -24,6 +26,8 @@ export function SyncSection() {
   const [codeSent, setCodeSent] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // With Google available, the email sign-in is tucked behind a link.
+  const [showEmail, setShowEmail] = useState(false)
 
   async function run(fn: () => Promise<void>) {
     setBusy(true)
@@ -55,10 +59,15 @@ export function SyncSection() {
             <button className="btn google-btn" disabled={busy} onClick={() => run(signInWithGoogle)}>
               <GoogleLogo /> {t('התחברות עם Google')}
             </button>
-            <p className="or-line muted">{t('או במייל')}</p>
+            {!showEmail && (
+              <p className="or-line">
+                <button className="link-btn" onClick={() => setShowEmail(true)}>{t('התחברות במייל')}</button>
+              </p>
+            )}
+            {showEmail && <p className="or-line muted">{t('או במייל')}</p>}
           </>
         )}
-        {!codeSent ? (
+        {google && !showEmail ? null : !codeSent ? (
           <form
             className="row"
             onSubmit={(e) => {
@@ -124,7 +133,24 @@ export function SyncSection() {
       </p>
       <div className="row">
         <button className="btn secondary" disabled={status.state === 'syncing'} onClick={() => syncNow()}>{t('סנכרון עכשיו')}</button>
-        <button className="btn secondary" onClick={() => run(signOut)}>{t('התנתקות')}</button>
+        <button
+          className="btn secondary"
+          disabled={busy}
+          onClick={() =>
+            run(async () => {
+              if (!confirm(t('להתנתק? הקורסים וההתקדמות יימחקו מהמכשיר הזה וייטענו שוב כשתתחבר.'))) return
+              try {
+                await signOut()
+              } catch (e) {
+                if (!(e instanceof UnsyncedChangesError)) throw e
+                if (confirm(t('לא הצלחנו לשמור בענן את השינויים האחרונים ({message}). להתנתק בכל זאת? השינויים האלה יאבדו.', { message: e.message })))
+                  await signOut(true)
+              }
+            })
+          }
+        >
+          {t('התנתקות')}
+        </button>
       </div>
     </>
   )

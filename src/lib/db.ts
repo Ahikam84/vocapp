@@ -171,6 +171,18 @@ export async function deleteDeck(deckId: string) {
   })
 }
 
+/**
+ * Remove the signed-in account's data from this device (on sign-out), so the
+ * next person – or the next account – starts clean. Device preferences such
+ * as voice and UI language stay.
+ */
+export async function clearAccountData() {
+  await db.transaction('rw', [db.decks, db.words, db.progress, db.reviews, db.tombstones, db.settings], async () => {
+    await Promise.all([db.decks.clear(), db.words.clear(), db.progress.clear(), db.reviews.clear(), db.tombstones.clear()])
+    await db.settings.bulkDelete(['currentDeckId', 'studyDeckIds', 'sync:pushedAt', 'sync:pulledSeq', 'sync:userId'])
+  })
+}
+
 export async function resetProgress(wordId: string) {
   await db.transaction('rw', [db.progress, db.tombstones], async () => {
     await db.progress.delete(wordId)

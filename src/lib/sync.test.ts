@@ -1,7 +1,7 @@
 import 'fake-indexeddb/auto'
 import Dexie from 'dexie'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { db, deleteWord, migrateFromV1 } from './db'
+import { clearAccountData, db, deleteWord, migrateFromV1 } from './db'
 import { applyRemote, type RemoteRow } from './sync'
 
 const word = (id: string, term: string) => ({ id, deckId: 'default', term, translations: ['x'], createdAt: 1 })
@@ -50,6 +50,26 @@ describe('applyRemote (last write wins)', () => {
     await deleteWord('w1')
     await applyRemote([row('old remote', 1000)])
     expect(await db.words.get('w1')).toBeUndefined()
+  })
+})
+
+describe('clearAccountData (sign-out)', () => {
+  it("removes the account's courses and sync state but keeps device preferences", async () => {
+    await db.decks.add({ id: 'd1', name: 'Unit 1', sourceLang: 'en', targetLang: 'he', createdAt: 1 })
+    await db.words.add(word('w1', 'שלום'))
+    await deleteWord('w1')
+    await db.settings.bulkPut([
+      { key: 'currentDeckId', value: 'd1' },
+      { key: 'sync:userId', value: 'user-a' },
+      { key: 'uiLang', value: 'en' },
+      { key: 'migratedV1', value: true },
+    ])
+
+    await clearAccountData()
+
+    expect(await db.decks.count()).toBe(0)
+    expect(await db.tombstones.count()).toBe(0)
+    expect((await db.settings.toArray()).map((s) => s.key).sort()).toEqual(['migratedV1', 'uiLang'])
   })
 })
 

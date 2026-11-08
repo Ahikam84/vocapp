@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { useSyncExternalStore } from 'react'
-import { db, markRemote, reviveCard, setLocalChangeListener, SYNCED_TABLES, type SyncedTable } from './db'
+import { clearAccountData, db, markRemote, reviveCard, setLocalChangeListener, SYNCED_TABLES, type SyncedTable } from './db'
 
 /**
  * Offline-first cloud sync. The local IndexedDB stays the source the app reads
@@ -234,6 +234,20 @@ export async function verifyLoginCode(email: string, token: string) {
   if (error) throw error
 }
 
-export async function signOut() {
+/** Thrown by signOut when the latest changes couldn't be saved to the cloud first. */
+export class UnsyncedChangesError extends Error {}
+
+/**
+ * Sign out and remove this account's courses and progress from the device –
+ * they live in the account and come back on the next sign-in. The latest
+ * changes are synced first; if that fails we stop, unless `force` is set.
+ */
+export async function signOut(force = false) {
+  if (!force) {
+    await syncNow()
+    if (status.state === 'error') throw new UnsyncedChangesError(status.error)
+  }
   await supabase!.auth.signOut()
+  await clearAccountData()
+  setStatus({ state: 'signed-out', email: undefined, lastSync: undefined, error: undefined })
 }
