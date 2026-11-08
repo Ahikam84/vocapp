@@ -5,7 +5,7 @@ import { checkAnswer, stripAccents, type AnswerResult } from '../lib/answer'
 import { pickDistractors, shuffle } from '../lib/session'
 import { dirOf, t } from '../lib/i18n'
 import { speak } from '../lib/tts'
-import { DECOY_LETTERS, HEBREW_KEYBOARD, SPECIAL_CHARS } from '../lib/useDeck'
+import { DECOY_LETTERS, HEBREW_KEYBOARD, SPECIAL_CHARS, toHebrewKeys } from '../lib/useDeck'
 import { SpeakButton, T } from './common'
 
 export interface ExerciseOutcome {
@@ -235,7 +235,7 @@ function Tiles({ word, deck, answered, onAnswer }: Props & { answered: boolean; 
         return
       }
       if ([...e.key].length !== 1) return
-      const key = e.key.toLowerCase()
+      const key = deck.targetLang === 'he' ? toHebrewKeys(e.key) : e.key.toLowerCase()
       const free = tiles.filter((x) => !usedRef.current.includes(x.i))
       // Exact letter first; otherwise "n" also finds "ñ", "e" finds "é", "מ" finds "ם".
       const hit = free.find((x) => x.c === key) ?? free.find((x) => stripAccents(x.c) === stripAccents(key))
@@ -313,7 +313,7 @@ function Typing({ word, deck, answered, onAnswer }: Props & { answered: boolean;
           spellCheck={false}
           value={value}
           readOnly={answered}
-          onChange={(e) => update(e.target.value)}
+          onChange={(e) => update(deck.targetLang === 'he' ? toHebrewKeys(e.target.value) : e.target.value)}
         />
         {deck.targetLang === 'he' && !answered && (
           <HebrewKeyboard

@@ -45,4 +45,16 @@ export const HEBREW_KEYBOARD = [
 ]
 
 /** Letters added to the tiles exercise as decoys. */
+/** Standard Israeli layout: which Hebrew letter sits on each English key, for keyboards left on English. */
+const QWERTY_TO_HEBREW: Record<string, string> = {
+  e: 'ק', r: 'ר', t: 'א', y: 'ט', u: 'ו', i: 'ן', o: 'ם', p: 'פ',
+  a: 'ש', s: 'ד', d: 'ג', f: 'כ', g: 'ע', h: 'י', j: 'ח', k: 'ל', l: 'ך', ';': 'ף',
+  z: 'ז', x: 'ס', c: 'ב', v: 'ה', b: 'נ', n: 'מ', m: 'צ', ',': 'ת', '.': 'ץ',
+}
+
+/** In a Hebrew course, turns letters typed on an English layout into the Hebrew letters on the same keys. */
+export function toHebrewKeys(text: string): string {
+  return [...text].map((c) => QWERTY_TO_HEBREW[c.toLowerCase()] ?? c).join('')
+}
+
 export const DECOY_LETTERS: Record<string, string> = { he: 'אבגדהוילמנרשת' }
