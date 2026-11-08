@@ -22,6 +22,18 @@ describe('ready-made courses', () => {
       }
     })
 
+  it('ready-made courses in the same language do not repeat words', async () => {
+    const seen = new Map<string, string>()
+    const repeats: string[] = []
+    for (const course of COURSES)
+      for (const w of courseToWords(course, await course.load())) {
+        const key = `${course.targetLang}:${w.term.toLowerCase()}`
+        if (seen.has(key)) repeats.push(`${w.term} (${seen.get(key)} & ${course.id})`)
+        else seen.set(key, course.id)
+      }
+    expect(repeats).toEqual([])
+  })
+
   it('adding a course twice keeps one copy and preserves user edits', async () => {
     const course = COURSES[0]
     const first = await addCourse(course)

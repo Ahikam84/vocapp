@@ -11,4 +11,13 @@ export const COURSES: CourseInfo[] = [
     targetLang: 'es',
     load: () => import('./es-c1').then((m) => m.default),
   },
+  {
+    id: 'es-c2',
+    name: 'ספרדית C2',
+    description: 'משלב גבוה: שפה ספרותית, משפט וכלכלה, ביטויים ושפה מדוברת מספרד',
+    level: 'C2',
+    sourceLang: 'he',
+    targetLang: 'es',
+    load: () => import('./es-c2').then((m) => m.default),
+  },
 ]
