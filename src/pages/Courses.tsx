@@ -1,4 +1,4 @@
-import { ChevronLeft, CircleCheck, Copy, RefreshCw, Share2, Trash2 } from 'lucide-react'
+import { ChevronLeft, CircleCheck, Copy, Link2, RefreshCw, Share2, Trash2 } from 'lucide-react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
@@ -82,6 +82,8 @@ function LanguageCourses({ lang, current }: { lang: string; current: Deck | null
           </ul>
         </>
       )}
+
+      <ShareSeveral decks={data.decks.filter((d) => !d.sharedFrom && !d.id.startsWith('course-'))} />
 
       {ready.length > 0 && (
         <>
@@ -186,6 +188,71 @@ function MyCourse({ deck, count, isCurrent, onChoose }: { deck: Deck; count: num
       )}
       {msg && <div className={msg.ok ? 'toast' : 'warn'}>{msg.text}</div>}
     </li>
+  )
+}
+
+/** One link for several courses: publishes each selected course and joins their codes. */
+function ShareSeveral({ decks }: { decks: Deck[] }) {
+  const [open, setOpen] = useState(false)
+  const [selected, setSelected] = useState<Set<string>>(() => new Set(decks.map((d) => d.id)))
+  const [link, setLink] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  if (decks.length < 2) return null
+
+  function toggle(id: string) {
+    const next = new Set(selected)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    setSelected(next)
+    setLink(null)
+  }
+
+  async function create() {
+    setBusy(true)
+    setError(null)
+    try {
+      const codes: string[] = []
+      for (const d of decks) if (selected.has(d.id)) codes.push(await publishDeck(d))
+      setLink(shareLink(codes.join(',')))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String((e as { message?: string })?.message ?? e))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  if (!open)
+    return (
+      <button className="btn secondary share-several-btn" onClick={() => setOpen(true)}>
+        <Link2 size={18} /> {t('שיתוף כמה קורסים בקישור אחד')}
+      </button>
+    )
+
+  return (
+    <div className="card share-several">
+      <h2>{t('שיתוף כמה קורסים בקישור אחד')}</h2>
+      <p className="muted">{t('התלמיד פותח קישור אחד ומוסיף את כל הקורסים שבחרת בלחיצה אחת. הקורסים יפורסמו בגרסתם הנוכחית.')}</p>
+      {decks.map((d) => (
+        <label key={d.id} className="inline check-row">
+          <span dir="auto">{d.name}</span>
+          <input type="checkbox" checked={selected.has(d.id)} onChange={() => toggle(d.id)} />
+        </label>
+      ))}
+      {link ? (
+        <div className="share-link">
+          <input readOnly dir="ltr" value={link} onFocus={(e) => e.target.select()} />
+          <button className="btn secondary small" onClick={() => navigator.clipboard.writeText(link)}>
+            <Copy size={16} /> {t('העתקה')}
+          </button>
+        </div>
+      ) : (
+        <button className="btn" disabled={busy || selected.size === 0} onClick={create}>
+          <Share2 size={18} /> {busy ? t('מפרסם…') : t('יצירת קישור ל-{n} קורסים', { n: selected.size })}
+        </button>
+      )}
+      {error && <div className="warn">{error}</div>}
+    </div>
   )
 }
 

@@ -179,6 +179,17 @@ export const EN: Record<string, string> = {
   'לא נמצא קורס עם הקוד {code}. בדוק את הקוד עם המורה.': 'No course found with the code {code}. Check the code with your teacher.',
   '{target} · תרגומים ב{source} · {n} מילים': '{target} · translations in {source} · {n} words',
   'הוספת הקורס': 'Add this course',
+  '{n} קורסים מהמורה': '{n} courses from your teacher',
+  '{target} · {n} מילים': '{target} · {n} words',
+  'כבר נוסף': 'Already added',
+  'הקודים האלה לא נמצאו: {codes}': "These codes weren't found: {codes}",
+  'עדכון הקורסים': 'Update courses',
+  'הוספת כל הקורסים': 'Add all courses',
+  'שיתוף כמה קורסים בקישור אחד': 'Share several courses in one link',
+  'התלמיד פותח קישור אחד ומוסיף את כל הקורסים שבחרת בלחיצה אחת. הקורסים יפורסמו בגרסתם הנוכחית.':
+    'Students open one link and add all the courses you picked in one tap. The courses are published as they are now.',
+  'מפרסם…': 'Publishing…',
+  'יצירת קישור ל-{n} קורסים': 'Create a link for {n} courses',
 
   // Sharing errors
   'השיתוף לא זמין בגרסה הזו (חסרים פרטי Supabase).': 'Sharing is not available in this version (Supabase is not configured).',
