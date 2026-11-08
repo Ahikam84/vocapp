@@ -1,7 +1,7 @@
 import { ArrowLeft, CircleCheck, CircleX, Delete, Lightbulb, TriangleAlert, Volume2 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Deck, ExerciseType, Word } from '../lib/db'
-import { checkAnswer, type AnswerResult } from '../lib/answer'
+import { checkAnswer, stripAccents, type AnswerResult } from '../lib/answer'
 import { pickDistractors, shuffle } from '../lib/session'
 import { dirOf, t } from '../lib/i18n'
 import { speak } from '../lib/tts'
@@ -206,18 +206,46 @@ function Tiles({ word, deck, answered, onAnswer }: Props & { answered: boolean; 
     const extra = shuffle([...decoys].filter((c) => !letters.includes(c))).slice(0, 2)
     return shuffle([...letters, ...extra]).map((c, i) => ({ c, i }))
   }, [word.id])
-  const [used, setUsed] = useState<number[]>([])
+  const [used, setUsedState] = useState<number[]>([])
+  // Mirrors `used` synchronously so fast typing never reads a stale value.
+  const usedRef = useRef<number[]>([])
+  const setUsed = (next: number[]) => {
+    usedRef.current = next
+    setUsedState(next)
+  }
   const built = used.map((i) => tiles[i].c).join('')
 
   function tap(i: number) {
-    if (answered || used.includes(i)) return
-    const next = [...used, i]
+    if (answered || usedRef.current.includes(i)) return
+    const next = [...usedRef.current, i]
     setUsed(next)
     if (next.length === word.term.length) {
       const given = next.map((j) => tiles[j].c).join('')
       onAnswer(checkAnswer(given, [word.term]).result === 'correct' ? 'correct' : 'wrong', given)
     }
   }
+
+  // The physical keyboard works too: a typed letter uses up the matching tile.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (answered || e.ctrlKey || e.metaKey || e.altKey) return
+      if (e.key === 'Backspace') {
+        e.preventDefault()
+        setUsed(usedRef.current.slice(0, -1))
+        return
+      }
+      if ([...e.key].length !== 1) return
+      const key = e.key.toLowerCase()
+      const free = tiles.filter((x) => !usedRef.current.includes(x.i))
+      // Exact letter first; otherwise "n" also finds "ñ", "e" finds "é", "מ" finds "ם".
+      const hit = free.find((x) => x.c === key) ?? free.find((x) => stripAccents(x.c) === stripAccents(key))
+      if (!hit) return
+      e.preventDefault()
+      tap(hit.i)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  })
 
   return (
     <>
@@ -255,6 +283,13 @@ function Typing({ word, deck, answered, onAnswer }: Props & { answered: boolean;
     onAnswer(checkAnswer(value, [word.term, ...(word.altTerms ?? [])]).result, value)
   }
 
+  /** Updates the text and accepts it right away once it matches exactly – no need to press Check. */
+  function update(next: string) {
+    if (answered) return
+    setValue(next)
+    if (checkAnswer(next, [word.term, ...(word.altTerms ?? [])]).result === 'correct') onAnswer('correct', next)
+  }
+
   return (
     <>
       <div className="card prompt">
@@ -278,12 +313,12 @@ function Typing({ word, deck, answered, onAnswer }: Props & { answered: boolean;
           spellCheck={false}
           value={value}
           readOnly={answered}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={(e) => update(e.target.value)}
         />
         {deck.targetLang === 'he' && !answered && (
           <HebrewKeyboard
             onKey={(c) => {
-              setValue((v) => (c === '⌫' ? v.slice(0, -1) : v + c))
+              update(c === '⌫' ? value.slice(0, -1) : value + c)
               input.current?.focus()
             }}
           />
@@ -295,7 +330,7 @@ function Typing({ word, deck, answered, onAnswer }: Props & { answered: boolean;
                 type="button"
                 key={c}
                 onClick={() => {
-                  setValue(value + c)
+                  update(value + c)
                   input.current?.focus()
                 }}
               >
