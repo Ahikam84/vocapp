@@ -4,6 +4,7 @@ import { db, importData, type Deck } from '../lib/db'
 import { langName, t, type UiLang } from '../lib/i18n'
 import { setSetting, useSettings } from '../lib/settings'
 import { SyncSection } from '../components/SyncSection'
+import { APP_VERSION } from '../lib/pwa'
 import { setTtsPreferences, speak, useVoices } from '../lib/tts'
 
 const SAMPLES: Record<string, string> = {
@@ -99,6 +100,8 @@ export default function SettingsPage({ deck }: { deck: Deck | null }) {
         </label>
       </div>
       {msg && <div className="toast">{msg}</div>}
+
+      <p className="version muted">{t('גרסה: {version}', { version: APP_VERSION })}</p>
     </div>
   )
 }

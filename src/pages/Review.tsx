@@ -3,11 +3,12 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Exercise, { type ExerciseOutcome } from '../components/Exercise'
 import { KnownButton, knownMessage, ProgressBar, UndoToast } from '../components/common'
-import { db, newId, setKnown, type Deck, type ExerciseType, type Word } from '../lib/db'
+import { db, newId, setKnown, type ExerciseType, type Word } from '../lib/db'
 import { t } from '../lib/i18n'
 import { getSettings, type Settings } from '../lib/settings'
 import { DIFFICULT_LAPSES, gradeAnswer, recordReview } from '../lib/srs'
 import { ttsAvailable } from '../lib/tts'
+import type { Study } from '../lib/useDeck'
 
 interface QueueItem {
   word: Word
@@ -30,7 +31,8 @@ function pickExercise(mode: Mode, audio: boolean, choices: boolean): ExerciseTyp
   return 'choice-source'
 }
 
-export default function Review({ deck, mode }: { deck: Deck; mode: Mode }) {
+export default function Review({ study, mode }: { study: Study; mode: Mode }) {
+  const { deck } = study
   const [queue, setQueue] = useState<QueueItem[] | null>(null)
   const [pos, setPos] = useState(0)
   const [pool, setPool] = useState<Word[]>([])
@@ -42,9 +44,9 @@ export default function Review({ deck, mode }: { deck: Deck; mode: Mode }) {
   useEffect(() => {
     ;(async () => {
       const s = await getSettings()
-      const words = await db.words.where('deckId').equals(deck.id).toArray()
+      const words = await db.words.where('deckId').anyOf(study.deckIds).toArray()
       const byId = new Map(words.map((w) => [w.id, w]))
-      let progress = await db.progress.where('deckId').equals(deck.id).toArray()
+      let progress = await db.progress.where('deckId').anyOf(study.deckIds).toArray()
       if (mode === 'review') {
         progress = progress.filter((p) => p.due <= Date.now()).sort((a, b) => a.due - b.due)
       } else {
@@ -63,13 +65,13 @@ export default function Review({ deck, mode }: { deck: Deck; mode: Mode }) {
       setSettings(s)
       setQueue(items)
     })()
-  }, [deck, mode])
+  }, [study, mode]) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function onDone(outcome: ExerciseOutcome) {
     if (!queue) return
     const item = queue[pos]
     await db.reviews.add({
-      id: newId(), wordId: item.word.id, deckId: deck.id, mode, exercise: item.exercise,
+      id: newId(), wordId: item.word.id, deckId: item.word.deckId, mode, exercise: item.exercise,
       correct: outcome.correct, responseMs: Math.round(outcome.responseMs), at: Date.now(),
     })
     if (!item.retry) {

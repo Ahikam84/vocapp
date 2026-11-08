@@ -238,4 +238,22 @@ export const EN: Record<string, string> = {
   'מחובר כ-': 'Signed in as ',
   'סנכרון עכשיו': 'Sync now',
   'התנתקות': 'Sign out',
+  'התחברות עם Google': 'Sign in with Google',
+  'או במייל': 'or with email',
+
+  // Studying several courses together
+  'לקורס': 'Into course',
+  '{name} ועוד {n}': '{name} + {n} more',
+  'מה לתרגל': 'What to practise',
+  'מה לתרגל?': 'What do you want to practise?',
+  'אפשר לסמן כמה קורסים באותה שפה – הלמידה, החזרות והסטטיסטיקה יכללו את כולם.':
+    'Tick several courses in the same language – lessons, reviews and stats will include all of them.',
+  'רק את הקורס הזה': 'Only this one',
+  'סימון הכל': 'Select all',
+  'סיום': 'Done',
+  'בשפות אחרות': 'Other languages',
+
+  // App updates
+  'יש גרסה חדשה – לחץ לרענון': 'A new version is available – tap to refresh',
+  'גרסה: {version}': 'Version: {version}',
 }

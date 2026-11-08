@@ -3,13 +3,14 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Exercise, { type ExerciseOutcome } from '../components/Exercise'
 import { KnownButton, knownMessage, ProgressBar, T, UndoToast } from '../components/common'
-import { db, newId, setKnown, type Deck, type Word } from '../lib/db'
+import { db, newId, setKnown, type Word } from '../lib/db'
 import { t } from '../lib/i18n'
 import { LearnSession, type Step } from '../lib/session'
 import { getSettings, type Settings } from '../lib/settings'
 import { markLearned } from '../lib/srs'
 import { ttsAvailable } from '../lib/tts'
 import { startOfToday } from '../lib/stats'
+import type { Study } from '../lib/useDeck'
 
 interface Loaded {
   session: LearnSession
@@ -17,12 +18,13 @@ interface Loaded {
   settings: Settings
 }
 
-export default function Learn({ deck }: { deck: Deck }) {
+export default function Learn({ study }: { study: Study }) {
   const [round, setRound] = useState(0)
-  return <LearnRound key={round} deck={deck} onAgain={() => setRound((r) => r + 1)} />
+  return <LearnRound key={round} study={study} onAgain={() => setRound((r) => r + 1)} />
 }
 
-function LearnRound({ deck, onAgain }: { deck: Deck; onAgain: () => void }) {
+function LearnRound({ study, onAgain }: { study: Study; onAgain: () => void }) {
+  const { deck } = study
   const [loaded, setLoaded] = useState<Loaded | null>(null)
   const [step, setStep] = useState<Step | null>(null)
   const [stepNo, setStepNo] = useState(0)
@@ -37,8 +39,8 @@ function LearnRound({ deck, onAgain }: { deck: Deck; onAgain: () => void }) {
     ;(async () => {
       const settings = await getSettings()
       const [pool, progress] = await Promise.all([
-        db.words.where('deckId').equals(deck.id).sortBy('createdAt'),
-        db.progress.where('deckId').equals(deck.id).toArray(),
+        db.words.where('deckId').anyOf(study.deckIds).sortBy('createdAt'),
+        db.progress.where('deckId').anyOf(study.deckIds).toArray(),
       ])
       const learnedIds = new Set(progress.map((p) => p.wordId))
       const learnedToday = progress.filter((p) => p.learnedAt >= startOfToday()).length
@@ -53,18 +55,18 @@ function LearnRound({ deck, onAgain }: { deck: Deck; onAgain: () => void }) {
       setLoaded({ session, pool, settings })
       setStep(session.next())
     })()
-  }, [deck])
+  }, [study]) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function onDone(outcome: ExerciseOutcome) {
     if (!loaded || !step) return
     const { session } = loaded
     if (step.exercise !== 'intro')
       await db.reviews.add({
-        id: newId(), wordId: step.item.word.id, deckId: deck.id, mode: 'learn', exercise: step.exercise,
+        id: newId(), wordId: step.item.word.id, deckId: step.item.word.deckId, mode: 'learn', exercise: step.exercise,
         correct: outcome.correct, responseMs: Math.round(outcome.responseMs), at: Date.now(),
       })
     if (session.answer(step.item, outcome.correct)) {
-      await markLearned(step.item.word.id, deck.id)
+      await markLearned(step.item.word.id, step.item.word.deckId)
       setLearned((l) => [...l, step.item.word])
     }
     setStep(session.next())

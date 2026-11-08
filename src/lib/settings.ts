@@ -11,6 +11,8 @@ export interface Settings {
   voices: Record<string, string>
   speechRate: number
   currentDeckId: string | null
+  /** Courses practised together with the current one (same language); empty = just the current course */
+  studyDeckIds: string[]
   /** null = follow the browser language */
   uiLang: UiLang | null
 }
@@ -23,6 +25,7 @@ export const DEFAULT_SETTINGS: Settings = {
   voices: {},
   speechRate: 0.9,
   currentDeckId: null,
+  studyDeckIds: [],
   uiLang: null,
 }
 

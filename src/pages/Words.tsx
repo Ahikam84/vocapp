@@ -3,14 +3,18 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { SpeakButton, Strength, T } from '../components/common'
-import { db, setKnown, type Deck } from '../lib/db'
+import { db, setKnown } from '../lib/db'
 import { t } from '../lib/i18n'
 import { DIFFICULT_LAPSES, strength } from '../lib/srs'
 import { normalize, stripAccents } from '../lib/answer'
+import type { Study } from '../lib/useDeck'
 
 type Filter = 'all' | 'new' | 'learned' | 'difficult' | 'known'
 
-export default function Words({ deck }: { deck: Deck }) {
+export default function Words({ study }: { study: Study }) {
+  const { deck } = study
+  const courseName = new Map(study.decks.map((d) => [d.id, d.name]))
+  const several = study.decks.length > 1
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [params] = useSearchParams()
@@ -18,11 +22,11 @@ export default function Words({ deck }: { deck: Deck }) {
 
   const data = useLiveQuery(async () => {
     const [words, progress] = await Promise.all([
-      db.words.where('deckId').equals(deck.id).reverse().sortBy('createdAt'),
-      db.progress.where('deckId').equals(deck.id).toArray(),
+      db.words.where('deckId').anyOf(study.deckIds).reverse().sortBy('createdAt'),
+      db.progress.where('deckId').anyOf(study.deckIds).toArray(),
     ])
     return { words, progress: new Map(progress.map((p) => [p.wordId, p])) }
-  }, [deck.id])
+  }, [study.deckIds.join()])
 
   if (!data) return null
   const q = stripAccents(normalize(query))
@@ -87,7 +91,10 @@ export default function Words({ deck }: { deck: Deck }) {
               {w.known ? <span className="known-mark" title={t('מסומנת כמוכרת')}><Check size={18} /></span> : <Strength level={strength(p)} />}
               <div className="grow">
                 <T className="term">{w.term}</T>
-                <div className="muted"><T>{w.translations.join(', ')}</T></div>
+                <div className="muted">
+                  <T>{w.translations.join(', ')}</T>
+                  {several && <span className="course-tag" dir="auto">{courseName.get(w.deckId)}</span>}
+                </div>
               </div>
               {w.known ? (
                 <button

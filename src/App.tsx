@@ -1,12 +1,11 @@
-import { House, Languages, Library, Settings } from 'lucide-react'
-import { useLiveQuery } from 'dexie-react-hooks'
+import { ChevronDown, House, Languages, Library, RefreshCw, Settings } from 'lucide-react'
 import { useEffect } from 'react'
 import { Link, NavLink, Route, Routes } from 'react-router-dom'
-import { db } from './lib/db'
 import { detectUiLang, setUiLang, t } from './lib/i18n'
-import { setSetting, useSettings } from './lib/settings'
+import { applyUpdate, useNeedRefresh } from './lib/pwa'
+import { useSettings } from './lib/settings'
 import { setTtsPreferences } from './lib/tts'
-import { useDeck } from './lib/useDeck'
+import { useStudy, type Study } from './lib/useDeck'
 import Courses from './pages/Courses'
 import Home from './pages/Home'
 import Import from './pages/Import'
@@ -14,19 +13,28 @@ import Join from './pages/Join'
 import Learn from './pages/Learn'
 import Review from './pages/Review'
 import SettingsPage from './pages/Settings'
+import StudyPicker from './pages/StudyPicker'
 import WordForm from './pages/WordForm'
 import Words from './pages/Words'
 
+/** "Unit 2", "Unit 2 + Unit 3", or "Unit 2 + 3 more" for the top bar. */
+function studyLabel({ decks }: Study) {
+  if (decks.length === 1) return decks[0].name
+  if (decks.length === 2) return `${decks[0].name} + ${decks[1].name}`
+  return t('{name} ועוד {n}', { name: decks[0].name, n: decks.length - 1 })
+}
+
 export default function App() {
-  const deck = useDeck()
+  const study = useStudy()
   const settings = useSettings()
-  const decks = useLiveQuery(() => db.decks.toArray().then((ds) => ds.sort((a, b) => a.createdAt - b.createdAt)))
+  const needRefresh = useNeedRefresh()
   useEffect(() => {
     if (settings) setTtsPreferences(settings.voices, settings.speechRate)
   }, [settings])
-  if (deck === undefined || !settings) return null
+  if (study === undefined || !settings) return null
   // Set before rendering children so every t() call below uses the chosen language.
   setUiLang(settings.uiLang ?? detectUiLang())
+  const deck = study?.deck ?? null
 
   return (
     <div className="app">
@@ -35,28 +43,32 @@ export default function App() {
           <img src="icon.svg" alt="" width={28} height={28} />
           VocApp
         </NavLink>
-        {deck && decks && decks.length > 1 ? (
-          <select className="deck-switch" value={deck.id} onChange={(e) => setSetting('currentDeckId', e.target.value)} aria-label={t('קורס נוכחי')}>
-            {decks.map((d) => (
-              <option key={d.id} value={d.id}>{d.name}</option>
-            ))}
-          </select>
-        ) : deck ? (
-          <Link to="/courses" className="deck-name">{deck.name}</Link>
-        ) : null}
+        {study && (
+          <Link to="/study" className="study-switch" title={t('מה לתרגל')}>
+            <span dir="auto">{studyLabel(study)}</span>
+            <ChevronDown size={16} />
+          </Link>
+        )}
       </header>
 
+      {needRefresh && (
+        <button className="update-banner" onClick={applyUpdate}>
+          <RefreshCw size={16} /> {t('יש גרסה חדשה – לחץ לרענון')}
+        </button>
+      )}
+
       <main className="content">
-        {deck ? (
+        {study && deck ? (
           <Routes>
-            <Route path="/" element={<Home deck={deck} />} />
-            <Route path="/learn" element={<Learn deck={deck} />} />
-            <Route path="/review" element={<Review deck={deck} mode="review" />} />
-            <Route path="/difficult" element={<Review deck={deck} mode="practice" />} />
-            <Route path="/words" element={<Words deck={deck} />} />
-            <Route path="/words/new" element={<WordForm deck={deck} />} />
-            <Route path="/words/:id" element={<WordForm deck={deck} />} />
-            <Route path="/import" element={<Import deck={deck} />} />
+            <Route path="/" element={<Home study={study} />} />
+            <Route path="/learn" element={<Learn study={study} />} />
+            <Route path="/review" element={<Review study={study} mode="review" />} />
+            <Route path="/difficult" element={<Review study={study} mode="practice" />} />
+            <Route path="/words" element={<Words study={study} />} />
+            <Route path="/words/new" element={<WordForm study={study} />} />
+            <Route path="/words/:id" element={<WordForm study={study} />} />
+            <Route path="/import" element={<Import study={study} />} />
+            <Route path="/study" element={<StudyPicker study={study} />} />
             <Route path="/courses" element={<Courses deck={deck} />} />
             <Route path="/courses/:lang" element={<Courses deck={deck} />} />
             <Route path="/join/:code" element={<Join />} />

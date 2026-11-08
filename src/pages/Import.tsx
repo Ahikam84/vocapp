@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { T } from '../components/common'
-import { db, newId, type Deck } from '../lib/db'
+import { CourseSelect, T } from '../components/common'
+import { db, newId } from '../lib/db'
 import { normalize } from '../lib/answer'
 import { t } from '../lib/i18n'
 import { parseWordList } from '../lib/importText'
+import type { Study } from '../lib/useDeck'
 
 /** Example list per course language, in that course's word – translation order. */
 const SAMPLES: Record<string, string> = {
@@ -12,8 +13,10 @@ const SAMPLES: Record<string, string> = {
   he: `שלום - hello/hi\nתודה - thank you\nכלב - dog\nבית - house/home`,
 }
 
-export default function Import({ deck }: { deck: Deck }) {
+export default function Import({ study }: { study: Study }) {
+  const { deck } = study
   const navigate = useNavigate()
+  const [targetDeckId, setTargetDeckId] = useState(deck.id)
   const [text, setText] = useState('')
   const [skipped, setSkipped] = useState<number | null>(null)
   const parsed = useMemo(() => parseWordList(text, deck.targetLang), [text, deck.targetLang])
@@ -24,7 +27,7 @@ export default function Import({ deck }: { deck: Deck }) {
   }
 
   async function doImport() {
-    const existing = new Set((await db.words.where('deckId').equals(deck.id).toArray()).map((w) => normalize(w.term)))
+    const existing = new Set((await db.words.where('deckId').equals(targetDeckId).toArray()).map((w) => normalize(w.term)))
     const now = Date.now()
     const fresh = parsed.filter((p) => {
       const key = normalize(p.term)
@@ -32,7 +35,7 @@ export default function Import({ deck }: { deck: Deck }) {
       existing.add(key)
       return true
     })
-    await db.words.bulkAdd(fresh.map((p, i) => ({ ...p, id: newId(), deckId: deck.id, createdAt: now + i })))
+    await db.words.bulkAdd(fresh.map((p, i) => ({ ...p, id: newId(), deckId: targetDeckId, createdAt: now + i })))
     setSkipped(parsed.length - fresh.length)
     if (parsed.length === fresh.length) navigate('/words')
   }
@@ -45,6 +48,7 @@ export default function Import({ deck }: { deck: Deck }) {
         {t('אפשר להפריד גם בטאב, בנקודה-פסיק או בפסיק (CSV). כמה תרגומים מפרידים ב-/. עמודות נוספות (לא חובה): משפט לדוגמה, תרגום המשפט, רמז.')}
       </p>
 
+      <CourseSelect decks={study.decks} value={targetDeckId} onChange={setTargetDeckId} />
       <textarea dir="auto" rows={10} value={text} onChange={(e) => setText(e.target.value)} placeholder={sample} />
       <div className="row">
         <label className="btn secondary">

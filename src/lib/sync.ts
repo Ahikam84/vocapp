@@ -184,8 +184,28 @@ export function startSync() {
 }
 
 // ---- auth -----------------------------------------------------------------
-// The email holds a sign-in link back to this page (and a one-time code, if the
-// Supabase email template includes {{ .Token }} – codes also work inside an installed PWA).
+// Two ways in: "Sign in with Google" (preferred – one tap, no email limits) and
+// an email sign-in link (plus a one-time code, if the Supabase email template
+// includes {{ .Token }} – codes also work inside an installed PWA).
+
+let googleEnabled: Promise<boolean> | null = null
+
+/** Whether the Google provider is switched on in Supabase (so we don't show a button that fails). */
+export function isGoogleEnabled(): Promise<boolean> {
+  googleEnabled ??= fetch(`${url}/auth/v1/settings`, { headers: { apikey: key! } })
+    .then((r) => r.json())
+    .then((s) => !!s?.external?.google)
+    .catch(() => false)
+  return googleEnabled
+}
+
+export async function signInWithGoogle() {
+  const { error } = await supabase!.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: location.origin + location.pathname },
+  })
+  if (error) throw error
+}
 
 export async function sendLoginCode(email: string) {
   const { error } = await supabase!.auth.signInWithOtp({
@@ -196,11 +216,11 @@ export async function sendLoginCode(email: string) {
 }
 
 /**
- * The email link returns with "#access_token=…" (or "#error=…") in the URL, which
- * clashes with the hash router. Let Supabase read it before the app renders, then
- * land on the settings page where the sync status is shown.
+ * Google and the email link both return with "#access_token=…" (or "#error=…")
+ * in the URL, which clashes with the hash router. Let Supabase read it before
+ * the app renders, then land on the settings page where the sync status is shown.
  */
-export async function completeEmailLink() {
+export async function completeAuthRedirect() {
   if (!supabase || !/access_token=|error_description=/.test(location.hash)) return
   const params = new URLSearchParams(location.hash.slice(1))
   const failure = params.get('error_description')

@@ -9,16 +9,19 @@ export function startOfToday(): number {
 
 const DAY = 86400000
 
-export async function deckStats(deckId: string) {
+/** Stats for the courses being studied together. */
+export async function studyStats(deckIds: string[]) {
   const now = Date.now()
-  const [words, allProgress, reviews] = await Promise.all([
-    db.words.where('deckId').equals(deckId).toArray(),
-    db.progress.where('deckId').equals(deckId).toArray(),
+  const inStudy = new Set(deckIds)
+  const [words, allProgress, allReviews] = await Promise.all([
+    db.words.where('deckId').anyOf(deckIds).toArray(),
+    db.progress.where('deckId').anyOf(deckIds).toArray(),
     db.reviews.where('at').above(now - 400 * DAY).toArray(),
   ])
+  const reviews = allReviews.filter((r) => inStudy.has(r.deckId))
 
   // Streak: consecutive days (ending today or yesterday) with at least one answer.
-  const days = new Set(reviews.filter((r) => r.deckId === deckId).map((r) => Math.floor((r.at - new Date(r.at).getTimezoneOffset() * 60000) / DAY)))
+  const days = new Set(reviews.map((r) => Math.floor((r.at - new Date(r.at).getTimezoneOffset() * 60000) / DAY)))
   let streak = 0
   let day = Math.floor((now - new Date().getTimezoneOffset() * 60000) / DAY)
   if (!days.has(day)) day--
@@ -43,7 +46,7 @@ export async function deckStats(deckId: string) {
     difficult: progress.filter((p) => p.lapses >= DIFFICULT_LAPSES).length,
     longTerm: progress.filter((p) => p.card.stability >= 21).length,
     learnedToday: allProgress.filter((p) => p.learnedAt >= today).length,
-    answeredToday: reviews.filter((r) => r.deckId === deckId && r.at >= today).length,
+    answeredToday: reviews.filter((r) => r.at >= today).length,
     streak,
   }
 }

@@ -1,13 +1,13 @@
 import { ChevronLeft, Flame, Repeat2, Sprout, Target } from 'lucide-react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Link } from 'react-router-dom'
-import type { Deck } from '../lib/db'
 import { t } from '../lib/i18n'
 import { useSettings } from '../lib/settings'
-import { deckStats } from '../lib/stats'
+import { studyStats } from '../lib/stats'
+import type { Study } from '../lib/useDeck'
 
-export default function Home({ deck }: { deck: Deck }) {
-  const stats = useLiveQuery(() => deckStats(deck.id), [deck.id])
+export default function Home({ study }: { study: Study }) {
+  const stats = useLiveQuery(() => studyStats(study.deckIds), [study.deckIds.join()])
   const settings = useSettings()
   if (!stats || !settings) return null
 

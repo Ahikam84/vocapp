@@ -2,19 +2,22 @@ import { Check, CircleCheck, TriangleAlert, Undo2 } from 'lucide-react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { SpeakButton } from '../components/common'
-import { db, deleteWord, newId, resetProgress as resetWordProgress, setKnown, type Deck, type Word } from '../lib/db'
+import { CourseSelect, SpeakButton } from '../components/common'
+import { db, deleteWord, newId, resetProgress as resetWordProgress, setKnown, type Word } from '../lib/db'
 import { normalize } from '../lib/answer'
 import { dirOf, langName, t, uiLocale } from '../lib/i18n'
-import { SPECIAL_CHARS } from '../lib/useDeck'
+import { SPECIAL_CHARS, type Study } from '../lib/useDeck'
 
 const splitList = (s: string) => s.split(/[,/،]/).map((t) => t.trim()).filter(Boolean)
 
 const EMPTY = { term: '', translations: '', altTerms: '', example: '', exampleTranslation: '', hint: '' }
 
-export default function WordForm({ deck }: { deck: Deck }) {
+export default function WordForm({ study }: { study: Study }) {
+  const { deck } = study
   const { id } = useParams()
   const wordId = id
+  // Which course the word belongs to – changeable when several courses are studied together.
+  const [targetDeckId, setTargetDeckId] = useState(deck.id)
   const navigate = useNavigate()
   const termRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState(EMPTY)
@@ -25,11 +28,12 @@ export default function WordForm({ deck }: { deck: Deck }) {
   const duplicate = useLiveQuery(async () => {
     const t = normalize(form.term)
     if (!t) return undefined
-    const all = await db.words.where('deckId').equals(deck.id).toArray()
+    const all = await db.words.where('deckId').equals(targetDeckId).toArray()
     return all.find((w) => w.id !== wordId && normalize(w.term) === t)
-  }, [form.term, deck.id, wordId])
+  }, [form.term, targetDeckId, wordId])
 
   useEffect(() => {
+    if (existing) setTargetDeckId(existing.deckId)
     if (existing)
       setForm({
         term: existing.term,
@@ -54,7 +58,7 @@ export default function WordForm({ deck }: { deck: Deck }) {
     const translations = splitList(form.translations)
     if (!form.term.trim() || translations.length === 0) return
     const data: Omit<Word, 'id'> = {
-      deckId: deck.id,
+      deckId: targetDeckId,
       term: form.term.trim(),
       translations,
       altTerms: splitList(form.altTerms),
@@ -96,6 +100,8 @@ export default function WordForm({ deck }: { deck: Deck }) {
     >
       <h1>{wordId ? t('עריכת מילה') : t('מילה חדשה')}</h1>
       {saved && <div className="toast"><Check size={18} /> {t('"{word}" נשמרה', { word: saved })}</div>}
+
+      <CourseSelect decks={study.decks} value={targetDeckId} onChange={setTargetDeckId} />
 
       <label>
         {t('מילה ב{lang}', { lang: langName(deck.targetLang) })} *

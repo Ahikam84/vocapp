@@ -94,3 +94,18 @@ export function knownMessage(term: string) {
     </>
   )
 }
+
+/** Lets the user choose which of the studied courses new words go into (shown only with 2+ courses). */
+export function CourseSelect({ decks, value, onChange }: { decks: { id: string; name: string }[]; value: string; onChange: (id: string) => void }) {
+  if (decks.length < 2) return null
+  return (
+    <label>
+      {t('לקורס')}
+      <select value={value} onChange={(e) => onChange(e.target.value)}>
+        {decks.map((d) => (
+          <option key={d.id} value={d.id}>{d.name}</option>
+        ))}
+      </select>
+    </label>
+  )
+}

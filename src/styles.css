@@ -333,3 +333,27 @@ input[type='range'] { width: 160px; padding: 0; background: none; accent-color: 
 .join-list li { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: var(--surface); border-radius: var(--radius-sm); margin-bottom: 6px; }
 .join-list b { display: block; }
 .join-list .added { color: var(--primary); }
+
+/* Update banner and version */
+.update-banner {
+  display: flex; align-items: center; justify-content: center; gap: 8px; width: calc(100% - 32px); max-width: 608px;
+  margin: 0 auto 8px; padding: 10px 14px; border: 0; border-radius: var(--radius-sm);
+  background: var(--water-soft); color: var(--water); font: inherit; font-weight: 600; cursor: pointer;
+}
+.version { margin-top: 32px; text-align: center; font-size: 0.8rem; direction: ltr; }
+
+/* Top-bar study set and picker */
+.study-switch {
+  display: inline-flex; align-items: center; gap: 4px; max-width: 60%; padding: 6px 10px;
+  background: var(--surface); color: var(--text); border-radius: 10px; font-size: 0.9rem; font-weight: 500;
+}
+.study-switch span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pick-list { list-style: none; padding: 0; margin: 0 0 16px; }
+.pick-list li { display: flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: var(--radius-sm); margin-bottom: 6px; background: var(--surface); }
+.pick-list li.on { background: var(--primary-soft); }
+.pick-list .pick-main { flex: 1; flex-direction: row; align-items: center; gap: 12px; margin: 0; padding: 10px 0; cursor: pointer; }
+.pick-list b { display: block; font-weight: 600; }
+.course-tag { margin-inline-start: 8px; font-size: 0.75rem; padding: 1px 8px; border-radius: 99px; background: var(--surface); color: var(--muted); }
+.google-btn { background: var(--bg); color: var(--text); border: 1px solid var(--surface-2); width: 100%; }
+.google-btn:hover { background: var(--surface); opacity: 1; }
+.or-line { text-align: center; margin: 10px 0; }
