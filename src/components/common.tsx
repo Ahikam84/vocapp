@@ -1,3 +1,4 @@
+import { Check, Undo2, Volume2 } from 'lucide-react'
 import { useEffect } from 'react'
 import { speak } from '../lib/tts'
 
@@ -13,17 +14,18 @@ export function SpeakButton({ text, lang, small }: { text: string; lang: string;
       aria-label="השמע"
       title="השמע"
     >
-      🔊
+      <Volume2 size={small ? 16 : 20} />
     </button>
   )
 }
 
-/** 0–5 growth indicator, from seed to full plant. */
-export function Plant({ level }: { level: number }) {
-  const icons = ['🌰', '🌱', '🌿', '🪴', '🌳', '🌳']
+/** 0–5 memory strength as five rising bars. */
+export function Strength({ level }: { level: number }) {
   return (
-    <span className="plant" title={`חוזק זיכרון ${level}/5`}>
-      {icons[level]}
+    <span className="strength" title={`חוזק זיכרון ${level}/5`} aria-label={`חוזק זיכרון ${level} מתוך 5`}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <i key={n} className={n <= level ? 'on' : ''} />
+      ))}
     </span>
   )
 }
@@ -49,7 +51,7 @@ export function ProgressBar({ value }: { value: number }) {
 export function KnownButton({ onClick }: { onClick: () => void }) {
   return (
     <button type="button" className="known-btn" onClick={onClick} title="המילה לא תופיע יותר בלמידה ובחזרות">
-      ✓ כבר מכיר
+      <Check size={14} /> כבר מכיר
     </button>
   )
 }
@@ -70,7 +72,7 @@ export function UndoToast({ message, onUndo, onClose }: { message: React.ReactNo
           onClose()
         }}
       >
-        ביטול
+        <Undo2 size={16} /> ביטול
       </button>
     </div>
   )

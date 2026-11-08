@@ -1,3 +1,4 @@
+import { Sprout, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Exercise, { type ExerciseOutcome } from '../components/Exercise'
@@ -44,7 +45,7 @@ function LearnRound({ deck, onAgain }: { deck: Deck; onAgain: () => void }) {
       const fresh = pool.filter((w) => !learnedIds.has(w.id) && !w.known).slice(0, Math.max(0, quota))
 
       if (fresh.length === 0) {
-        setReason(quota <= 0 ? 'הגעת ליעד המילים החדשות להיום 🎉 אפשר לשנות אותו בהגדרות.' : 'אין מילים חדשות ללמוד. הוסף מילים כדי להמשיך.')
+        setReason(quota <= 0 ? 'הגעת ליעד המילים החדשות להיום. אפשר לשנות אותו בהגדרות.' : 'אין מילים חדשות ללמוד. הוסף מילים כדי להמשיך.')
         return
       }
       const session = new LearnSession(fresh, { audio: ttsAvailable(deck.targetLang), choices: pool.length >= 3 })
@@ -103,7 +104,7 @@ function LearnRound({ deck, onAgain }: { deck: Deck; onAgain: () => void }) {
   if (!step)
     return (
       <div className="page center-page">
-        <div className="celebrate">🌱</div>
+        <div className="celebrate"><Sprout size={40} /></div>
         <h1>{learned.length ? `נשתלו ${learned.length} מילים חדשות!` : 'הסשן הסתיים'}</h1>
         <ul className="summary">
           {learned.map((w) => (
@@ -122,7 +123,7 @@ function LearnRound({ deck, onAgain }: { deck: Deck; onAgain: () => void }) {
   return (
     <div className="page session">
       <div className="session-top">
-        <Link to="/" className="close" aria-label="יציאה">✕</Link>
+        <Link to="/" className="close" aria-label="יציאה"><X size={22} /></Link>
         <ProgressBar value={loaded.session.progress} />
         <KnownButton onClick={markKnown} />
       </div>

@@ -1,3 +1,4 @@
+import { Circle, CircleCheck, Lightbulb, Volume2 } from 'lucide-react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useState } from 'react'
 import { db, importData, newId, type Deck } from '../lib/db'
@@ -111,7 +112,7 @@ export default function SettingsPage({ deck }: { deck: Deck }) {
                   </option>
                 ))}
               </select>
-              <button type="button" className="btn secondary" onClick={() => speak(sample, lang)}>🔊 השמעה</button>
+              <button type="button" className="btn secondary" onClick={() => speak(sample, lang)}><Volume2 size={18} /> השמעה</button>
             </div>
           </label>
           <label className="inline">
@@ -128,8 +129,8 @@ export default function SettingsPage({ deck }: { deck: Deck }) {
             />
           </label>
           {!voices.some((v) => /natural|neural|online|google|premium|enhanced/i.test(v.name)) && (
-            <p className="muted">
-              💡 הקולות כאן בסיסיים. ב-Microsoft Edge יש קולות "Natural" טבעיים יותר, וב-Chrome יש קול של Google.
+            <p className="tip">
+              <Lightbulb size={16} /> הקולות כאן בסיסיים. ב-Microsoft Edge יש קולות "Natural" טבעיים יותר, וב-Chrome יש קול של Google.
             </p>
           )}
         </>
@@ -141,7 +142,7 @@ export default function SettingsPage({ deck }: { deck: Deck }) {
       <ul className="deck-list">
         {decks.map((d) => (
           <li key={d.id} className={d.id === deck.id ? 'active' : ''} onClick={() => setSetting('currentDeckId', d.id)}>
-            {d.id === deck.id ? '●' : '○'} {d.name} <span className="muted">({LANGUAGES[d.targetLang] ?? d.targetLang})</span>
+            {d.id === deck.id ? <CircleCheck size={18} /> : <Circle size={18} />} {d.name} <span className="muted">({LANGUAGES[d.targetLang] ?? d.targetLang})</span>
           </li>
         ))}
       </ul>

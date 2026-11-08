@@ -1,7 +1,8 @@
+import { Check, Plus, Undo2 } from 'lucide-react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { Plant, SpeakButton, T } from '../components/common'
+import { SpeakButton, Strength, T } from '../components/common'
 import { db, setKnown, type Deck } from '../lib/db'
 import { DIFFICULT_LAPSES, strength } from '../lib/srs'
 import { normalize, stripAccents } from '../lib/answer'
@@ -40,11 +41,13 @@ export default function Words({ deck }: { deck: Deck }) {
 
   return (
     <div className="page">
-      <div className="row between">
-        <h1>המילים שלי ({data.words.length})</h1>
+      <div className="page-head">
+        <h1>
+          המילים שלי <span className="head-count">{data.words.length}</span>
+        </h1>
         <div className="row">
-          <Link className="btn secondary" to="/import">ייבוא</Link>
-          <Link className="btn" to="/words/new">+ מילה</Link>
+          <Link className="btn secondary small" to="/import">ייבוא</Link>
+          <Link className="btn small" to="/words/new"><Plus size={18} /> מילה</Link>
         </div>
       </div>
 
@@ -72,7 +75,7 @@ export default function Words({ deck }: { deck: Deck }) {
       )}
 
       {filter === 'known' && rows.length === 0 && !q && (
-        <p className="empty">אין מילים מסומנות כמוכרות. אפשר לסמן מילה בכפתור "✓ כבר מכיר" בזמן הלמידה.</p>
+        <p className="empty">אין מילים מסומנות כמוכרות. אפשר לסמן מילה בכפתור "כבר מכיר" בזמן הלמידה.</p>
       )}
 
       <ul className="word-list">
@@ -80,7 +83,7 @@ export default function Words({ deck }: { deck: Deck }) {
           const p = data.progress.get(w.id)
           return (
             <li key={w.id} className={w.known ? 'known' : ''} onClick={() => navigate(`/words/${w.id}`)}>
-              {w.known ? <span className="plant" title="מסומנת כמוכרת">✅</span> : <Plant level={strength(p)} />}
+              {w.known ? <span className="known-mark" title="מסומנת כמוכרת"><Check size={18} /></span> : <Strength level={strength(p)} />}
               <div className="grow">
                 <T className="term">{w.term}</T>
                 <div className="muted">{w.translations.join(', ')}</div>
@@ -94,7 +97,7 @@ export default function Words({ deck }: { deck: Deck }) {
                     setKnown(w.id, false)
                   }}
                 >
-                  ↩ החזר ללמידה
+                  <Undo2 size={14} /> החזר ללמידה
                 </button>
               ) : (
                 p && p.lapses >= DIFFICULT_LAPSES && <span className="badge">קשה</span>

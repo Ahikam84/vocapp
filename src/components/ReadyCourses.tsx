@@ -43,7 +43,7 @@ export function ReadyCourses() {
                 <div className="grow">
                   <b>{c.name}</b> <span className="badge level">{c.level}</span>
                   <div className="muted">{c.description}</div>
-                  {have > 0 && <div className="muted">✓ נוסף · {have} מילים</div>}
+                  {have > 0 && <div className="muted">נוסף · {have} מילים</div>}
                 </div>
                 <button className={have ? 'btn secondary' : 'btn'} disabled={busy === c.id} onClick={() => add(c)}>
                   {busy === c.id ? 'מוסיף…' : have ? 'בדיקת עדכונים' : 'הוספה'}
@@ -51,7 +51,7 @@ export function ReadyCourses() {
               </div>
               {msg?.id === c.id && (
                 <div className="toast">
-                  {msg.text} <Link to="/">להתחיל ללמוד ←</Link>
+                  {msg.text} <Link to="/">להתחיל ללמוד</Link>
                 </div>
               )}
             </li>

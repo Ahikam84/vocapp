@@ -11,6 +11,8 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['icon.svg'],
+      // Precache the font too, so the app looks the same offline.
+      workbox: { globPatterns: ['**/*.{js,css,html,svg,woff2}'] },
       manifest: {
         name: 'VocApp – לימוד אוצר מילים',
         short_name: 'VocApp',
@@ -18,8 +20,8 @@ export default defineConfig({
         dir: 'rtl',
         start_url: '.',
         display: 'standalone',
-        background_color: '#f6f7fb',
-        theme_color: '#2f6b4f',
+        background_color: '#ffffff',
+        theme_color: '#ffffff',
         icons: [{ src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' }],
       },
     }),

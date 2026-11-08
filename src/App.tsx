@@ -1,3 +1,4 @@
+import { House, Library, Plus, Settings } from 'lucide-react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useEffect } from 'react'
 import { NavLink, Route, Routes } from 'react-router-dom'
@@ -55,10 +56,10 @@ export default function App() {
       </main>
 
       <nav className="tabbar">
-        <NavLink to="/" end>🏠<span>בית</span></NavLink>
-        <NavLink to="/words">📚<span>מילים</span></NavLink>
-        <NavLink to="/words/new">➕<span>הוספה</span></NavLink>
-        <NavLink to="/settings">⚙️<span>הגדרות</span></NavLink>
+        <NavLink to="/" end><House size={22} /><span>בית</span></NavLink>
+        <NavLink to="/words" end><Library size={22} /><span>מילים</span></NavLink>
+        <NavLink to="/words/new"><Plus size={22} /><span>הוספה</span></NavLink>
+        <NavLink to="/settings"><Settings size={22} /><span>הגדרות</span></NavLink>
       </nav>
     </div>
   )

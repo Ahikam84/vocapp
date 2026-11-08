@@ -1,3 +1,4 @@
+import { ArrowLeft, CircleCheck, CircleX, Delete, Lightbulb, TriangleAlert, Volume2 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Deck, ExerciseType, Word } from '../lib/db'
 import { checkAnswer, type AnswerResult } from '../lib/answer'
@@ -93,7 +94,13 @@ export default function Exercise(props: Props) {
       {feedback && pending.current && (
         <div className={`feedback ${feedback.result}`}>
           <div className="fb-title">
-            {feedback.result === 'correct' ? '✓ נכון!' : feedback.result === 'almost' ? '≈ כמעט! שים לב לכתיב:' : '✗ התשובה הנכונה:'}
+            {feedback.result === 'correct' ? (
+              <><CircleCheck size={18} /> נכון!</>
+            ) : feedback.result === 'almost' ? (
+              <><TriangleAlert size={18} /> כמעט! שים לב לכתיב:</>
+            ) : (
+              <><CircleX size={18} /> התשובה הנכונה:</>
+            )}
           </div>
           <div className="fb-answer">
             <T className="term">{word.term}</T> <SpeakButton text={word.term} lang={deck.targetLang} small />
@@ -104,13 +111,13 @@ export default function Exercise(props: Props) {
               כתבת: <T>{feedback.given}</T>
             </div>
           )}
-          {word.hint && feedback.result === 'wrong' && <div className="hint">💡 {word.hint}</div>}
-          <button className="btn" autoFocus onClick={proceed}>המשך ↵</button>
+          {word.hint && feedback.result === 'wrong' && <div className="hint"><Lightbulb size={16} /> {word.hint}</div>}
+          <button className="btn" autoFocus onClick={proceed}>המשך</button>
         </div>
       )}
       {exercise === 'intro' && (
         <button className="btn big" autoFocus onClick={() => props.onDone({ correct: true, almost: false, responseMs: 0 })}>
-          הבנתי, הלאה ←
+          הבנתי, הלאה <ArrowLeft size={18} />
         </button>
       )}
     </div>
@@ -131,7 +138,7 @@ function Intro({ word, deck }: Props) {
           {word.exampleTranslation && <div className="muted">{word.exampleTranslation}</div>}
         </div>
       )}
-      {word.hint && <div className="hint">💡 {word.hint}</div>}
+      {word.hint && <div className="hint"><Lightbulb size={16} /> {word.hint}</div>}
     </div>
   )
 }
@@ -171,7 +178,7 @@ function Choice({
         )}
         {exercise === 'choice-source' && <div className="term huge">{word.translations[0]}</div>}
         {exercise === 'audio-choice' && (
-          <button className="play-big" onClick={() => speak(word.term, deck.targetLang)}>🔊</button>
+          <button className="play-big" onClick={() => speak(word.term, deck.targetLang)} aria-label="השמע שוב"><Volume2 size={40} /></button>
         )}
       </div>
       <div className="options">
@@ -228,7 +235,7 @@ function Tiles({ word, answered, onAnswer }: Props & { answered: boolean; onAnsw
       </div>
       {!answered && (
         <div className="row center">
-          <button className="btn secondary" onClick={() => setUsed(used.slice(0, -1))}>⌫ מחק</button>
+          <button className="btn secondary" onClick={() => setUsed(used.slice(0, -1))}><Delete size={18} /> מחק</button>
           <button className="btn secondary" onClick={() => onAnswer('wrong', built)}>לא יודע</button>
         </div>
       )}
@@ -289,7 +296,7 @@ function Typing({ word, deck, answered, onAnswer }: Props & { answered: boolean;
         )}
         {!answered && (
           <div className="row center">
-            <button className="btn" type="submit">בדיקה ↵</button>
+            <button className="btn" type="submit">בדיקה</button>
             <button className="btn secondary" type="button" onClick={() => onAnswer('wrong', value)}>לא יודע</button>
           </div>
         )}

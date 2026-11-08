@@ -1,3 +1,4 @@
+import { Cloud } from 'lucide-react'
 import { useState } from 'react'
 import { sendLoginCode, signOut, syncNow, useSyncStatus, verifyLoginCode } from '../lib/sync'
 
@@ -92,7 +93,7 @@ export function SyncSection() {
     <>
       <h2>סנכרון בענן</h2>
       <p>
-        ☁️ מחובר כ-<span dir="ltr">{status.email}</span>
+        <Cloud size={16} style={{ verticalAlign: '-3px' }} /> מחובר כ-<span dir="ltr">{status.email}</span>
         <br />
         <span className={status.state === 'error' ? 'warn-text' : 'muted'}>{label}</span>
       </p>

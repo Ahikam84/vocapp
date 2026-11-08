@@ -1,3 +1,4 @@
+import { Check, CircleCheck, TriangleAlert, Undo2 } from 'lucide-react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -92,7 +93,7 @@ export default function WordForm({ deck }: { deck: Deck }) {
       }}
     >
       <h1>{wordId ? 'עריכת מילה' : 'מילה חדשה'}</h1>
-      {saved && <div className="toast">✓ "{saved}" נשמרה</div>}
+      {saved && <div className="toast"><Check size={18} /> "{saved}" נשמרה</div>}
 
       <label>
         מילה ב{lang} *
@@ -108,7 +109,7 @@ export default function WordForm({ deck }: { deck: Deck }) {
           ))}
         </div>
       )}
-      {duplicate && <div className="warn">⚠️ המילה כבר קיימת: {duplicate.term} = {duplicate.translations.join(', ')}</div>}
+      {duplicate && <div className="warn"><TriangleAlert size={18} /> המילה כבר קיימת: {duplicate.term} = {duplicate.translations.join(', ')}</div>}
 
       <label>
         תרגום * <small>(כמה תרגומים – מפרידים בפסיק)</small>
@@ -144,7 +145,7 @@ export default function WordForm({ deck }: { deck: Deck }) {
 
       {wordId && (
         <div className="danger-zone">
-          {existing?.known && <p className="known-note">✅ המילה מסומנת כמוכרת – היא לא מופיעה בלמידה ובחזרות.</p>}
+          {existing?.known && <p className="known-note"><CircleCheck size={18} /> המילה מסומנת כמוכרת – היא לא מופיעה בלמידה ובחזרות.</p>}
           {progress && (
             <p className="muted">
               נלמדה ב-{new Date(progress.learnedAt).toLocaleDateString('he-IL')} · חזרה הבאה:{' '}
@@ -153,7 +154,7 @@ export default function WordForm({ deck }: { deck: Deck }) {
           )}
           <div className="row">
             <button type="button" className="btn secondary" onClick={() => setKnown(wordId, !existing?.known)}>
-              {existing?.known ? '↩ החזר ללמידה' : '✓ אני כבר מכיר'}
+              {existing?.known ? <><Undo2 size={18} /> החזר ללמידה</> : <><Check size={18} /> אני כבר מכיר</>}
             </button>
             {progress && <button type="button" className="btn secondary" onClick={resetProgress}>איפוס התקדמות</button>}
             <button type="button" className="btn danger" onClick={remove}>מחיקה</button>

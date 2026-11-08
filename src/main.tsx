@@ -5,6 +5,7 @@ import { registerSW } from 'virtual:pwa-register'
 import App from './App'
 import { ensureDefaultDeck, migrateFromV1 } from './lib/db'
 import { completeEmailLink, startSync } from './lib/sync'
+import '@fontsource-variable/heebo'
 import './styles.css'
 
 registerSW({ immediate: true })

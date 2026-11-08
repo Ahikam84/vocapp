@@ -1,3 +1,4 @@
+import { CircleCheck, Trophy, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Exercise, { type ExerciseOutcome } from '../components/Exercise'
@@ -108,7 +109,7 @@ export default function Review({ deck, mode }: { deck: Deck; mode: Mode }) {
   if (queue.length === 0)
     return (
       <div className="page center-page">
-        <div className="celebrate">💧</div>
+        <div className="celebrate"><CircleCheck size={40} /></div>
         <p>{mode === 'review' ? 'אין מילים לחזרה כרגע. כל הכבוד!' : 'אין עדיין מילים שנלמדו.'}</p>
         <Link className="btn" to="/">לדף הבית</Link>
         {undoToast}
@@ -119,7 +120,7 @@ export default function Review({ deck, mode }: { deck: Deck; mode: Mode }) {
     const pct = Math.round((score.right / Math.max(1, score.right + score.wrong)) * 100)
     return (
       <div className="page center-page">
-        <div className="celebrate">{pct >= 80 ? '🌳' : '🌿'}</div>
+        <div className="celebrate">{pct >= 80 ? <Trophy size={40} /> : <CircleCheck size={40} />}</div>
         <h1>{mode === 'review' ? 'החזרה הושלמה!' : 'התרגול הושלם!'}</h1>
         <p>
           {score.right} נכונות מתוך {score.right + score.wrong} ({pct}%)
@@ -135,7 +136,7 @@ export default function Review({ deck, mode }: { deck: Deck; mode: Mode }) {
   return (
     <div className="page session">
       <div className="session-top">
-        <Link to="/" className="close" aria-label="יציאה">✕</Link>
+        <Link to="/" className="close" aria-label="יציאה"><X size={22} /></Link>
         <ProgressBar value={done / total.current} />
         <span className="muted counter">{done}/{total.current}</span>
         <KnownButton onClick={markKnown} />
