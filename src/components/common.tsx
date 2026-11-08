@@ -1,6 +1,7 @@
-import { Check, Undo2, Volume2 } from 'lucide-react'
+import { Check, Undo2, Volume2, VolumeX } from 'lucide-react'
 import { useEffect } from 'react'
 import { t } from '../lib/i18n'
+import { setSetting, useSettings } from '../lib/settings'
 import { speak } from '../lib/tts'
 
 export function SpeakButton({ text, lang, small }: { text: string; lang: string; small?: boolean }) {
@@ -49,6 +50,27 @@ export function ProgressBar({ value }: { value: number }) {
     <div className="progress">
       <div style={{ width: `${Math.round(value * 100)}%` }} />
     </div>
+  )
+}
+
+/**
+ * Session-bar sound switch. It flips the same "play words automatically"
+ * setting as the Settings page, so muting during practice sticks next time too.
+ */
+export function SoundToggle() {
+  const settings = useSettings()
+  if (!settings) return null
+  const on = settings.autoPlayAudio
+  return (
+    <button
+      type="button"
+      className={on ? 'known-btn' : 'known-btn muted-on'}
+      onClick={() => setSetting('autoPlayAudio', !on)}
+      title={on ? t('השתקת ההשמעה האוטומטית') : t('הפעלת ההשמעה האוטומטית')}
+      aria-pressed={!on}
+    >
+      {on ? <><VolumeX size={14} /> {t('השתקה')}</> : <><Volume2 size={14} /> {t('הפעלת קול')}</>}
+    </button>
   )
 }
 

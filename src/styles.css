@@ -359,3 +359,4 @@ input[type='range'] { width: 160px; padding: 0; background: none; accent-color: 
 .or-line { text-align: center; margin: 10px 0; }
 .study-lang { color: var(--muted); font-size: 0.8rem; flex-shrink: 0; }
 .study-lang::after { content: ' ·'; }
+.known-btn.muted-on { background: var(--almost-soft); color: var(--almost); }

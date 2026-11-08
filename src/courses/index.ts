@@ -3,6 +3,24 @@ import type { CourseInfo } from './types'
 /** Ready-made courses. Word lists load on demand so they don't weigh down the app. */
 export const COURSES: CourseInfo[] = [
   {
+    id: 'es-b1',
+    name: 'ספרדית B1',
+    description: 'אוצר מילים לרמה בינונית: נסיעות, אוכל, בית, בריאות, קניות וביטויים יומיומיים',
+    level: 'B1',
+    sourceLang: 'he',
+    targetLang: 'es',
+    load: () => import('./es-b1').then((m) => m.default),
+  },
+  {
+    id: 'es-b2',
+    name: 'ספרדית B2',
+    description: 'אוצר מילים לרמה בינונית-גבוהה: עבודה, חברה, בריאות, יחסים וביטויים נפוצים',
+    level: 'B2',
+    sourceLang: 'he',
+    targetLang: 'es',
+    load: () => import('./es-b2').then((m) => m.default),
+  },
+  {
     id: 'es-c1',
     name: 'ספרדית C1',
     description: 'אוצר מילים מתקדם: מילות קישור, פעלים, ביטויים, חברה, כלכלה ועוד',

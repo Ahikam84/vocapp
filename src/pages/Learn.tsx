@@ -2,11 +2,11 @@ import { Sprout, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Exercise, { type ExerciseOutcome } from '../components/Exercise'
-import { KnownButton, knownMessage, ProgressBar, T, UndoToast } from '../components/common'
+import { KnownButton, knownMessage, ProgressBar, SoundToggle, T, UndoToast } from '../components/common'
 import { db, newId, setKnown, type Word } from '../lib/db'
 import { t } from '../lib/i18n'
 import { LearnSession, type Step } from '../lib/session'
-import { getSettings, type Settings } from '../lib/settings'
+import { getSettings, useSettings, type Settings } from '../lib/settings'
 import { markLearned } from '../lib/srs'
 import { ttsAvailable } from '../lib/tts'
 import { startOfToday } from '../lib/stats'
@@ -32,6 +32,7 @@ function LearnRound({ study, onAgain }: { study: Study; onAgain: () => void }) {
   const [reason, setReason] = useState<string | null>(null)
   const [knownWord, setKnownWord] = useState<Word | null>(null)
   const started = useRef(false)
+  const liveSettings = useSettings()
 
   useEffect(() => {
     if (started.current) return
@@ -128,6 +129,7 @@ function LearnRound({ study, onAgain }: { study: Study; onAgain: () => void }) {
       <div className="session-top">
         <Link to="/" className="close" aria-label={t('יציאה')}><X size={22} /></Link>
         <ProgressBar value={loaded.session.progress} />
+        <SoundToggle />
         <KnownButton onClick={markKnown} />
       </div>
       <Exercise
@@ -136,7 +138,7 @@ function LearnRound({ study, onAgain }: { study: Study; onAgain: () => void }) {
         exercise={step.exercise}
         deck={deck}
         pool={loaded.pool}
-        autoPlay={loaded.settings.autoPlayAudio}
+        autoPlay={(liveSettings ?? loaded.settings).autoPlayAudio}
         onDone={onDone}
       />
       {undoToast}

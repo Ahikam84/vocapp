@@ -34,13 +34,15 @@ const PROMPTS: Record<ExerciseType, string> = {
 }
 
 export default function Exercise(props: Props) {
-  const { word, exercise, deck, autoPlay } = props
+  const { word, deck, autoPlay } = props
+  // With sound off, a listening question can't be answered – show the word instead.
+  const exercise: ExerciseType = props.exercise === 'audio-choice' && !autoPlay ? 'choice-target' : props.exercise
   const startedAt = useRef(performance.now())
   const [feedback, setFeedback] = useState<{ result: AnswerResult; given?: string } | null>(null)
 
   const playsTermUpfront = exercise === 'intro' || exercise === 'choice-target' || exercise === 'audio-choice'
   useEffect(() => {
-    if (playsTermUpfront && (autoPlay || exercise === 'audio-choice')) speak(word.term, deck.targetLang)
+    if (playsTermUpfront && autoPlay) speak(word.term, deck.targetLang)
   }, [word.id, exercise]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Set only when the user has to acknowledge the feedback (mistakes, near-misses).
@@ -87,7 +89,7 @@ export default function Exercise(props: Props) {
       <div className="prompt-label">{t(PROMPTS[exercise])}</div>
       {exercise === 'intro' && <Intro {...props} />}
       {(exercise === 'choice-target' || exercise === 'choice-source' || exercise === 'audio-choice') && (
-        <Choice {...props} answered={feedback} onAnswer={finish} />
+        <Choice {...props} exercise={exercise} answered={feedback} onAnswer={finish} />
       )}
       {exercise === 'tiles' && <Tiles {...props} answered={!!feedback} onAnswer={finish} />}
       {exercise === 'typing' && <Typing {...props} answered={!!feedback} onAnswer={finish} />}

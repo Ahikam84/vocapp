@@ -2,10 +2,10 @@ import { CircleCheck, Trophy, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Exercise, { type ExerciseOutcome } from '../components/Exercise'
-import { KnownButton, knownMessage, ProgressBar, UndoToast } from '../components/common'
+import { KnownButton, knownMessage, ProgressBar, SoundToggle, UndoToast } from '../components/common'
 import { db, newId, setKnown, type ExerciseType, type Word } from '../lib/db'
 import { t } from '../lib/i18n'
-import { getSettings, type Settings } from '../lib/settings'
+import { getSettings, useSettings, type Settings } from '../lib/settings'
 import { DIFFICULT_LAPSES, gradeAnswer, recordReview } from '../lib/srs'
 import { ttsAvailable } from '../lib/tts'
 import type { Study } from '../lib/useDeck'
@@ -40,6 +40,7 @@ export default function Review({ study, mode }: { study: Study; mode: Mode }) {
   const [score, setScore] = useState({ right: 0, wrong: 0 })
   const total = useRef(0)
   const [knownWord, setKnownWord] = useState<Word | null>(null)
+  const liveSettings = useSettings()
 
   useEffect(() => {
     ;(async () => {
@@ -140,6 +141,7 @@ export default function Review({ study, mode }: { study: Study; mode: Mode }) {
         <Link to="/" className="close" aria-label={t('יציאה')}><X size={22} /></Link>
         <ProgressBar value={done / total.current} />
         <span className="muted counter">{done}/{total.current}</span>
+        <SoundToggle />
         <KnownButton onClick={markKnown} />
       </div>
       <Exercise
@@ -148,7 +150,7 @@ export default function Review({ study, mode }: { study: Study; mode: Mode }) {
         exercise={item.exercise}
         deck={deck}
         pool={pool}
-        autoPlay={settings.autoPlayAudio}
+        autoPlay={(liveSettings ?? settings).autoPlayAudio}
         onDone={onDone}
       />
       {undoToast}
