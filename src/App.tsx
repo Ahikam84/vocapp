@@ -1,7 +1,7 @@
 import { ChevronDown, House, Languages, Library, RefreshCw, Settings } from 'lucide-react'
 import { useEffect } from 'react'
 import { Link, NavLink, Route, Routes } from 'react-router-dom'
-import { detectUiLang, setUiLang, t } from './lib/i18n'
+import { detectUiLang, langName, setUiLang, t } from './lib/i18n'
 import { applyUpdate, useNeedRefresh } from './lib/pwa'
 import { useSettings } from './lib/settings'
 import { setTtsPreferences } from './lib/tts'
@@ -45,6 +45,7 @@ export default function App() {
         </NavLink>
         {study && (
           <Link to="/study" className="study-switch" title={t('מה לתרגל')}>
+            <span className="study-lang">{langName(study.deck.targetLang)}</span>
             <span dir="auto">{studyLabel(study)}</span>
             <ChevronDown size={16} />
           </Link>

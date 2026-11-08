@@ -357,3 +357,5 @@ input[type='range'] { width: 160px; padding: 0; background: none; accent-color: 
 .google-btn { background: var(--bg); color: var(--text); border: 1px solid var(--surface-2); width: 100%; }
 .google-btn:hover { background: var(--surface); opacity: 1; }
 .or-line { text-align: center; margin: 10px 0; }
+.study-lang { color: var(--muted); font-size: 0.8rem; flex-shrink: 0; }
+.study-lang::after { content: ' ·'; }
