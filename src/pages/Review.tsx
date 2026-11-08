@@ -2,8 +2,9 @@ import { CircleCheck, Trophy, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Exercise, { type ExerciseOutcome } from '../components/Exercise'
-import { KnownButton, ProgressBar, T, UndoToast } from '../components/common'
+import { KnownButton, knownMessage, ProgressBar, UndoToast } from '../components/common'
 import { db, newId, setKnown, type Deck, type ExerciseType, type Word } from '../lib/db'
+import { t } from '../lib/i18n'
 import { getSettings, type Settings } from '../lib/settings'
 import { DIFFICULT_LAPSES, gradeAnswer, recordReview } from '../lib/srs'
 import { ttsAvailable } from '../lib/tts'
@@ -98,7 +99,7 @@ export default function Review({ deck, mode }: { deck: Deck; mode: Mode }) {
   const undoToast = knownWord && (
     <UndoToast
       key={knownWord.id}
-      message={<>"<T>{knownWord.term}</T>" סומנה כמוכרת ולא תופיע יותר</>}
+      message={knownMessage(knownWord.term)}
       onUndo={() => setKnown(knownWord.id, false)}
       onClose={() => setKnownWord(null)}
     />
@@ -110,8 +111,8 @@ export default function Review({ deck, mode }: { deck: Deck; mode: Mode }) {
     return (
       <div className="page center-page">
         <div className="celebrate"><CircleCheck size={40} /></div>
-        <p>{mode === 'review' ? 'אין מילים לחזרה כרגע. כל הכבוד!' : 'אין עדיין מילים שנלמדו.'}</p>
-        <Link className="btn" to="/">לדף הבית</Link>
+        <p>{mode === 'review' ? t('אין מילים לחזרה כרגע. כל הכבוד!') : t('אין עדיין מילים שנלמדו.')}</p>
+        <Link className="btn" to="/">{t('לדף הבית')}</Link>
         {undoToast}
       </div>
     )
@@ -121,11 +122,9 @@ export default function Review({ deck, mode }: { deck: Deck; mode: Mode }) {
     return (
       <div className="page center-page">
         <div className="celebrate">{pct >= 80 ? <Trophy size={40} /> : <CircleCheck size={40} />}</div>
-        <h1>{mode === 'review' ? 'החזרה הושלמה!' : 'התרגול הושלם!'}</h1>
-        <p>
-          {score.right} נכונות מתוך {score.right + score.wrong} ({pct}%)
-        </p>
-        <Link className="btn" to="/">לדף הבית</Link>
+        <h1>{mode === 'review' ? t('החזרה הושלמה!') : t('התרגול הושלם!')}</h1>
+        <p>{t('{right} נכונות מתוך {total} ({pct}%)', { right: score.right, total: score.right + score.wrong, pct })}</p>
+        <Link className="btn" to="/">{t('לדף הבית')}</Link>
         {undoToast}
       </div>
     )
@@ -136,7 +135,7 @@ export default function Review({ deck, mode }: { deck: Deck; mode: Mode }) {
   return (
     <div className="page session">
       <div className="session-top">
-        <Link to="/" className="close" aria-label="יציאה"><X size={22} /></Link>
+        <Link to="/" className="close" aria-label={t('יציאה')}><X size={22} /></Link>
         <ProgressBar value={done / total.current} />
         <span className="muted counter">{done}/{total.current}</span>
         <KnownButton onClick={markKnown} />

@@ -1,12 +1,15 @@
 export type AnswerResult = 'correct' | 'almost' | 'wrong'
 
-const HEBREW_NIKUD = /[֑-ׇ]/g
-const PUNCT = /[.,;:!?¿¡"'()\-–—]/g
+const HEBREW_NIKUD = /[\u0591-\u05C7]/g
+const PUNCT = /[.,;:!?¿¡"'()\-–—׳״]/g
+const MAQAF = /\u05BE/g
+const FINAL_LETTERS: Record<string, string> = { ך: 'כ', ם: 'מ', ן: 'נ', ף: 'פ', ץ: 'צ' }
 
 /** Lowercase, trim, collapse spaces, drop punctuation and Hebrew vowel marks. */
 export function normalize(s: string): string {
   return s
     .normalize('NFC')
+    .replace(MAQAF, ' ')
     .replace(HEBREW_NIKUD, '')
     .replace(PUNCT, ' ')
     .toLowerCase()
@@ -14,9 +17,13 @@ export function normalize(s: string): string {
     .trim()
 }
 
-/** Also strips Latin diacritics (á → a, ñ → n). */
+/** Also strips Latin diacritics (á → a, ñ → n) and treats Hebrew final letters as regular ones (ם → מ). */
 export function stripAccents(s: string): string {
-  return s.normalize('NFD').replace(/[̀-ͯ]/g, '').normalize('NFC')
+  return s
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .normalize('NFC')
+    .replace(/[ךםןףץ]/g, (c) => FINAL_LETTERS[c])
 }
 
 const ARTICLES = /^(el|la|los|las|un|una|unos|unas|l')\s+/

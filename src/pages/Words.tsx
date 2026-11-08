@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { SpeakButton, Strength, T } from '../components/common'
 import { db, setKnown, type Deck } from '../lib/db'
+import { t } from '../lib/i18n'
 import { DIFFICULT_LAPSES, strength } from '../lib/srs'
 import { normalize, stripAccents } from '../lib/answer'
 
@@ -43,15 +44,15 @@ export default function Words({ deck }: { deck: Deck }) {
     <div className="page">
       <div className="page-head">
         <h1>
-          המילים שלי <span className="head-count">{data.words.length}</span>
+          {t('המילים שלי')} <span className="head-count">{data.words.length}</span>
         </h1>
         <div className="row">
-          <Link className="btn secondary small" to="/import">ייבוא</Link>
-          <Link className="btn small" to="/words/new"><Plus size={18} /> מילה</Link>
+          <Link className="btn secondary small" to="/import">{t('ייבוא')}</Link>
+          <Link className="btn small" to="/words/new"><Plus size={18} /> {t('מילה')}</Link>
         </div>
       </div>
 
-      <input className="search" placeholder="חיפוש…" value={query} onChange={(e) => setQuery(e.target.value)} />
+      <input className="search" placeholder={t('חיפוש…')} value={query} onChange={(e) => setQuery(e.target.value)} />
       <div className="chips">
         {(
           [
@@ -63,19 +64,19 @@ export default function Words({ deck }: { deck: Deck }) {
           ] as [Filter, string][]
         ).map(([key, label]) => (
           <button key={key} className={filter === key ? 'chip active' : 'chip'} onClick={() => setFilter(key)}>
-            {label}
+            {t(label)}
           </button>
         ))}
       </div>
 
       {data.words.length === 0 && (
         <p className="empty">
-          אין עדיין מילים. <Link to="/words/new">הוסף מילה</Link> או <Link to="/import">ייבא רשימה</Link>.
+          {t('אין עדיין מילים.')} <Link to="/words/new">{t('הוספת מילה')}</Link> · <Link to="/import">{t('ייבוא רשימה')}</Link>
         </p>
       )}
 
       {filter === 'known' && rows.length === 0 && !q && (
-        <p className="empty">אין מילים מסומנות כמוכרות. אפשר לסמן מילה בכפתור "כבר מכיר" בזמן הלמידה.</p>
+        <p className="empty">{t('אין מילים מסומנות כמוכרות. אפשר לסמן מילה בכפתור "כבר מכיר" בזמן הלמידה.')}</p>
       )}
 
       <ul className="word-list">
@@ -83,24 +84,24 @@ export default function Words({ deck }: { deck: Deck }) {
           const p = data.progress.get(w.id)
           return (
             <li key={w.id} className={w.known ? 'known' : ''} onClick={() => navigate(`/words/${w.id}`)}>
-              {w.known ? <span className="known-mark" title="מסומנת כמוכרת"><Check size={18} /></span> : <Strength level={strength(p)} />}
+              {w.known ? <span className="known-mark" title={t('מסומנת כמוכרת')}><Check size={18} /></span> : <Strength level={strength(p)} />}
               <div className="grow">
                 <T className="term">{w.term}</T>
-                <div className="muted">{w.translations.join(', ')}</div>
+                <div className="muted"><T>{w.translations.join(', ')}</T></div>
               </div>
               {w.known ? (
                 <button
                   className="link-btn"
-                  title="החזרת המילה ללמידה"
+                  title={t('החזרת המילה ללמידה')}
                   onClick={(e) => {
                     e.stopPropagation()
                     setKnown(w.id, false)
                   }}
                 >
-                  <Undo2 size={14} /> החזר ללמידה
+                  <Undo2 size={14} /> {t('החזר ללמידה')}
                 </button>
               ) : (
-                p && p.lapses >= DIFFICULT_LAPSES && <span className="badge">קשה</span>
+                p && p.lapses >= DIFFICULT_LAPSES && <span className="badge">{t('קשה')}</span>
               )}
               <SpeakButton text={w.term} lang={deck.targetLang} small />
             </li>

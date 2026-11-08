@@ -1,5 +1,6 @@
 import { Cloud } from 'lucide-react'
 import { useState } from 'react'
+import { t, uiLocale } from '../lib/i18n'
 import { sendLoginCode, signOut, syncNow, useSyncStatus, verifyLoginCode } from '../lib/sync'
 
 export function SyncSection() {
@@ -25,16 +26,16 @@ export function SyncSection() {
   if (status.state === 'disabled')
     return (
       <>
-        <h2>סנכרון בענן</h2>
-        <p className="muted">הסנכרון לא מוגדר בגרסה הזו (חסרים פרטי Supabase).</p>
+        <h2>{t('סנכרון בענן')}</h2>
+        <p className="muted">{t('הסנכרון לא מוגדר בגרסה הזו (חסרים פרטי Supabase).')}</p>
       </>
     )
 
   if (status.state === 'signed-out')
     return (
       <>
-        <h2>סנכרון בענן</h2>
-        <p className="muted">התחבר כדי שהמילים וההתקדמות יהיו זמינות בכל מכשיר.</p>
+        <h2>{t('סנכרון בענן')}</h2>
+        <p className="muted">{t('התחבר כדי שהמילים וההתקדמות יהיו זמינות בכל מכשיר.')}</p>
         {!codeSent ? (
           <form
             className="row"
@@ -47,7 +48,7 @@ export function SyncSection() {
             }}
           >
             <input type="email" dir="ltr" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
-            <button className="btn" disabled={busy}>שליחת מייל התחברות</button>
+            <button className="btn" disabled={busy}>{t('שליחת מייל התחברות')}</button>
           </form>
         ) : (
           <form
@@ -61,19 +62,18 @@ export function SyncSection() {
               dir="ltr"
               inputMode="numeric"
               autoComplete="one-time-code"
-              placeholder="קוד מהמייל (אם יש)"
+              placeholder={t('קוד מהמייל (אם יש)')}
               value={code}
               onChange={(e) => setCode(e.target.value)}
               required
             />
-            <button className="btn" disabled={busy}>התחברות</button>
-            <button type="button" className="btn secondary" onClick={() => setCodeSent(false)}>מייל אחר</button>
+            <button className="btn" disabled={busy}>{t('התחברות')}</button>
+            <button type="button" className="btn secondary" onClick={() => setCodeSent(false)}>{t('מייל אחר')}</button>
           </form>
         )}
         {codeSent && (
           <p className="muted">
-            שלחנו מייל ל-<span dir="ltr">{email}</span>. לחץ על הקישור שבמייל – הוא יחזיר אותך לאפליקציה מחובר. אם
-            במייל מופיע קוד, אפשר גם להקליד אותו כאן.
+            {t('שלחנו מייל ל-{email}. לחץ על הקישור שבמייל – הוא יחזיר אותך לאפליקציה מחובר. אם במייל מופיע קוד, אפשר גם להקליד אותו כאן.', { email })}
           </p>
         )}
         {(error || status.error) && <div className="warn">{error ?? status.error}</div>}
@@ -82,24 +82,27 @@ export function SyncSection() {
 
   const label =
     status.state === 'syncing'
-      ? 'מסנכרן…'
+      ? t('מסנכרן…')
       : status.state === 'error'
-        ? `שגיאה: ${status.error}`
+        ? t('שגיאה: {message}', { message: status.error ?? '' })
         : status.lastSync
-          ? `סונכרן לאחרונה ב-${new Date(status.lastSync).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}`
-          : 'מחובר'
+          ? t('סונכרן לאחרונה ב-{time}', {
+              time: new Date(status.lastSync).toLocaleTimeString(uiLocale(), { hour: '2-digit', minute: '2-digit' }),
+            })
+          : t('מחובר')
 
   return (
     <>
-      <h2>סנכרון בענן</h2>
+      <h2>{t('סנכרון בענן')}</h2>
       <p>
-        <Cloud size={16} style={{ verticalAlign: '-3px' }} /> מחובר כ-<span dir="ltr">{status.email}</span>
+        <Cloud size={16} style={{ verticalAlign: '-3px' }} /> {t('מחובר כ-')}
+        <span dir="ltr">{status.email}</span>
         <br />
         <span className={status.state === 'error' ? 'warn-text' : 'muted'}>{label}</span>
       </p>
       <div className="row">
-        <button className="btn secondary" disabled={status.state === 'syncing'} onClick={() => syncNow()}>סנכרון עכשיו</button>
-        <button className="btn secondary" onClick={() => run(signOut)}>התנתקות</button>
+        <button className="btn secondary" disabled={status.state === 'syncing'} onClick={() => syncNow()}>{t('סנכרון עכשיו')}</button>
+        <button className="btn secondary" onClick={() => run(signOut)}>{t('התנתקות')}</button>
       </div>
     </>
   )

@@ -287,3 +287,39 @@ input[type='range'] { width: 160px; padding: 0; background: none; accent-color: 
 .head-count { color: var(--muted); font-weight: 500; font-size: 1rem; }
 .btn.small { min-height: 36px; padding: 6px 12px; font-size: 0.9rem; gap: 4px; }
 .course-list .btn.secondary, .card .btn.secondary { background: var(--bg); }
+
+/* Direction-aware icons: arrows that mean "forward" point left in Hebrew and right in English */
+:root[dir='ltr'] .flip { transform: scaleX(-1); }
+.word-list .term { text-align: start; }
+
+/* On-screen Hebrew keyboard */
+.he-keyboard { display: flex; flex-direction: column; gap: 6px; margin: 0 0 16px; }
+.he-row { display: flex; gap: 4px; justify-content: center; }
+.he-row button {
+  flex: 1; max-width: 40px; height: 44px; border: 0; border-radius: 8px; padding: 0;
+  background: var(--surface); color: var(--text); font: inherit; font-size: 1.15rem; cursor: pointer;
+}
+.he-row button:hover { background: var(--surface-2); }
+.he-row button.wide { max-width: 56px; display: inline-grid; place-items: center; }
+.he-row button.space { max-width: 220px; }
+
+/* Courses */
+.lang-list { list-style: none; padding: 0; margin: 0; }
+.lang-list a { display: flex; align-items: center; gap: 12px; padding: 16px 4px; color: var(--text); border-bottom: 1px solid var(--line); }
+.lang-list a:hover { background: var(--surface); border-radius: var(--radius-sm); }
+.lang-list b { display: block; font-size: 1.05rem; }
+.back { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); font-size: 0.9rem; margin-bottom: 4px; }
+:root[dir='rtl'] .flip-back { transform: scaleX(-1); }
+.course-list li.current { background: var(--primary-soft); }
+.course-list li.current .btn.secondary { background: var(--bg); }
+.current-mark { display: inline-flex; align-items: center; gap: 4px; color: var(--primary); font-weight: 600; font-size: 0.9rem; }
+.course-actions { margin-top: 6px; gap: 12px; }
+.danger-link { color: var(--bad); }
+.share-panel { margin-top: 10px; padding-top: 12px; border-top: 1px solid var(--surface-2); display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.share-panel p { margin: 0; }
+.share-link { display: flex; gap: 8px; width: 100%; }
+.share-link input { flex: 1; background: var(--bg); font-size: 0.85rem; }
+.code { font-family: ui-monospace, monospace; letter-spacing: 2px; }
+.code-input { max-width: 180px; text-transform: uppercase; letter-spacing: 2px; }
+.auto-width { width: auto; }
+.course-list .warn { margin: 10px 0 0; }

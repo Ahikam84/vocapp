@@ -5,7 +5,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { SpeakButton } from '../components/common'
 import { db, deleteWord, newId, resetProgress as resetWordProgress, setKnown, type Deck, type Word } from '../lib/db'
 import { normalize } from '../lib/answer'
-import { LANGUAGES, SPECIAL_CHARS } from '../lib/useDeck'
+import { dirOf, langName, t, uiLocale } from '../lib/i18n'
+import { SPECIAL_CHARS } from '../lib/useDeck'
 
 const splitList = (s: string) => s.split(/[,/،]/).map((t) => t.trim()).filter(Boolean)
 
@@ -73,17 +74,18 @@ export default function WordForm({ deck }: { deck: Deck }) {
   }
 
   async function remove() {
-    if (wordId && confirm(`למחוק את "${form.term}"?`)) {
+    if (wordId && confirm(t('למחוק את "{word}"?', { word: form.term }))) {
       await deleteWord(wordId)
       navigate('/words')
     }
   }
 
   async function resetProgress() {
-    if (wordId && confirm('לאפס את ההתקדמות של המילה? היא תחזור לרשימת המילים החדשות.')) await resetWordProgress(wordId)
+    if (wordId && confirm(t('לאפס את ההתקדמות של המילה? היא תחזור לרשימת המילים החדשות.'))) await resetWordProgress(wordId)
   }
 
-  const lang = LANGUAGES[deck.targetLang] ?? deck.targetLang
+  const target = { dir: dirOf(deck.targetLang), lang: deck.targetLang }
+  const source = { dir: dirOf(deck.sourceLang), lang: deck.sourceLang }
   return (
     <form
       className="page form"
@@ -92,13 +94,13 @@ export default function WordForm({ deck }: { deck: Deck }) {
         save(!wordId)
       }}
     >
-      <h1>{wordId ? 'עריכת מילה' : 'מילה חדשה'}</h1>
-      {saved && <div className="toast"><Check size={18} /> "{saved}" נשמרה</div>}
+      <h1>{wordId ? t('עריכת מילה') : t('מילה חדשה')}</h1>
+      {saved && <div className="toast"><Check size={18} /> {t('"{word}" נשמרה', { word: saved })}</div>}
 
       <label>
-        מילה ב{lang} *
+        {t('מילה ב{lang}', { lang: langName(deck.targetLang) })} *
         <div className="row">
-          <input ref={termRef} dir="ltr" lang={deck.targetLang} value={form.term} onChange={set('term')} autoFocus required />
+          <input ref={termRef} {...target} value={form.term} onChange={set('term')} autoFocus required />
           {form.term && <SpeakButton text={form.term} lang={deck.targetLang} />}
         </div>
       </label>
@@ -109,55 +111,56 @@ export default function WordForm({ deck }: { deck: Deck }) {
           ))}
         </div>
       )}
-      {duplicate && <div className="warn"><TriangleAlert size={18} /> המילה כבר קיימת: {duplicate.term} = {duplicate.translations.join(', ')}</div>}
+      {duplicate && <div className="warn"><TriangleAlert size={18} /> {t('המילה כבר קיימת:')} {duplicate.term} = {duplicate.translations.join(', ')}</div>}
 
       <label>
-        תרגום * <small>(כמה תרגומים – מפרידים בפסיק)</small>
-        <input value={form.translations} onChange={set('translations')} required />
+        {t('תרגום ל{lang}', { lang: langName(deck.sourceLang) })} * <small>{t('(כמה תרגומים – מפרידים בפסיק)')}</small>
+        <input {...source} value={form.translations} onChange={set('translations')} required />
       </label>
 
       <details open={!!(form.example || form.hint || form.altTerms)}>
-        <summary>פרטים נוספים</summary>
+        <summary>{t('פרטים נוספים')}</summary>
         <label>
-          משפט לדוגמה
-          <input dir="ltr" value={form.example} onChange={set('example')} />
+          {t('משפט לדוגמה')}
+          <input {...target} value={form.example} onChange={set('example')} />
         </label>
         <label>
-          תרגום המשפט
-          <input value={form.exampleTranslation} onChange={set('exampleTranslation')} />
+          {t('תרגום המשפט')}
+          <input {...source} value={form.exampleTranslation} onChange={set('exampleTranslation')} />
         </label>
         <label>
-          רמז לזיכרון <small>(אסוציאציה, תמונה בראש, מילה דומה בעברית…)</small>
+          {t('רמז לזיכרון')} <small>{t('(אסוציאציה, תמונה בראש, מילה דומה…)')}</small>
           <textarea rows={2} value={form.hint} onChange={set('hint')} />
         </label>
         <label>
-          צורות נוספות שיתקבלו כתשובה נכונה <small>(מפרידים בפסיק)</small>
-          <input dir="ltr" value={form.altTerms} onChange={set('altTerms')} />
+          {t('צורות נוספות שיתקבלו כתשובה נכונה')} <small>{t('(מפרידים בפסיק)')}</small>
+          <input {...target} value={form.altTerms} onChange={set('altTerms')} />
         </label>
       </details>
 
       <div className="row">
-        <button className="btn" type="submit">{wordId ? 'שמירה' : 'שמירה והוספת עוד'}</button>
+        <button className="btn" type="submit">{wordId ? t('שמירה') : t('שמירה והוספת עוד')}</button>
         {!wordId && (
-          <button className="btn secondary" type="button" onClick={() => save(false)}>שמירה וסיום</button>
+          <button className="btn secondary" type="button" onClick={() => save(false)}>{t('שמירה וסיום')}</button>
         )}
       </div>
 
       {wordId && (
         <div className="danger-zone">
-          {existing?.known && <p className="known-note"><CircleCheck size={18} /> המילה מסומנת כמוכרת – היא לא מופיעה בלמידה ובחזרות.</p>}
+          {existing?.known && <p className="known-note"><CircleCheck size={18} /> {t('המילה מסומנת כמוכרת – היא לא מופיעה בלמידה ובחזרות.')}</p>}
           {progress && (
             <p className="muted">
-              נלמדה ב-{new Date(progress.learnedAt).toLocaleDateString('he-IL')} · חזרה הבאה:{' '}
-              {new Date(progress.due).toLocaleDateString('he-IL')} · טעויות: {progress.lapses}
+              {t('נלמדה ב-{date}', { date: new Date(progress.learnedAt).toLocaleDateString(uiLocale()) })} ·{' '}
+              {t('חזרה הבאה: {date}', { date: new Date(progress.due).toLocaleDateString(uiLocale()) })} ·{' '}
+              {t('טעויות: {n}', { n: progress.lapses })}
             </p>
           )}
           <div className="row">
             <button type="button" className="btn secondary" onClick={() => setKnown(wordId, !existing?.known)}>
-              {existing?.known ? <><Undo2 size={18} /> החזר ללמידה</> : <><Check size={18} /> אני כבר מכיר</>}
+              {existing?.known ? <><Undo2 size={18} /> {t('החזר ללמידה')}</> : <><Check size={18} /> {t('אני כבר מכיר')}</>}
             </button>
-            {progress && <button type="button" className="btn secondary" onClick={resetProgress}>איפוס התקדמות</button>}
-            <button type="button" className="btn danger" onClick={remove}>מחיקה</button>
+            {progress && <button type="button" className="btn secondary" onClick={resetProgress}>{t('איפוס התקדמות')}</button>}
+            <button type="button" className="btn danger" onClick={remove}>{t('מחיקה')}</button>
           </div>
         </div>
       )}

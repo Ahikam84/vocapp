@@ -17,6 +17,10 @@ export interface Deck extends Synced {
   /** BCP-47 code of the language being learned, e.g. "es" */
   targetLang: string
   createdAt: number
+  /** Set on a teacher's course once it is shared: the code students use to join */
+  shareCode?: string
+  /** Set on a course received from a teacher: the share code it came from */
+  sharedFrom?: string
 }
 
 export interface Word extends Synced {
@@ -133,17 +137,6 @@ async function addTombstones(tbl: SyncedTable, ids: string[]) {
   onLocalChange()
 }
 
-export async function ensureDefaultDeck(): Promise<string> {
-  const first = await db.decks.orderBy('id').first()
-  if (first) return first.id
-  // Written as "remote" with updatedAt 0 so any copy already in the cloud wins over this placeholder.
-  await db.transaction('rw', db.decks, async (tx) => {
-    markRemote(tx)
-    await db.decks.add({ id: DEFAULT_DECK_ID, name: 'ספרדית', sourceLang: 'he', targetLang: 'es', createdAt: 0, updatedAt: 0 })
-  })
-  return DEFAULT_DECK_ID
-}
-
 export async function deleteWord(wordId: string) {
   await db.transaction('rw', [db.words, db.progress, db.reviews, db.tombstones], async () => {
     const reviewIds = (await db.reviews.where('wordId').equals(wordId).primaryKeys()) as string[]
@@ -159,6 +152,23 @@ export async function deleteWord(wordId: string) {
 /** Mark a word as already known (or bring it back). Its review schedule is kept for if it returns. */
 export async function setKnown(wordId: string, known: boolean) {
   await db.words.update(wordId, { known })
+}
+
+/** Delete a course with all its words, progress and history (synced as deletions). */
+export async function deleteDeck(deckId: string) {
+  await db.transaction('rw', [db.decks, db.words, db.progress, db.reviews, db.tombstones], async () => {
+    const wordIds = (await db.words.where('deckId').equals(deckId).primaryKeys()) as string[]
+    const progressIds = (await db.progress.where('deckId').equals(deckId).primaryKeys()) as string[]
+    const reviewIds = (await db.reviews.where('deckId').equals(deckId).primaryKeys()) as string[]
+    await db.words.bulkDelete(wordIds)
+    await db.progress.bulkDelete(progressIds)
+    await db.reviews.bulkDelete(reviewIds)
+    await db.decks.delete(deckId)
+    await addTombstones('words', wordIds)
+    await addTombstones('progress', progressIds)
+    await addTombstones('reviews', reviewIds)
+    await addTombstones('decks', [deckId])
+  })
 }
 
 export async function resetProgress(wordId: string) {

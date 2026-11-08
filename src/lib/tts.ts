@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 
-const LOCALES: Record<string, string> = { es: 'es-ES', ca: 'ca-ES', he: 'he-IL', en: 'en-US', fr: 'fr-FR' }
+const LOCALES: Record<string, string> = {
+  es: 'es-ES', ca: 'ca-ES', he: 'he-IL', en: 'en-US', fr: 'fr-FR', it: 'it-IT', de: 'de-DE', pt: 'pt-PT', ar: 'ar-SA',
+}
 
 export function ttsAvailable(lang: string): boolean {
   if (typeof speechSynthesis === 'undefined') return false

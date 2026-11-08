@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from './db'
+import type { UiLang } from './i18n'
 
 export interface Settings {
   wordsPerSession: number
@@ -10,6 +11,8 @@ export interface Settings {
   voices: Record<string, string>
   speechRate: number
   currentDeckId: string | null
+  /** null = follow the browser language */
+  uiLang: UiLang | null
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -20,6 +23,7 @@ export const DEFAULT_SETTINGS: Settings = {
   voices: {},
   speechRate: 0.9,
   currentDeckId: null,
+  uiLang: null,
 }
 
 export async function getSettings(): Promise<Settings> {

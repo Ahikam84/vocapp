@@ -19,6 +19,11 @@ describe('checkAnswer', () => {
   it('ignores Hebrew nikud', () => {
     expect(checkAnswer('כֶּלֶב', ['כלב']).result).toBe('correct')
   })
+  it('handles Hebrew maqaf, geresh and final letters', () => {
+    expect(checkAnswer('בית ספר', ['בית־ספר']).result).toBe('correct')
+    expect(checkAnswer("ג'ירפה", ['ג׳ירפה']).result).toBe('correct')
+    expect(checkAnswer('שלומ', ['שלום']).result).toBe('almost')
+  })
 })
 
 describe('parseWordList', () => {
@@ -27,6 +32,11 @@ describe('parseWordList', () => {
     expect(r.map((w) => w.term)).toEqual(['perro', 'gato', 'la casa'])
     expect(r[2].translations).toEqual(['בית', 'דירה'])
     expect(r[2].example).toBe('Mi casa')
+  })
+  it('puts the Hebrew side first when Hebrew is the language being learned', () => {
+    const r = parseWordList('hello - שלום\nכלב - dog', 'he')
+    expect(r.map((w) => w.term)).toEqual(['שלום', 'כלב'])
+    expect(r[0].translations).toEqual(['hello'])
   })
 })
 

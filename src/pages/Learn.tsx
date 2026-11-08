@@ -2,8 +2,9 @@ import { Sprout, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Exercise, { type ExerciseOutcome } from '../components/Exercise'
-import { KnownButton, ProgressBar, T, UndoToast } from '../components/common'
+import { KnownButton, knownMessage, ProgressBar, T, UndoToast } from '../components/common'
 import { db, newId, setKnown, type Deck, type Word } from '../lib/db'
+import { t } from '../lib/i18n'
 import { LearnSession, type Step } from '../lib/session'
 import { getSettings, type Settings } from '../lib/settings'
 import { markLearned } from '../lib/srs'
@@ -45,7 +46,7 @@ function LearnRound({ deck, onAgain }: { deck: Deck; onAgain: () => void }) {
       const fresh = pool.filter((w) => !learnedIds.has(w.id) && !w.known).slice(0, Math.max(0, quota))
 
       if (fresh.length === 0) {
-        setReason(quota <= 0 ? 'הגעת ליעד המילים החדשות להיום. אפשר לשנות אותו בהגדרות.' : 'אין מילים חדשות ללמוד. הוסף מילים כדי להמשיך.')
+        setReason(quota <= 0 ? t('הגעת ליעד המילים החדשות להיום. אפשר לשנות אותו בהגדרות.') : t('אין מילים חדשות ללמוד. הוסף מילים כדי להמשיך.'))
         return
       }
       const session = new LearnSession(fresh, { audio: ttsAvailable(deck.targetLang), choices: pool.length >= 3 })
@@ -83,7 +84,7 @@ function LearnRound({ deck, onAgain }: { deck: Deck; onAgain: () => void }) {
   const undoToast = knownWord && (
     <UndoToast
       key={knownWord.id}
-      message={<>"<T>{knownWord.term}</T>" סומנה כמוכרת ולא תופיע יותר</>}
+      message={knownMessage(knownWord.term)}
       onUndo={() => setKnown(knownWord.id, false)}
       onClose={() => setKnownWord(null)}
     />
@@ -94,8 +95,8 @@ function LearnRound({ deck, onAgain }: { deck: Deck; onAgain: () => void }) {
       <div className="page center-page">
         <p>{reason}</p>
         <div className="row center">
-          <Link className="btn" to="/words/new">הוספת מילים</Link>
-          <Link className="btn secondary" to="/">חזרה</Link>
+          <Link className="btn" to="/words/new">{t('הוספת מילים')}</Link>
+          <Link className="btn secondary" to="/">{t('חזרה')}</Link>
         </div>
       </div>
     )
@@ -105,16 +106,16 @@ function LearnRound({ deck, onAgain }: { deck: Deck; onAgain: () => void }) {
     return (
       <div className="page center-page">
         <div className="celebrate"><Sprout size={40} /></div>
-        <h1>{learned.length ? `נשתלו ${learned.length} מילים חדשות!` : 'הסשן הסתיים'}</h1>
+        <h1>{learned.length ? t('נשתלו {n} מילים חדשות!', { n: learned.length }) : t('הסשן הסתיים')}</h1>
         <ul className="summary">
           {learned.map((w) => (
-            <li key={w.id}><T>{w.term}</T> = {w.translations[0]}</li>
+            <li key={w.id}><T>{w.term}</T> = <T>{w.translations[0]}</T></li>
           ))}
         </ul>
-        <p className="muted">הן יחזרו לחזרה בימים הקרובים, במרווחים שהולכים וגדלים.</p>
+        <p className="muted">{t('הן יחזרו לחזרה בימים הקרובים, במרווחים שהולכים וגדלים.')}</p>
         <div className="row center">
-          <button className="btn" onClick={onAgain}>עוד מילים</button>
-          <Link className="btn secondary" to="/">לדף הבית</Link>
+          <button className="btn" onClick={onAgain}>{t('עוד מילים')}</button>
+          <Link className="btn secondary" to="/">{t('לדף הבית')}</Link>
         </div>
         {undoToast}
       </div>
@@ -123,7 +124,7 @@ function LearnRound({ deck, onAgain }: { deck: Deck; onAgain: () => void }) {
   return (
     <div className="page session">
       <div className="session-top">
-        <Link to="/" className="close" aria-label="יציאה"><X size={22} /></Link>
+        <Link to="/" className="close" aria-label={t('יציאה')}><X size={22} /></Link>
         <ProgressBar value={loaded.session.progress} />
         <KnownButton onClick={markKnown} />
       </div>

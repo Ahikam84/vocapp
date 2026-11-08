@@ -3,8 +3,9 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Deck, ExerciseType, Word } from '../lib/db'
 import { checkAnswer, type AnswerResult } from '../lib/answer'
 import { pickDistractors, shuffle } from '../lib/session'
+import { dirOf, t } from '../lib/i18n'
 import { speak } from '../lib/tts'
-import { SPECIAL_CHARS } from '../lib/useDeck'
+import { DECOY_LETTERS, HEBREW_KEYBOARD, SPECIAL_CHARS } from '../lib/useDeck'
 import { SpeakButton, T } from './common'
 
 export interface ExerciseOutcome {
@@ -83,7 +84,7 @@ export default function Exercise(props: Props) {
 
   return (
     <div className={`exercise ${feedback ? `fb-${feedback.result}` : ''}`}>
-      <div className="prompt-label">{PROMPTS[exercise]}</div>
+      <div className="prompt-label">{t(PROMPTS[exercise])}</div>
       {exercise === 'intro' && <Intro {...props} />}
       {(exercise === 'choice-target' || exercise === 'choice-source' || exercise === 'audio-choice') && (
         <Choice {...props} answered={feedback} onAnswer={finish} />
@@ -95,29 +96,29 @@ export default function Exercise(props: Props) {
         <div className={`feedback ${feedback.result}`}>
           <div className="fb-title">
             {feedback.result === 'correct' ? (
-              <><CircleCheck size={18} /> נכון!</>
+              <><CircleCheck size={18} /> {t('נכון!')}</>
             ) : feedback.result === 'almost' ? (
-              <><TriangleAlert size={18} /> כמעט! שים לב לכתיב:</>
+              <><TriangleAlert size={18} /> {t('כמעט! שים לב לכתיב:')}</>
             ) : (
-              <><CircleX size={18} /> התשובה הנכונה:</>
+              <><CircleX size={18} /> {t('התשובה הנכונה:')}</>
             )}
           </div>
           <div className="fb-answer">
             <T className="term">{word.term}</T> <SpeakButton text={word.term} lang={deck.targetLang} small />
-            <span className="muted"> = {word.translations.join(', ')}</span>
+            <span className="muted"> = <T>{word.translations.join(', ')}</T></span>
           </div>
           {feedback.given && feedback.result !== 'correct' && (
             <div className="muted">
-              כתבת: <T>{feedback.given}</T>
+              {t('כתבת:')} <T>{feedback.given}</T>
             </div>
           )}
           {word.hint && feedback.result === 'wrong' && <div className="hint"><Lightbulb size={16} /> {word.hint}</div>}
-          <button className="btn" autoFocus onClick={proceed}>המשך</button>
+          <button className="btn" autoFocus onClick={proceed}>{t('המשך')}</button>
         </div>
       )}
       {exercise === 'intro' && (
         <button className="btn big" autoFocus onClick={() => props.onDone({ correct: true, almost: false, responseMs: 0 })}>
-          הבנתי, הלאה <ArrowLeft size={18} />
+          {t('הבנתי, הלאה')} <ArrowLeft className="flip" size={18} />
         </button>
       )}
     </div>
@@ -131,11 +132,11 @@ function Intro({ word, deck }: Props) {
         <T className="term huge">{word.term}</T>
         <SpeakButton text={word.term} lang={deck.targetLang} />
       </div>
-      <div className="translation">{word.translations.join(', ')}</div>
+      <div className="translation"><T>{word.translations.join(', ')}</T></div>
       {word.example && (
         <div className="example">
           <T>{word.example}</T> <SpeakButton text={word.example} lang={deck.targetLang} small />
-          {word.exampleTranslation && <div className="muted">{word.exampleTranslation}</div>}
+          {word.exampleTranslation && <div className="muted"><T>{word.exampleTranslation}</T></div>}
         </div>
       )}
       {word.hint && <div className="hint"><Lightbulb size={16} /> {word.hint}</div>}
@@ -176,9 +177,9 @@ function Choice({
             <SpeakButton text={word.term} lang={deck.targetLang} />
           </div>
         )}
-        {exercise === 'choice-source' && <div className="term huge">{word.translations[0]}</div>}
+        {exercise === 'choice-source' && <T className="term huge">{word.translations[0]}</T>}
         {exercise === 'audio-choice' && (
-          <button className="play-big" onClick={() => speak(word.term, deck.targetLang)} aria-label="השמע שוב"><Volume2 size={40} /></button>
+          <button className="play-big" onClick={() => speak(word.term, deck.targetLang)} aria-label={t('השמע שוב')}><Volume2 size={40} /></button>
         )}
       </div>
       <div className="options">
@@ -187,7 +188,7 @@ function Choice({
           return (
             <button key={o.id} className={`option ${state}`} onClick={() => pick(o)}>
               <span className="key">{i + 1}</span>
-              {showTerms ? <T>{o.term}</T> : o.translations[0]}
+              <T>{showTerms ? o.term : o.translations[0]}</T>
             </button>
           )
         })}
@@ -196,12 +197,11 @@ function Choice({
   )
 }
 
-const EXTRA_LETTERS = 'aeioulnrst'
-
-function Tiles({ word, answered, onAnswer }: Props & { answered: boolean; onAnswer: (r: AnswerResult, given?: string) => void }) {
+function Tiles({ word, deck, answered, onAnswer }: Props & { answered: boolean; onAnswer: (r: AnswerResult, given?: string) => void }) {
   const tiles = useMemo(() => {
     const letters = [...word.term.toLowerCase()]
-    const extra = shuffle([...EXTRA_LETTERS].filter((c) => !letters.includes(c))).slice(0, 2)
+    const decoys = DECOY_LETTERS[deck.targetLang] ?? 'aeioulnrst'
+    const extra = shuffle([...decoys].filter((c) => !letters.includes(c))).slice(0, 2)
     return shuffle([...letters, ...extra]).map((c, i) => ({ c, i }))
   }, [word.id])
   const [used, setUsed] = useState<number[]>([])
@@ -220,13 +220,13 @@ function Tiles({ word, answered, onAnswer }: Props & { answered: boolean; onAnsw
   return (
     <>
       <div className="card prompt">
-        <div className="term huge">{word.translations[0]}</div>
+        <T className="term huge">{word.translations[0]}</T>
       </div>
-      <div className="tiles-answer" dir="ltr" onClick={() => !answered && setUsed(used.slice(0, -1))}>
+      <div className="tiles-answer" dir={dirOf(deck.targetLang)} onClick={() => !answered && setUsed(used.slice(0, -1))}>
         {built || <span className="muted">&nbsp;</span>}
         {!answered && <span className="caret" />}
       </div>
-      <div className="tiles" dir="ltr">
+      <div className="tiles" dir={dirOf(deck.targetLang)}>
         {tiles.map(({ c, i }) => (
           <button key={i} className="tile" disabled={used.includes(i) || answered} onClick={() => tap(i)}>
             {c === ' ' ? '␣' : c}
@@ -235,8 +235,8 @@ function Tiles({ word, answered, onAnswer }: Props & { answered: boolean; onAnsw
       </div>
       {!answered && (
         <div className="row center">
-          <button className="btn secondary" onClick={() => setUsed(used.slice(0, -1))}><Delete size={18} /> מחק</button>
-          <button className="btn secondary" onClick={() => onAnswer('wrong', built)}>לא יודע</button>
+          <button className="btn secondary" onClick={() => setUsed(used.slice(0, -1))}><Delete size={18} /> {t('מחק')}</button>
+          <button className="btn secondary" onClick={() => onAnswer('wrong', built)}>{t('לא יודע')}</button>
         </div>
       )}
     </>
@@ -256,7 +256,7 @@ function Typing({ word, deck, answered, onAnswer }: Props & { answered: boolean;
   return (
     <>
       <div className="card prompt">
-        <div className="term huge">{word.translations.join(', ')}</div>
+        <T className="term huge">{word.translations.join(', ')}</T>
       </div>
       <form
         className="typing"
@@ -267,7 +267,7 @@ function Typing({ word, deck, answered, onAnswer }: Props & { answered: boolean;
       >
         <input
           ref={input}
-          dir="ltr"
+          dir={dirOf(deck.targetLang)}
           lang={deck.targetLang}
           autoFocus
           autoComplete="off"
@@ -278,6 +278,14 @@ function Typing({ word, deck, answered, onAnswer }: Props & { answered: boolean;
           readOnly={answered}
           onChange={(e) => setValue(e.target.value)}
         />
+        {deck.targetLang === 'he' && !answered && (
+          <HebrewKeyboard
+            onKey={(c) => {
+              setValue((v) => (c === '⌫' ? v.slice(0, -1) : v + c))
+              input.current?.focus()
+            }}
+          />
+        )}
         {SPECIAL_CHARS[deck.targetLang] && !answered && (
           <div className="char-row">
             {SPECIAL_CHARS[deck.targetLang].map((c) => (
@@ -296,11 +304,34 @@ function Typing({ word, deck, answered, onAnswer }: Props & { answered: boolean;
         )}
         {!answered && (
           <div className="row center">
-            <button className="btn" type="submit">בדיקה</button>
-            <button className="btn secondary" type="button" onClick={() => onAnswer('wrong', value)}>לא יודע</button>
+            <button className="btn" type="submit">{t('בדיקה')}</button>
+            <button className="btn secondary" type="button" onClick={() => onAnswer('wrong', value)}>{t('לא יודע')}</button>
           </div>
         )}
       </form>
     </>
+  )
+}
+
+/** Compact on-screen Hebrew keyboard for learners whose device has no Hebrew layout. */
+function HebrewKeyboard({ onKey }: { onKey: (c: string) => void }) {
+  return (
+    <div className="he-keyboard" dir="rtl">
+      {HEBREW_KEYBOARD.map((row, i) => (
+        <div key={i} className="he-row">
+          {row.map((c) => (
+            <button type="button" key={c} onClick={() => onKey(c)}>{c}</button>
+          ))}
+          {i === HEBREW_KEYBOARD.length - 1 && (
+            <button type="button" className="wide" onClick={() => onKey('⌫')} aria-label={t('מחק')}>
+              <Delete size={18} />
+            </button>
+          )}
+        </div>
+      ))}
+      <div className="he-row">
+        <button type="button" className="space" onClick={() => onKey(' ')} aria-label={t('רווח')}>&nbsp;</button>
+      </div>
+    </div>
   )
 }
