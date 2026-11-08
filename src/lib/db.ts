@@ -33,6 +33,8 @@ export interface Word extends Synced {
   /** Mnemonic / memory hint */
   hint?: string
   tags?: string[]
+  /** "I already know this word" – skipped by learning and reviews until restored */
+  known?: boolean
   createdAt: number
 }
 
@@ -152,6 +154,11 @@ export async function deleteWord(wordId: string) {
     await addTombstones('progress', [wordId])
     await addTombstones('reviews', reviewIds)
   })
+}
+
+/** Mark a word as already known (or bring it back). Its review schedule is kept for if it returns. */
+export async function setKnown(wordId: string, known: boolean) {
+  await db.words.update(wordId, { known })
 }
 
 export async function resetProgress(wordId: string) {

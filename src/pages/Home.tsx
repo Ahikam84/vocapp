@@ -56,6 +56,11 @@ export default function Home({ deck }: { deck: Deck }) {
         <div><b>{stats.learned}</b><span>נלמדו</span></div>
         <div><b>{stats.longTerm}</b><span>בזיכרון ארוך</span></div>
       </div>
+      {stats.known > 0 && (
+        <p className="muted center-text">
+          <Link to="/words?filter=known">✓ {stats.known} מילים מסומנות כמוכרות</Link>
+        </p>
+      )}
 
       {stats.total === 0 && (
         <div className="card onboarding">

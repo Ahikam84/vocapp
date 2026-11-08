@@ -70,6 +70,12 @@ export class LearnSession {
     return { item, exercise: this.ladder[item.level] }
   }
 
+  /** Drop a word from the session entirely (e.g. the user already knows it). */
+  remove(wordId: string) {
+    this.items = this.items.filter((i) => i.word.id !== wordId)
+    this.waiting = this.waiting.filter((w) => w.id !== wordId)
+  }
+
   /** Returns true when this answer completed the word. */
   answer(item: LearnItem, correct: boolean): boolean {
     if (correct) {

@@ -11,8 +11,8 @@ const DAY = 86400000
 
 export async function deckStats(deckId: string) {
   const now = Date.now()
-  const [total, progress, reviews] = await Promise.all([
-    db.words.where('deckId').equals(deckId).count(),
+  const [words, allProgress, reviews] = await Promise.all([
+    db.words.where('deckId').equals(deckId).toArray(),
     db.progress.where('deckId').equals(deckId).toArray(),
     db.reviews.where('at').above(now - 400 * DAY).toArray(),
   ])
@@ -27,16 +27,22 @@ export async function deckStats(deckId: string) {
     day--
   }
 
+  // Words marked "already known" are left out of everything except the known count.
+  const knownIds = new Set(words.filter((w) => w.known).map((w) => w.id))
+  const progress = allProgress.filter((p) => !knownIds.has(p.wordId))
+  const learnedIds = new Set(progress.map((p) => p.wordId))
+
   const today = startOfToday()
   return {
-    total,
+    total: words.length,
+    known: knownIds.size,
     learned: progress.length,
-    newWords: total - progress.length,
+    newWords: words.filter((w) => !w.known && !learnedIds.has(w.id)).length,
     due: progress.filter((p) => p.due <= now).length,
     dueTomorrow: progress.filter((p) => p.due > now && p.due <= today + 2 * DAY).length,
     difficult: progress.filter((p) => p.lapses >= DIFFICULT_LAPSES).length,
     longTerm: progress.filter((p) => p.card.stability >= 21).length,
-    learnedToday: progress.filter((p) => p.learnedAt >= today).length,
+    learnedToday: allProgress.filter((p) => p.learnedAt >= today).length,
     answeredToday: reviews.filter((r) => r.deckId === deckId && r.at >= today).length,
     streak,
   }

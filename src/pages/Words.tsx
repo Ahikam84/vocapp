@@ -1,17 +1,18 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Plant, SpeakButton, T } from '../components/common'
-import { db, type Deck } from '../lib/db'
+import { db, setKnown, type Deck } from '../lib/db'
 import { DIFFICULT_LAPSES, strength } from '../lib/srs'
 import { normalize, stripAccents } from '../lib/answer'
 
-type Filter = 'all' | 'new' | 'learned' | 'difficult'
+type Filter = 'all' | 'new' | 'learned' | 'difficult' | 'known'
 
 export default function Words({ deck }: { deck: Deck }) {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
-  const [filter, setFilter] = useState<Filter>('all')
+  const [params] = useSearchParams()
+  const [filter, setFilter] = useState<Filter>((params.get('filter') as Filter) ?? 'all')
 
   const data = useLiveQuery(async () => {
     const [words, progress] = await Promise.all([
@@ -25,9 +26,14 @@ export default function Words({ deck }: { deck: Deck }) {
   const q = stripAccents(normalize(query))
   const rows = data.words.filter((w) => {
     const p = data.progress.get(w.id)
-    if (filter === 'new' && p) return false
-    if (filter === 'learned' && !p) return false
-    if (filter === 'difficult' && !(p && p.lapses >= DIFFICULT_LAPSES)) return false
+    if (filter === 'known') {
+      if (!w.known) return false
+    } else if (filter !== 'all') {
+      if (w.known) return false
+      if (filter === 'new' && p) return false
+      if (filter === 'learned' && !p) return false
+      if (filter === 'difficult' && !(p && p.lapses >= DIFFICULT_LAPSES)) return false
+    }
     if (!q) return true
     return [w.term, ...w.translations].some((s) => stripAccents(normalize(s)).includes(q))
   })
@@ -50,6 +56,7 @@ export default function Words({ deck }: { deck: Deck }) {
             ['new', 'חדשות'],
             ['learned', 'נלמדו'],
             ['difficult', 'קשות'],
+            ['known', 'מוכרות'],
           ] as [Filter, string][]
         ).map(([key, label]) => (
           <button key={key} className={filter === key ? 'chip active' : 'chip'} onClick={() => setFilter(key)}>
@@ -64,17 +71,34 @@ export default function Words({ deck }: { deck: Deck }) {
         </p>
       )}
 
+      {filter === 'known' && rows.length === 0 && !q && (
+        <p className="empty">אין מילים מסומנות כמוכרות. אפשר לסמן מילה בכפתור "✓ כבר מכיר" בזמן הלמידה.</p>
+      )}
+
       <ul className="word-list">
         {rows.map((w) => {
           const p = data.progress.get(w.id)
           return (
-            <li key={w.id} onClick={() => navigate(`/words/${w.id}`)}>
-              <Plant level={strength(p)} />
+            <li key={w.id} className={w.known ? 'known' : ''} onClick={() => navigate(`/words/${w.id}`)}>
+              {w.known ? <span className="plant" title="מסומנת כמוכרת">✅</span> : <Plant level={strength(p)} />}
               <div className="grow">
                 <T className="term">{w.term}</T>
                 <div className="muted">{w.translations.join(', ')}</div>
               </div>
-              {p && p.lapses >= DIFFICULT_LAPSES && <span className="badge">קשה</span>}
+              {w.known ? (
+                <button
+                  className="link-btn"
+                  title="החזרת המילה ללמידה"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setKnown(w.id, false)
+                  }}
+                >
+                  ↩ החזר ללמידה
+                </button>
+              ) : (
+                p && p.lapses >= DIFFICULT_LAPSES && <span className="badge">קשה</span>
+              )}
               <SpeakButton text={w.term} lang={deck.targetLang} small />
             </li>
           )

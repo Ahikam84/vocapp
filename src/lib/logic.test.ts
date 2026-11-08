@@ -50,6 +50,20 @@ describe('LearnSession', () => {
     expect(steps).toBe(words.length * 6)
   })
 
+  it('removes a word the user already knows, including words not yet introduced', () => {
+    const s = new LearnSession(words.slice(0, 3), { audio: true, choices: true })
+    const first = s.next()!
+    s.remove(first.item.word.id)
+    s.remove('3')
+    const seen = new Set<string>()
+    for (let step = s.next(); step; step = s.next()) {
+      seen.add(step.item.word.id)
+      s.answer(step.item, true)
+    }
+    expect([...seen]).toEqual(['2'])
+    expect(s.finished).toBe(true)
+  })
+
   it('drops a level on a mistake but not below 1', () => {
     const s = new LearnSession(words.slice(0, 1), { audio: false, choices: true })
     const step = s.next()!

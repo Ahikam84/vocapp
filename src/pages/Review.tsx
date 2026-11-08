@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Exercise, { type ExerciseOutcome } from '../components/Exercise'
-import { ProgressBar } from '../components/common'
-import { db, newId, type Deck, type ExerciseType, type Word } from '../lib/db'
+import { KnownButton, ProgressBar, T, UndoToast } from '../components/common'
+import { db, newId, setKnown, type Deck, type ExerciseType, type Word } from '../lib/db'
 import { getSettings, type Settings } from '../lib/settings'
 import { DIFFICULT_LAPSES, gradeAnswer, recordReview } from '../lib/srs'
 import { ttsAvailable } from '../lib/tts'
@@ -35,6 +35,7 @@ export default function Review({ deck, mode }: { deck: Deck; mode: Mode }) {
   const [settings, setSettings] = useState<Settings | null>(null)
   const [score, setScore] = useState({ right: 0, wrong: 0 })
   const total = useRef(0)
+  const [knownWord, setKnownWord] = useState<Word | null>(null)
 
   useEffect(() => {
     ;(async () => {
@@ -53,7 +54,7 @@ export default function Review({ deck, mode }: { deck: Deck; mode: Mode }) {
       const items = progress
         .slice(0, mode === 'review' ? s.reviewsPerSession : 15)
         .map((p) => byId.get(p.wordId))
-        .filter((w): w is Word => !!w)
+        .filter((w): w is Word => !!w && !w.known)
         .map((word) => ({ word, exercise: pickExercise(mode, audio, words.length >= 3), retry: false }))
       total.current = items.length
       setPool(words)
@@ -82,6 +83,26 @@ export default function Review({ deck, mode }: { deck: Deck; mode: Mode }) {
     setPos((p) => p + 1)
   }
 
+  async function markKnown() {
+    if (!queue) return
+    const word = queue[pos].word
+    await setKnown(word.id, true)
+    // Drop this word (and any pending retry of it) from the rest of the session.
+    const next = [...queue.slice(0, pos), ...queue.slice(pos).filter((q) => q.word.id !== word.id)]
+    total.current = next.filter((q) => !q.retry).length
+    setQueue(next)
+    setKnownWord(word)
+  }
+
+  const undoToast = knownWord && (
+    <UndoToast
+      key={knownWord.id}
+      message={<>"<T>{knownWord.term}</T>" סומנה כמוכרת ולא תופיע יותר</>}
+      onUndo={() => setKnown(knownWord.id, false)}
+      onClose={() => setKnownWord(null)}
+    />
+  )
+
   if (!queue || !settings) return null
 
   if (queue.length === 0)
@@ -90,6 +111,7 @@ export default function Review({ deck, mode }: { deck: Deck; mode: Mode }) {
         <div className="celebrate">💧</div>
         <p>{mode === 'review' ? 'אין מילים לחזרה כרגע. כל הכבוד!' : 'אין עדיין מילים שנלמדו.'}</p>
         <Link className="btn" to="/">לדף הבית</Link>
+        {undoToast}
       </div>
     )
 
@@ -103,6 +125,7 @@ export default function Review({ deck, mode }: { deck: Deck; mode: Mode }) {
           {score.right} נכונות מתוך {score.right + score.wrong} ({pct}%)
         </p>
         <Link className="btn" to="/">לדף הבית</Link>
+        {undoToast}
       </div>
     )
   }
@@ -115,9 +138,10 @@ export default function Review({ deck, mode }: { deck: Deck; mode: Mode }) {
         <Link to="/" className="close" aria-label="יציאה">✕</Link>
         <ProgressBar value={done / total.current} />
         <span className="muted counter">{done}/{total.current}</span>
+        <KnownButton onClick={markKnown} />
       </div>
       <Exercise
-        key={pos}
+        key={`${pos}:${item.word.id}:${item.retry}`}
         word={item.word}
         exercise={item.exercise}
         deck={deck}
@@ -125,6 +149,7 @@ export default function Review({ deck, mode }: { deck: Deck; mode: Mode }) {
         autoPlay={settings.autoPlayAudio}
         onDone={onDone}
       />
+      {undoToast}
     </div>
   )
 }

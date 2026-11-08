@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Exercise, { type ExerciseOutcome } from '../components/Exercise'
-import { ProgressBar, T } from '../components/common'
-import { db, newId, type Deck, type Word } from '../lib/db'
+import { KnownButton, ProgressBar, T, UndoToast } from '../components/common'
+import { db, newId, setKnown, type Deck, type Word } from '../lib/db'
 import { LearnSession, type Step } from '../lib/session'
 import { getSettings, type Settings } from '../lib/settings'
 import { markLearned } from '../lib/srs'
@@ -26,6 +26,7 @@ function LearnRound({ deck, onAgain }: { deck: Deck; onAgain: () => void }) {
   const [stepNo, setStepNo] = useState(0)
   const [learned, setLearned] = useState<Word[]>([])
   const [reason, setReason] = useState<string | null>(null)
+  const [knownWord, setKnownWord] = useState<Word | null>(null)
   const started = useRef(false)
 
   useEffect(() => {
@@ -40,7 +41,7 @@ function LearnRound({ deck, onAgain }: { deck: Deck; onAgain: () => void }) {
       const learnedIds = new Set(progress.map((p) => p.wordId))
       const learnedToday = progress.filter((p) => p.learnedAt >= startOfToday()).length
       const quota = Math.min(settings.wordsPerSession, settings.newPerDay - learnedToday)
-      const fresh = pool.filter((w) => !learnedIds.has(w.id)).slice(0, Math.max(0, quota))
+      const fresh = pool.filter((w) => !learnedIds.has(w.id) && !w.known).slice(0, Math.max(0, quota))
 
       if (fresh.length === 0) {
         setReason(quota <= 0 ? 'הגעת ליעד המילים החדשות להיום 🎉 אפשר לשנות אותו בהגדרות.' : 'אין מילים חדשות ללמוד. הוסף מילים כדי להמשיך.')
@@ -68,6 +69,25 @@ function LearnRound({ deck, onAgain }: { deck: Deck; onAgain: () => void }) {
     setStepNo((n) => n + 1)
   }
 
+  async function markKnown() {
+    if (!loaded || !step) return
+    const word = step.item.word
+    await setKnown(word.id, true)
+    loaded.session.remove(word.id)
+    setKnownWord(word)
+    setStep(loaded.session.next())
+    setStepNo((n) => n + 1)
+  }
+
+  const undoToast = knownWord && (
+    <UndoToast
+      key={knownWord.id}
+      message={<>"<T>{knownWord.term}</T>" סומנה כמוכרת ולא תופיע יותר</>}
+      onUndo={() => setKnown(knownWord.id, false)}
+      onClose={() => setKnownWord(null)}
+    />
+  )
+
   if (reason)
     return (
       <div className="page center-page">
@@ -84,7 +104,7 @@ function LearnRound({ deck, onAgain }: { deck: Deck; onAgain: () => void }) {
     return (
       <div className="page center-page">
         <div className="celebrate">🌱</div>
-        <h1>נשתלו {learned.length} מילים חדשות!</h1>
+        <h1>{learned.length ? `נשתלו ${learned.length} מילים חדשות!` : 'הסשן הסתיים'}</h1>
         <ul className="summary">
           {learned.map((w) => (
             <li key={w.id}><T>{w.term}</T> = {w.translations[0]}</li>
@@ -95,6 +115,7 @@ function LearnRound({ deck, onAgain }: { deck: Deck; onAgain: () => void }) {
           <button className="btn" onClick={onAgain}>עוד מילים</button>
           <Link className="btn secondary" to="/">לדף הבית</Link>
         </div>
+        {undoToast}
       </div>
     )
 
@@ -103,6 +124,7 @@ function LearnRound({ deck, onAgain }: { deck: Deck; onAgain: () => void }) {
       <div className="session-top">
         <Link to="/" className="close" aria-label="יציאה">✕</Link>
         <ProgressBar value={loaded.session.progress} />
+        <KnownButton onClick={markKnown} />
       </div>
       <Exercise
         key={stepNo}
@@ -113,6 +135,7 @@ function LearnRound({ deck, onAgain }: { deck: Deck; onAgain: () => void }) {
         autoPlay={loaded.settings.autoPlayAudio}
         onDone={onDone}
       />
+      {undoToast}
     </div>
   )
 }

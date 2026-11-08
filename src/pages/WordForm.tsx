@@ -2,7 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { SpeakButton } from '../components/common'
-import { db, deleteWord, newId, resetProgress as resetWordProgress, type Deck, type Word } from '../lib/db'
+import { db, deleteWord, newId, resetProgress as resetWordProgress, setKnown, type Deck, type Word } from '../lib/db'
 import { normalize } from '../lib/answer'
 import { LANGUAGES, SPECIAL_CHARS } from '../lib/useDeck'
 
@@ -144,6 +144,7 @@ export default function WordForm({ deck }: { deck: Deck }) {
 
       {wordId && (
         <div className="danger-zone">
+          {existing?.known && <p className="known-note">✅ המילה מסומנת כמוכרת – היא לא מופיעה בלמידה ובחזרות.</p>}
           {progress && (
             <p className="muted">
               נלמדה ב-{new Date(progress.learnedAt).toLocaleDateString('he-IL')} · חזרה הבאה:{' '}
@@ -151,6 +152,9 @@ export default function WordForm({ deck }: { deck: Deck }) {
             </p>
           )}
           <div className="row">
+            <button type="button" className="btn secondary" onClick={() => setKnown(wordId, !existing?.known)}>
+              {existing?.known ? '↩ החזר ללמידה' : '✓ אני כבר מכיר'}
+            </button>
             {progress && <button type="button" className="btn secondary" onClick={resetProgress}>איפוס התקדמות</button>}
             <button type="button" className="btn danger" onClick={remove}>מחיקה</button>
           </div>
