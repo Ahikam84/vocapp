@@ -21,16 +21,30 @@ interface Loaded {
 
 export default function Learn({ study }: { study: Study }) {
   const [round, setRound] = useState(0)
-  return <LearnRound key={round} study={study} onAgain={() => setRound((r) => r + 1)} />
+  // Past the daily new-word limit the learner may still choose to go on; that choice lasts for this visit.
+  const [beyondLimit, setBeyondLimit] = useState(false)
+  return (
+    <LearnRound
+      key={round}
+      study={study}
+      beyondLimit={beyondLimit}
+      onAgain={() => setRound((r) => r + 1)}
+      onBeyondLimit={() => {
+        setBeyondLimit(true)
+        setRound((r) => r + 1)
+      }}
+    />
+  )
 }
 
-function LearnRound({ study, onAgain }: { study: Study; onAgain: () => void }) {
+function LearnRound({ study, beyondLimit, onAgain, onBeyondLimit }: { study: Study; beyondLimit: boolean; onAgain: () => void; onBeyondLimit: () => void }) {
   const { deck } = study
   const [loaded, setLoaded] = useState<Loaded | null>(null)
   const [step, setStep] = useState<Step | null>(null)
   const [stepNo, setStepNo] = useState(0)
   const [learned, setLearned] = useState<Word[]>([])
   const [reason, setReason] = useState<string | null>(null)
+  const [limitReached, setLimitReached] = useState(false)
   const [knownWord, setKnownWord] = useState<Word | null>(null)
   const started = useRef(false)
   const startedAt = useRef(Date.now())
@@ -47,11 +61,15 @@ function LearnRound({ study, onAgain }: { study: Study; onAgain: () => void }) {
       ])
       const learnedIds = new Set(progress.map((p) => p.wordId))
       const learnedToday = progress.filter((p) => p.learnedAt >= startOfToday()).length
-      const quota = Math.min(settings.wordsPerSession, settings.newPerDay - learnedToday)
-      const fresh = interleaveByDeck(pool.filter((w) => !learnedIds.has(w.id) && !w.known), study.deckIds).slice(0, Math.max(0, quota))
+      const left = settings.newPerDay - learnedToday
+      const quota = beyondLimit ? settings.wordsPerSession : Math.min(settings.wordsPerSession, left)
+      const waiting = interleaveByDeck(pool.filter((w) => !learnedIds.has(w.id) && !w.known), study.deckIds)
+      const fresh = waiting.slice(0, Math.max(0, quota))
 
       if (fresh.length === 0) {
-        setReason(quota <= 0 ? t('הגעת ליעד המילים החדשות להיום. אפשר לשנות אותו בהגדרות.') : t('אין מילים חדשות ללמוד. הוסף מילים כדי להמשיך.'))
+        // The daily limit is advice, not a wall: offer to go on when words are waiting.
+        if (waiting.length > 0) setLimitReached(true)
+        else setReason(t('אין מילים חדשות ללמוד. הוסף מילים כדי להמשיך.'))
         return
       }
       const session = new LearnSession(fresh, { audio: ttsAvailable(deck.targetLang), choices: pool.length >= 3 })
@@ -94,6 +112,22 @@ function LearnRound({ study, onAgain }: { study: Study; onAgain: () => void }) {
       onClose={() => setKnownWord(null)}
     />
   )
+
+  if (limitReached)
+    return (
+      <div className="page center-page">
+        <h1>{t('עברת את מכסת המילים החדשות להיום')}</h1>
+        <p className="muted">
+          {t('הרבה מילים חדשות ביום אחד אומרות הרבה חזרות בימים הבאים. אפשר להמשיך בכל זאת, או לחזק את מה שכבר למדת.')}
+        </p>
+        <div className="row center wrap">
+          <button className="btn" onClick={onBeyondLimit}>{t('ללמוד עוד מילים')}</button>
+          <Link className="btn secondary" to="/difficult">{t('תרגול מילים קשות')}</Link>
+          <Link className="btn secondary" to="/">{t('לדף הבית')}</Link>
+        </div>
+        <p className="muted small-note">{t('את המכסה אפשר לשנות בהגדרות.')}</p>
+      </div>
+    )
 
   if (reason)
     return (

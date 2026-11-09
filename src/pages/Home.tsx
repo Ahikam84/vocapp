@@ -33,7 +33,7 @@ export default function Home({ study }: { study: Study }) {
         <ChevronLeft className="chev flip" size={20} />
       </Link>
 
-      <Link to="/learn" className={`action-card ${stats.newWords && newLeftToday ? '' : 'disabled'}`}>
+      <Link to="/learn" className={`action-card ${stats.newWords ? '' : 'disabled'}`}>
         <div className="icon"><Sprout size={22} /></div>
         <div className="grow">
           <h2>{t('למידת מילים חדשות')}</h2>
@@ -41,7 +41,7 @@ export default function Home({ study }: { study: Study }) {
             {stats.newWords === 0
               ? t('אין מילים חדשות – הוסף עוד')
               : newLeftToday === 0
-                ? t('הגעת ליעד היומי')
+                ? t('עברת את מכסת היום · אפשר להמשיך בכל זאת')
                 : t('{n} מילים ממתינות · עוד {left} היום', { n: stats.newWords, left: newLeftToday })}
           </p>
         </div>
