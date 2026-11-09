@@ -1,4 +1,4 @@
-import { ArrowLeft, CircleCheck, CircleX, Delete, Lightbulb, TriangleAlert, Volume2 } from 'lucide-react'
+import { ArrowLeft, CircleCheck, CircleX, Delete, Keyboard, Lightbulb, TriangleAlert, Volume2 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Deck, ExerciseType, Word } from '../lib/db'
 import { checkAnswer, stripAccents, type AnswerResult } from '../lib/answer'
@@ -48,11 +48,12 @@ export default function Exercise(props: Props) {
   // Set only when the user has to acknowledge the feedback (mistakes, near-misses).
   const pending = useRef<ExerciseOutcome | null>(null)
 
-  function finish(result: AnswerResult, given?: string) {
+  /** `helped`: right in the end, but with a hint – shown as correct, scheduled as a harder word. */
+  function finish(result: AnswerResult, given?: string, helped = false) {
     if (feedback) return
     const outcome: ExerciseOutcome = {
       correct: result !== 'wrong',
-      almost: result === 'almost',
+      almost: result === 'almost' || (helped && result === 'correct'),
       responseMs: performance.now() - startedAt.current,
     }
     // Hearing the word again right after answering reinforces the sound–meaning link.
@@ -199,7 +200,7 @@ function Choice({
   )
 }
 
-function Tiles({ word, deck, answered, onAnswer }: Props & { answered: boolean; onAnswer: (r: AnswerResult, given?: string) => void }) {
+function Tiles({ word, deck, answered, onAnswer }: Props & { answered: boolean; onAnswer: (r: AnswerResult, given?: string, helped?: boolean) => void }) {
   const tiles = useMemo(() => {
     const letters = [...word.term.toLowerCase()]
     const decoys = DECOY_LETTERS[deck.targetLang] ?? 'aeioulnrst'
@@ -215,46 +216,107 @@ function Tiles({ word, deck, answered, onAnswer }: Props & { answered: boolean; 
   }
   const built = used.map((i) => tiles[i].c).join('')
 
+  const hinted = useRef(false)
+  const answer = [...word.term.toLowerCase()]
+  // Phones: a hidden text field brings up the built-in keyboard. It always holds one
+  // space, so a Backspace on it can be noticed (the field gets shorter).
+  const phoneInput = useRef<HTMLInputElement>(null)
+  const touch = useMemo(() => window.matchMedia?.('(pointer: coarse)').matches ?? false, [])
+
   function tap(i: number) {
     if (answered || usedRef.current.includes(i)) return
     const next = [...usedRef.current, i]
     setUsed(next)
-    if (next.length === word.term.length) {
+    if (next.length === answer.length) {
       const given = next.map((j) => tiles[j].c).join('')
-      onAnswer(checkAnswer(given, [word.term]).result === 'correct' ? 'correct' : 'wrong', given)
+      const right = checkAnswer(given, [word.term]).result === 'correct'
+      // With help from the hint button it's right, but not fully remembered.
+      onAnswer(right ? 'correct' : 'wrong', given, hinted.current)
     }
   }
 
-  // The physical keyboard works too: a typed letter uses up the matching tile.
+  function erase() {
+    if (!answered) setUsed(usedRef.current.slice(0, -1))
+  }
+
+  /** Uses up the tile for a typed character; returns false when no tile has it. */
+  function typeChar(raw: string): boolean {
+    const key = deck.targetLang === 'he' ? toHebrewKeys(raw) : raw.toLowerCase()
+    const free = tiles.filter((x) => !usedRef.current.includes(x.i))
+    // Exact letter first; otherwise "n" also finds "ñ", "e" finds "é", "מ" finds "ם".
+    const hit = free.find((x) => x.c === key) ?? free.find((x) => stripAccents(x.c) === stripAccents(key))
+    if (!hit) return false
+    tap(hit.i)
+    return true
+  }
+
+  /** Hint: keeps the correct start of the answer, drops anything after a mistake, and adds the next right letter. */
+  function hint() {
+    if (answered) return
+    hinted.current = true
+    let keep = 0
+    while (keep < usedRef.current.length && tiles[usedRef.current[keep]].c === answer[keep]) keep++
+    setUsed(usedRef.current.slice(0, keep))
+    const want = answer[keep]
+    const hit = tiles.find((x) => x.c === want && !usedRef.current.includes(x.i))
+    if (hit) tap(hit.i)
+  }
+
+  // The computer keyboard works too: a typed letter uses up the matching tile.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (answered || e.ctrlKey || e.metaKey || e.altKey) return
+      if (answered || e.ctrlKey || e.metaKey || e.altKey || e.target === phoneInput.current) return
       if (e.key === 'Backspace') {
         e.preventDefault()
-        setUsed(usedRef.current.slice(0, -1))
+        erase()
         return
       }
       if ([...e.key].length !== 1) return
-      const key = deck.targetLang === 'he' ? toHebrewKeys(e.key) : e.key.toLowerCase()
-      const free = tiles.filter((x) => !usedRef.current.includes(x.i))
-      // Exact letter first; otherwise "n" also finds "ñ", "e" finds "é", "מ" finds "ם".
-      const hit = free.find((x) => x.c === key) ?? free.find((x) => stripAccents(x.c) === stripAccents(key))
-      if (!hit) return
-      e.preventDefault()
-      tap(hit.i)
+      if (typeChar(e.key)) e.preventDefault()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   })
+
+  function onPhoneInput(e: React.FormEvent<HTMLInputElement>) {
+    const value = e.currentTarget.value
+    if (value.length === 0) erase()
+    // Whatever was typed, wherever the cursor was: the field minus its one placeholder space.
+    else for (const c of [...value.replace(' ', '')]) typeChar(c)
+    e.currentTarget.value = ' '
+    e.currentTarget.setSelectionRange(1, 1)
+  }
+
+  const openKeyboard = () => {
+    const el = phoneInput.current
+    if (!el || answered) return
+    el.value = ' '
+    el.focus()
+    el.setSelectionRange(1, 1)
+  }
 
   return (
     <>
       <div className="card prompt">
         <T className="term huge">{word.translations[0]}</T>
       </div>
-      <div className="tiles-answer" dir={dirOf(deck.targetLang)} onClick={() => !answered && setUsed(used.slice(0, -1))}>
+      <div className="tiles-answer" dir={dirOf(deck.targetLang)} onClick={() => (touch ? openKeyboard() : erase())}>
         {built || <span className="muted">&nbsp;</span>}
         {!answered && <span className="caret" />}
+        {touch && !answered && (
+          <input
+            ref={phoneInput}
+            className="phone-keys"
+            lang={deck.targetLang}
+            defaultValue=" "
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
+            aria-label={t('מקלדת')}
+            onInput={onPhoneInput}
+          />
+        )}
       </div>
       <div className="tiles" dir={dirOf(deck.targetLang)}>
         {tiles.map(({ c, i }) => (
@@ -264,8 +326,12 @@ function Tiles({ word, deck, answered, onAnswer }: Props & { answered: boolean; 
         ))}
       </div>
       {!answered && (
-        <div className="row center">
-          <button className="btn secondary" onClick={() => setUsed(used.slice(0, -1))}><Delete size={18} /> {t('מחק')}</button>
+        <div className="row center wrap">
+          {touch && (
+            <button className="btn secondary" onClick={openKeyboard}><Keyboard size={18} /> {t('מקלדת')}</button>
+          )}
+          <button className="btn secondary" onClick={erase}><Delete size={18} /> {t('מחק')}</button>
+          <button className="btn secondary" onClick={hint}><Lightbulb size={18} /> {t('רמז')}</button>
           <button className="btn secondary" onClick={() => onAnswer('wrong', built)}>{t('לא יודע')}</button>
         </div>
       )}

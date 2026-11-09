@@ -62,6 +62,8 @@ export interface ReviewLog extends Synced {
   mode: 'learn' | 'review' | 'practice'
   exercise: ExerciseType
   correct: boolean
+  /** Right but not quite: a small spelling slip, or built with a hint. */
+  almost?: boolean
   responseMs: number
   at: number
 }

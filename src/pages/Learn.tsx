@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Exercise, { type ExerciseOutcome } from '../components/Exercise'
 import { KnownButton, knownMessage, ProgressBar, SoundToggle, T, UndoToast } from '../components/common'
+import { SessionReward } from '../components/Goal'
 import { db, newId, setKnown, type Word } from '../lib/db'
 import { t } from '../lib/i18n'
 import { interleaveByDeck, LearnSession, type Step } from '../lib/session'
@@ -32,6 +33,7 @@ function LearnRound({ study, onAgain }: { study: Study; onAgain: () => void }) {
   const [reason, setReason] = useState<string | null>(null)
   const [knownWord, setKnownWord] = useState<Word | null>(null)
   const started = useRef(false)
+  const startedAt = useRef(Date.now())
   const liveSettings = useSettings()
 
   useEffect(() => {
@@ -64,7 +66,7 @@ function LearnRound({ study, onAgain }: { study: Study; onAgain: () => void }) {
     if (step.exercise !== 'intro')
       await db.reviews.add({
         id: newId(), wordId: step.item.word.id, deckId: step.item.word.deckId, mode: 'learn', exercise: step.exercise,
-        correct: outcome.correct, responseMs: Math.round(outcome.responseMs), at: Date.now(),
+        correct: outcome.correct, almost: outcome.almost, responseMs: Math.round(outcome.responseMs), at: Date.now(),
       })
     if (session.answer(step.item, outcome.correct)) {
       await markLearned(step.item.word.id, step.item.word.deckId)
@@ -116,6 +118,7 @@ function LearnRound({ study, onAgain }: { study: Study; onAgain: () => void }) {
           ))}
         </ul>
         <p className="muted">{t('הן יחזרו לחזרה בימים הקרובים, במרווחים שהולכים וגדלים.')}</p>
+        <SessionReward since={startedAt.current} />
         <div className="row center">
           <button className="btn" onClick={onAgain}>{t('עוד מילים')}</button>
           <Link className="btn secondary" to="/">{t('לדף הבית')}</Link>

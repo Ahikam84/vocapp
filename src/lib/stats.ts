@@ -20,16 +20,6 @@ export async function studyStats(deckIds: string[]) {
   ])
   const reviews = allReviews.filter((r) => inStudy.has(r.deckId))
 
-  // Streak: consecutive days (ending today or yesterday) with at least one answer.
-  const days = new Set(reviews.map((r) => Math.floor((r.at - new Date(r.at).getTimezoneOffset() * 60000) / DAY)))
-  let streak = 0
-  let day = Math.floor((now - new Date().getTimezoneOffset() * 60000) / DAY)
-  if (!days.has(day)) day--
-  while (days.has(day)) {
-    streak++
-    day--
-  }
-
   // Words marked "already known" are left out of everything except the known count.
   const knownIds = new Set(words.filter((w) => w.known).map((w) => w.id))
   const progress = allProgress.filter((p) => !knownIds.has(p.wordId))
@@ -47,6 +37,5 @@ export async function studyStats(deckIds: string[]) {
     longTerm: progress.filter((p) => p.card.stability >= 21).length,
     learnedToday: allProgress.filter((p) => p.learnedAt >= today).length,
     answeredToday: reviews.filter((r) => r.at >= today).length,
-    streak,
   }
 }

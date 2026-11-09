@@ -1,4 +1,5 @@
-import { ChevronLeft, Flame, Repeat2, Sprout, Target } from 'lucide-react'
+import { ChevronLeft, Repeat2, Sprout, Target } from 'lucide-react'
+import { DailyGoalCard } from '../components/Goal'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Link } from 'react-router-dom'
 import { t } from '../lib/i18n'
@@ -15,10 +16,7 @@ export default function Home({ study }: { study: Study }) {
 
   return (
     <div className="page home">
-      <div className="streak">
-        <Flame size={18} /> {t(stats.streak === 1 ? '{n} יום ברצף' : '{n} ימים ברצף', { n: stats.streak })}
-        <span> · {t('{n} תשובות היום', { n: stats.answeredToday })}</span>
-      </div>
+      <DailyGoalCard />
 
       <Link to="/review" className={`action-card primary ${stats.due ? '' : 'disabled'}`}>
         <div className="icon"><Repeat2 size={22} /></div>

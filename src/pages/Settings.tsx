@@ -1,3 +1,5 @@
+import { goalUnit } from '../components/Goal'
+import { DEFAULT_GOAL, GOAL_PRESETS, type GoalType } from '../lib/goals'
 import { Lightbulb, Volume2 } from 'lucide-react'
 import { useState } from 'react'
 import { db, importData, type Deck } from '../lib/db'
@@ -76,6 +78,36 @@ export default function SettingsPage({ deck }: { deck: Deck | null }) {
           <option value="en">English</option>
         </select>
       </label>
+
+      <h2>{t('יעד יומי')}</h2>
+      <p className="muted">{t('הרצף ממשיך בכל יום שבו עומדים ביעד.')}</p>
+      <label className="inline">
+        {t('היעד נמדד לפי')}
+        <select
+          className="auto-width"
+          value={settings.dailyGoalType}
+          onChange={async (e) => {
+            const type = e.target.value as GoalType
+            await setSetting('dailyGoalType', type)
+            await setSetting('dailyGoal', DEFAULT_GOAL[type])
+          }}
+        >
+          <option value="xp">{t('נקודות (XP)')}</option>
+          <option value="minutes">{t('דקות תרגול')}</option>
+          <option value="answers">{t('מספר תשובות')}</option>
+        </select>
+      </label>
+      <label className="inline">
+        {t('כמה ביום')}
+        <select className="auto-width" value={settings.dailyGoal} onChange={(e) => setSetting('dailyGoal', Number(e.target.value))}>
+          {[...new Set([...GOAL_PRESETS[settings.dailyGoalType], settings.dailyGoal])].sort((a, b) => a - b).map((n) => (
+            <option key={n} value={n}>{n} {goalUnit(settings.dailyGoalType)}</option>
+          ))}
+        </select>
+      </label>
+      {settings.dailyGoalType === 'xp' && (
+        <p className="muted">{t('תשובה נכונה: 10 XP · עם רמז או כמעט נכונה: 5 · טעות: 1 · מילה חדשה שנלמדה: 15')}</p>
+      )}
 
       <h2>{t('למידה')}</h2>
       <label className="inline">{t('מילים חדשות בכל סשן')} {num('wordsPerSession', 1, 20)}</label>

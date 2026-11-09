@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Exercise, { type ExerciseOutcome } from '../components/Exercise'
 import { KnownButton, knownMessage, ProgressBar, SoundToggle, UndoToast } from '../components/common'
+import { SessionReward } from '../components/Goal'
 import { db, newId, setKnown, type ExerciseType, type Word } from '../lib/db'
 import { t } from '../lib/i18n'
 import { getSettings, useSettings, type Settings } from '../lib/settings'
@@ -39,6 +40,7 @@ export default function Review({ study, mode }: { study: Study; mode: Mode }) {
   const [settings, setSettings] = useState<Settings | null>(null)
   const [score, setScore] = useState({ right: 0, wrong: 0 })
   const total = useRef(0)
+  const startedAt = useRef(Date.now())
   const [knownWord, setKnownWord] = useState<Word | null>(null)
   const liveSettings = useSettings()
 
@@ -73,7 +75,7 @@ export default function Review({ study, mode }: { study: Study; mode: Mode }) {
     const item = queue[pos]
     await db.reviews.add({
       id: newId(), wordId: item.word.id, deckId: item.word.deckId, mode, exercise: item.exercise,
-      correct: outcome.correct, responseMs: Math.round(outcome.responseMs), at: Date.now(),
+      correct: outcome.correct, almost: outcome.almost, responseMs: Math.round(outcome.responseMs), at: Date.now(),
     })
     if (!item.retry) {
       if (mode === 'review') await recordReview(item.word.id, gradeAnswer({ ...outcome, exercise: item.exercise }))
@@ -127,6 +129,7 @@ export default function Review({ study, mode }: { study: Study; mode: Mode }) {
         <div className="celebrate">{pct >= 80 ? <Trophy size={40} /> : <CircleCheck size={40} />}</div>
         <h1>{mode === 'review' ? t('החזרה הושלמה!') : t('התרגול הושלם!')}</h1>
         <p>{t('{right} נכונות מתוך {total} ({pct}%)', { right: score.right, total: score.right + score.wrong, pct })}</p>
+        <SessionReward since={startedAt.current} />
         <Link className="btn" to="/">{t('לדף הבית')}</Link>
         {undoToast}
       </div>
