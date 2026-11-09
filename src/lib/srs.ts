@@ -53,4 +53,10 @@ export function strength(progress: Progress | undefined): number {
   return 5
 }
 
+/** The strength a word would have after this grade – for showing the change before it's saved. */
+export function strengthAfter(progress: Progress, grade: Grade, now = new Date()): number {
+  const card = scheduler.next(reviveCard(progress.card), now, grade).card
+  return strength({ ...progress, card })
+}
+
 export const DIFFICULT_LAPSES = 3

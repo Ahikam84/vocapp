@@ -49,3 +49,14 @@ describe('xp', () => {
     expect(day.minutes).toBeCloseTo(1.5) // the 10-minute answer counts as 1
   })
 })
+
+describe('mascot', () => {
+  it('picks a mood for the home screen and a plant stage', async () => {
+    const { homeMood, plantStage } = await import('../components/Mascot')
+    expect(homeMood({ goalDone: true, answeredToday: 30, due: 5, hour: 20 })).toBe('party')
+    expect(homeMood({ goalDone: false, answeredToday: 0, due: 5, hour: 20 })).toBe('angry')
+    expect(homeMood({ goalDone: false, answeredToday: 0, due: 5, hour: 10 })).toBe('idle')
+    expect(homeMood({ goalDone: false, answeredToday: 3, due: 0, hour: 21 })).toBe('sleep')
+    expect([plantStage(0), plantStage(20), plantStage(150)]).toEqual(['g1', 'g2', 'g3'])
+  })
+})

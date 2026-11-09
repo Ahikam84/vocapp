@@ -6,7 +6,7 @@ import { pickDistractors, shuffle } from '../lib/session'
 import { dirOf, t } from '../lib/i18n'
 import { speak } from '../lib/tts'
 import { DECOY_LETTERS, HEBREW_KEYBOARD, SPECIAL_CHARS, toHebrewKeys } from '../lib/useDeck'
-import { SpeakButton, T } from './common'
+import { Meter, SpeakButton, T } from './common'
 
 export interface ExerciseOutcome {
   correct: boolean
@@ -22,6 +22,15 @@ interface Props {
   pool: Word[]
   autoPlay: boolean
   onDone: (outcome: ExerciseOutcome) => void
+  /** Strength bars above the question: the level now, and what an answer turns it into. */
+  meter?: MeterInfo
+}
+
+export interface MeterInfo {
+  level: number
+  max: number
+  label: (level: number) => string
+  after: (outcome: ExerciseOutcome) => number
 }
 
 const PROMPTS: Record<ExerciseType, string> = {
@@ -39,6 +48,7 @@ export default function Exercise(props: Props) {
   const exercise: ExerciseType = props.exercise === 'audio-choice' && !autoPlay ? 'choice-target' : props.exercise
   const startedAt = useRef(performance.now())
   const [feedback, setFeedback] = useState<{ result: AnswerResult; given?: string } | null>(null)
+  const [meterLevel, setMeterLevel] = useState<number | null>(null)
 
   const playsTermUpfront = exercise === 'intro' || exercise === 'choice-target' || exercise === 'audio-choice'
   useEffect(() => {
@@ -58,6 +68,7 @@ export default function Exercise(props: Props) {
     }
     // Hearing the word again right after answering reinforces the sound–meaning link.
     if (autoPlay && !playsTermUpfront) speak(word.term, deck.targetLang)
+    if (props.meter) setMeterLevel(props.meter.after(outcome))
     setFeedback({ result, given })
     if (result === 'correct') {
       const recall = exercise === 'typing' || exercise === 'tiles'
@@ -87,6 +98,14 @@ export default function Exercise(props: Props) {
 
   return (
     <div className={`exercise ${feedback ? `fb-${feedback.result}` : ''}`}>
+      {props.meter && exercise !== 'intro' && (
+        <Meter
+          level={meterLevel ?? props.meter.level}
+          prev={props.meter.level}
+          max={props.meter.max}
+          label={props.meter.label(meterLevel ?? props.meter.level)}
+        />
+      )}
       <div className="prompt-label">{t(PROMPTS[exercise])}</div>
       {exercise === 'intro' && <Intro {...props} />}
       {(exercise === 'choice-target' || exercise === 'choice-source' || exercise === 'audio-choice') && (

@@ -21,6 +21,12 @@ export function SpeakButton({ text, lang, small }: { text: string; lang: string;
   )
 }
 
+const STRENGTH_NAMES = ['חדשה', 'חלשה', 'מתחזקת', 'טובה', 'חזקה', 'בזיכרון ארוך']
+/** Name of a 0–5 memory strength level. */
+export function strengthName(level: number): string {
+  return t(STRENGTH_NAMES[Math.max(0, Math.min(5, level))])
+}
+
 /** 0–5 memory strength as five rising bars. */
 export function Strength({ level }: { level: number }) {
   const label = t('חוזק זיכרון {n} מתוך 5', { n: level })
@@ -30,6 +36,28 @@ export function Strength({ level }: { level: number }) {
         <i key={n} className={n <= level ? 'on' : ''} />
       ))}
     </span>
+  )
+}
+
+/**
+ * Strength bars inside an exercise. `prev` is the level before this answer:
+ * bars gained pop in green, bars lost drain red, and a full meter lights up in a wave.
+ */
+export function Meter({ level, prev, max, label }: { level: number; prev: number; max: number; label: string }) {
+  const diff = level - prev
+  const complete = level >= max && prev < max
+  return (
+    <div className={`meter ${diff < 0 ? 'lost' : ''} ${complete ? 'complete' : ''}`} aria-label={label} title={label}>
+      <span className="meter-bars">
+        {Array.from({ length: max }, (_, i) => {
+          const n = i + 1
+          const cls = n <= Math.min(level, prev) ? 'on' : n <= level ? 'on gain' : n <= prev ? 'loss' : ''
+          return <i key={i} className={cls} style={{ height: `${30 + (70 * n) / max}%`, animationDelay: complete ? `${i * 70}ms` : undefined }} />
+        })}
+      </span>
+      <span className="meter-label">{label}</span>
+      {diff > 0 && <span className="meter-plus" key={level}>+{diff}</span>}
+    </div>
   )
 }
 

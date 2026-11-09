@@ -1,13 +1,13 @@
-import { CircleCheck, Trophy, X } from 'lucide-react'
+import { CircleCheck, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import Exercise, { type ExerciseOutcome } from '../components/Exercise'
-import { KnownButton, knownMessage, ProgressBar, SoundToggle, UndoToast } from '../components/common'
+import Exercise, { type ExerciseOutcome, type MeterInfo } from '../components/Exercise'
+import { KnownButton, knownMessage, ProgressBar, SoundToggle, strengthName, UndoToast } from '../components/common'
 import { SessionReward } from '../components/Goal'
-import { db, newId, setKnown, type ExerciseType, type Word } from '../lib/db'
+import { db, newId, setKnown, type ExerciseType, type Progress, type Word } from '../lib/db'
 import { t } from '../lib/i18n'
 import { getSettings, useSettings, type Settings } from '../lib/settings'
-import { DIFFICULT_LAPSES, gradeAnswer, recordReview } from '../lib/srs'
+import { DIFFICULT_LAPSES, gradeAnswer, recordReview, strength, strengthAfter } from '../lib/srs'
 import { ttsAvailable } from '../lib/tts'
 import type { Study } from '../lib/useDeck'
 
@@ -41,6 +41,8 @@ export default function Review({ study, mode }: { study: Study; mode: Mode }) {
   const [score, setScore] = useState({ right: 0, wrong: 0 })
   const total = useRef(0)
   const startedAt = useRef(Date.now())
+  // Each word's memory state, kept current during the session for the strength bars.
+  const progressById = useRef(new Map<string, Progress>())
   const [knownWord, setKnownWord] = useState<Word | null>(null)
   const liveSettings = useSettings()
 
@@ -50,6 +52,7 @@ export default function Review({ study, mode }: { study: Study; mode: Mode }) {
       const words = await db.words.where('deckId').anyOf(study.deckIds).toArray()
       const byId = new Map(words.map((w) => [w.id, w]))
       let progress = await db.progress.where('deckId').anyOf(study.deckIds).toArray()
+      progressById.current = new Map(progress.map((p) => [p.wordId, p]))
       if (mode === 'review') {
         progress = progress.filter((p) => p.due <= Date.now()).sort((a, b) => a.due - b.due)
       } else {
@@ -78,7 +81,11 @@ export default function Review({ study, mode }: { study: Study; mode: Mode }) {
       correct: outcome.correct, almost: outcome.almost, responseMs: Math.round(outcome.responseMs), at: Date.now(),
     })
     if (!item.retry) {
-      if (mode === 'review') await recordReview(item.word.id, gradeAnswer({ ...outcome, exercise: item.exercise }))
+      if (mode === 'review') {
+        await recordReview(item.word.id, gradeAnswer({ ...outcome, exercise: item.exercise }))
+        const updated = await db.progress.get(item.word.id)
+        if (updated) progressById.current.set(item.word.id, updated)
+      }
       setScore((s) => (outcome.correct ? { ...s, right: s.right + 1 } : { ...s, wrong: s.wrong + 1 }))
     }
     if (!outcome.correct) {
@@ -126,7 +133,6 @@ export default function Review({ study, mode }: { study: Study; mode: Mode }) {
     const pct = Math.round((score.right / Math.max(1, score.right + score.wrong)) * 100)
     return (
       <div className="page center-page">
-        <div className="celebrate">{pct >= 80 ? <Trophy size={40} /> : <CircleCheck size={40} />}</div>
         <h1>{mode === 'review' ? t('החזרה הושלמה!') : t('התרגול הושלם!')}</h1>
         <p>{t('{right} נכונות מתוך {total} ({pct}%)', { right: score.right, total: score.right + score.wrong, pct })}</p>
         <SessionReward since={startedAt.current} />
@@ -138,6 +144,16 @@ export default function Review({ study, mode }: { study: Study; mode: Mode }) {
 
   const item = queue[pos]
   const done = queue.slice(0, pos).filter((q) => !q.retry).length
+  const progress = progressById.current.get(item.word.id)
+  const level = strength(progress)
+  // Only a first answer in a real review changes the schedule; retries and practice leave it as is.
+  const counts = mode === 'review' && !item.retry && !!progress
+  const meter: MeterInfo = {
+    level,
+    max: 5,
+    label: strengthName,
+    after: (o) => (counts ? strengthAfter(progress!, gradeAnswer({ ...o, exercise: item.exercise })) : level),
+  }
   return (
     <div className="page session">
       <div className="session-top">
@@ -155,6 +171,7 @@ export default function Review({ study, mode }: { study: Study; mode: Mode }) {
         pool={pool}
         autoPlay={(liveSettings ?? settings).autoPlayAudio}
         onDone={onDone}
+        meter={meter}
       />
       {undoToast}
     </div>

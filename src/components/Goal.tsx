@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { dailyStatus, xpSince, type DailyStatus, type GoalType } from '../lib/goals'
 import { t } from '../lib/i18n'
 import { useSettings } from '../lib/settings'
+import { homeMood, Mascot } from './Mascot'
 
 export function goalUnit(type: GoalType): string {
   return type === 'xp' ? 'XP' : type === 'minutes' ? t('דקות') : t('תשובות')
@@ -55,12 +56,15 @@ function StreakBadges({ status }: { status: DailyStatus }) {
   )
 }
 
-/** Home-screen card: today's goal and the streak. */
-export function DailyGoalCard() {
+/** Home-screen card: the cat, today's goal and the streak. `due` = words waiting for review. */
+export function DailyGoalCard({ due }: { due: number }) {
   const status = useDailyStatus()
   if (!status) return null
   const { value, goal, type, done, streak } = status
+  const mood = homeMood({ goalDone: done, answeredToday: status.today.answers, due, hour: new Date().getHours() })
   return (
+    <>
+    <Mascot mood={mood} size={190} />
     <div className={`goal-card ${done ? 'done' : ''}`}>
       <GoalRing value={value} goal={goal} />
       <div className="grow">
@@ -74,6 +78,7 @@ export function DailyGoalCard() {
       </div>
       <StreakBadges status={status} />
     </div>
+    </>
   )
 }
 
@@ -85,6 +90,7 @@ export function SessionReward({ since }: { since: number }) {
   const { value, goal, type, done, streak } = status
   return (
     <div className={`session-reward ${done ? 'done' : ''}`}>
+      <Mascot mood={done ? 'party' : 'water'} size={240} />
       <div className="xp"><bdi dir="ltr">+{xp} XP</bdi></div>
       <div className="row center goal-line">
         <GoalRing value={value} goal={goal} size={40} />

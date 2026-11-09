@@ -16,7 +16,7 @@ export default function Home({ study }: { study: Study }) {
 
   return (
     <div className="page home">
-      <DailyGoalCard />
+      <DailyGoalCard due={stats.due} />
 
       <Link to="/review" className={`action-card primary ${stats.due ? '' : 'disabled'}`}>
         <div className="icon"><Repeat2 size={22} /></div>

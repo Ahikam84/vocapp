@@ -1,7 +1,7 @@
-import { Sprout, X } from 'lucide-react'
+import { X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import Exercise, { type ExerciseOutcome } from '../components/Exercise'
+import Exercise, { type ExerciseOutcome, type MeterInfo } from '../components/Exercise'
 import { KnownButton, knownMessage, ProgressBar, SoundToggle, T, UndoToast } from '../components/common'
 import { SessionReward } from '../components/Goal'
 import { db, newId, setKnown, type Word } from '../lib/db'
@@ -110,7 +110,6 @@ function LearnRound({ study, onAgain }: { study: Study; onAgain: () => void }) {
   if (!step)
     return (
       <div className="page center-page">
-        <div className="celebrate"><Sprout size={40} /></div>
         <h1>{learned.length ? t('נשתלו {n} מילים חדשות!', { n: learned.length }) : t('הסשן הסתיים')}</h1>
         <ul className="summary">
           {learned.map((w) => (
@@ -126,6 +125,16 @@ function LearnRound({ study, onAgain }: { study: Study; onAgain: () => void }) {
         {undoToast}
       </div>
     )
+
+  const { rungs } = loaded.session
+  const climbed = step.item.level
+  const meter: MeterInfo = {
+    level: climbed,
+    max: rungs,
+    label: (n) => (n >= rungs ? t('נשתלה!') : t('שלב {n} מתוך {max}', { n, max: rungs })),
+    // Mirrors LearnSession.answer: up a step when right, down one (not below 1) when wrong.
+    after: (o) => (o.correct ? Math.min(rungs, climbed + 1) : Math.max(1, climbed - 1)),
+  }
 
   return (
     <div className="page session">
@@ -143,6 +152,7 @@ function LearnRound({ study, onAgain }: { study: Study; onAgain: () => void }) {
         pool={loaded.pool}
         autoPlay={(liveSettings ?? loaded.settings).autoPlayAudio}
         onDone={onDone}
+        meter={meter}
       />
       {undoToast}
     </div>

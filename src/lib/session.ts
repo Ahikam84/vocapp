@@ -31,6 +31,11 @@ export class LearnSession {
     )
   }
 
+  /** Number of steps a word climbs before it's learned. */
+  get rungs() {
+    return this.ladder.length
+  }
+
   get total() {
     return this.items.length + this.waiting.length
   }

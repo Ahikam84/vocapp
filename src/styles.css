@@ -159,6 +159,23 @@ input[type='range'] { width: 160px; padding: 0; background: none; accent-color: 
 .strength i:nth-child(1) { height: 30%; } .strength i:nth-child(2) { height: 45%; } .strength i:nth-child(3) { height: 60%; }
 .strength i:nth-child(4) { height: 80%; } .strength i:nth-child(5) { height: 100%; }
 .strength i.on { background: var(--primary); }
+/* Strength meter inside an exercise */
+.meter { position: relative; display: flex; align-items: center; justify-content: center; gap: 8px; margin: -4px 0 10px; font-size: 0.8rem; color: var(--muted); }
+.meter-bars { display: inline-flex; gap: 3px; align-items: flex-end; height: 20px; }
+.meter-bars i { width: 5px; border-radius: 2px; background: var(--surface-2); transform-origin: bottom; }
+.meter-bars i.on { background: var(--primary); }
+.meter-bars i.gain { animation: bar-gain 0.6s cubic-bezier(.3,1.6,.5,1) both; }
+.meter-bars i.loss { animation: bar-loss 0.9s ease both; }
+.meter.lost .meter-bars { animation: meter-shake 0.4s ease; }
+.meter.complete .meter-bars i { animation: bar-wave 0.7s ease both; background: #f59e0b; }
+.meter.complete .meter-label { color: #f59e0b; font-weight: 700; }
+.meter-plus { position: absolute; inset-inline-start: calc(50% + 70px); color: var(--good); font-weight: 800; animation: plus-float 1.1s ease forwards; }
+@keyframes bar-gain { 0% { transform: scaleY(0); } 60% { transform: scaleY(1.25); box-shadow: 0 0 8px var(--good); } 100% { transform: scaleY(1); } }
+@keyframes bar-loss { 0% { background: var(--bad); } 60% { background: var(--bad); transform: scaleY(1); } 100% { background: var(--surface-2); transform: scaleY(1); } }
+@keyframes meter-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
+@keyframes bar-wave { 0% { transform: scaleY(1); } 40% { transform: scaleY(1.35); } 100% { transform: scaleY(1); } }
+@keyframes plus-float { 0% { opacity: 0; transform: translateY(4px); } 20% { opacity: 1; } 100% { opacity: 0; transform: translateY(-14px); } }
+@media (prefers-reduced-motion: reduce) { .meter * { animation: none !important; } }
 .known-mark { display: inline-grid; place-items: center; width: 22px; color: var(--primary); }
 
 .preview { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 0.9rem; }
