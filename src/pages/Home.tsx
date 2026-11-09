@@ -14,6 +14,22 @@ export default function Home({ study }: { study: Study }) {
 
   const newLeftToday = Math.max(0, settings.newPerDay - stats.learnedToday)
 
+  // A course with no words yet: only show how to fill it.
+  if (stats.total === 0)
+    return (
+      <div className="page home">
+        <div className="card onboarding">
+          <h2>{t('הקורס ריק')}</h2>
+          <p>{t('הוסף מילים – אחת אחת או כרשימה – או בחר קורס מוכן.')}</p>
+          <div className="row">
+            <Link className="btn" to="/words/new">{t('הוספת מילה')}</Link>
+            <Link className="btn secondary" to="/import">{t('ייבוא רשימה')}</Link>
+            <Link className="btn secondary" to="/courses">{t('קורסים')}</Link>
+          </div>
+        </div>
+      </div>
+    )
+
   return (
     <div className="page home">
       <DailyGoalCard due={stats.due} />
@@ -73,17 +89,6 @@ export default function Home({ study }: { study: Study }) {
         </p>
       )}
 
-      {stats.total === 0 && (
-        <div className="card onboarding">
-          <h2>{t('הקורס ריק')}</h2>
-          <p>{t('הוסף מילים – אחת אחת או כרשימה – או בחר קורס מוכן.')}</p>
-          <div className="row">
-            <Link className="btn" to="/words/new">{t('הוספת מילה')}</Link>
-            <Link className="btn secondary" to="/import">{t('ייבוא רשימה')}</Link>
-            <Link className="btn secondary" to="/courses">{t('קורסים')}</Link>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
