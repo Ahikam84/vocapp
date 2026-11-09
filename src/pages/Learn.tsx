@@ -5,7 +5,7 @@ import Exercise, { type ExerciseOutcome } from '../components/Exercise'
 import { KnownButton, knownMessage, ProgressBar, SoundToggle, T, UndoToast } from '../components/common'
 import { db, newId, setKnown, type Word } from '../lib/db'
 import { t } from '../lib/i18n'
-import { LearnSession, type Step } from '../lib/session'
+import { interleaveByDeck, LearnSession, type Step } from '../lib/session'
 import { getSettings, useSettings, type Settings } from '../lib/settings'
 import { markLearned } from '../lib/srs'
 import { ttsAvailable } from '../lib/tts'
@@ -46,7 +46,7 @@ function LearnRound({ study, onAgain }: { study: Study; onAgain: () => void }) {
       const learnedIds = new Set(progress.map((p) => p.wordId))
       const learnedToday = progress.filter((p) => p.learnedAt >= startOfToday()).length
       const quota = Math.min(settings.wordsPerSession, settings.newPerDay - learnedToday)
-      const fresh = pool.filter((w) => !learnedIds.has(w.id) && !w.known).slice(0, Math.max(0, quota))
+      const fresh = interleaveByDeck(pool.filter((w) => !learnedIds.has(w.id) && !w.known), study.deckIds).slice(0, Math.max(0, quota))
 
       if (fresh.length === 0) {
         setReason(quota <= 0 ? t('הגעת ליעד המילים החדשות להיום. אפשר לשנות אותו בהגדרות.') : t('אין מילים חדשות ללמוד. הוסף מילים כדי להמשיך.'))

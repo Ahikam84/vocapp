@@ -82,3 +82,12 @@ describe('LearnSession', () => {
     expect(step.item.level).toBe(1)
   })
 })
+
+describe('interleaveByDeck', () => {
+  it('takes new words from each studied course in turn', async () => {
+    const { interleaveByDeck } = await import('./session')
+    const w = (deckId: string, n: number) => ({ deckId, n })
+    const words = [w('a', 1), w('a', 2), w('a', 3), w('b', 1), w('c', 1), w('c', 2)]
+    expect(interleaveByDeck(words, ['a', 'b', 'c']).map((x) => x.deckId + x.n)).toEqual(['a1', 'b1', 'c1', 'a2', 'c2', 'a3'])
+  })
+})

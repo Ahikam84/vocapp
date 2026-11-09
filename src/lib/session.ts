@@ -106,3 +106,14 @@ export function shuffle<T>(arr: T[], random = Math.random): T[] {
   }
   return a
 }
+
+/**
+ * When several courses are studied together, take new words from each in turn
+ * (keeping every course's own order) so one big course doesn't crowd out the rest.
+ */
+export function interleaveByDeck<T extends { deckId: string }>(words: T[], deckOrder: string[]): T[] {
+  const groups = deckOrder.map((id) => words.filter((w) => w.deckId === id))
+  const out: T[] = []
+  for (let i = 0; groups.some((g) => i < g.length); i++) for (const g of groups) if (i < g.length) out.push(g[i])
+  return out
+}
