@@ -57,6 +57,6 @@ describe('mascot', () => {
     expect(homeMood({ goalDone: false, answeredToday: 0, due: 5, hour: 20 })).toBe('angry')
     expect(homeMood({ goalDone: false, answeredToday: 0, due: 5, hour: 10 })).toBe('idle')
     expect(homeMood({ goalDone: false, answeredToday: 3, due: 0, hour: 21 })).toBe('sleep')
-    expect([plantStage(0), plantStage(20), plantStage(150)]).toEqual(['g1', 'g2', 'g3'])
+    expect([plantStage(0), plantStage(20), plantStage(150)]).toEqual([0, 1, 2])
   })
 })

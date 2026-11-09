@@ -64,7 +64,7 @@ export function DailyGoalCard({ due }: { due: number }) {
   const mood = homeMood({ goalDone: done, answeredToday: status.today.answers, due, hour: new Date().getHours() })
   return (
     <>
-    <Mascot mood={mood} size={190} />
+    <Mascot mood={mood} size={220} />
     <div className={`goal-card ${done ? 'done' : ''}`}>
       <GoalRing value={value} goal={goal} />
       <div className="grow">

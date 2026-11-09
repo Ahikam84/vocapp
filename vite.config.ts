@@ -25,8 +25,8 @@ export default defineConfig({
       // so a lesson in progress is never reloaded from under them.
       registerType: 'prompt',
       includeAssets: ['icon.svg'],
-      // Precache the font too, so the app looks the same offline.
-      workbox: { globPatterns: ['**/*.{js,css,html,svg,woff2}'] },
+      // Precache the font and the mascot images too, so the app looks the same offline.
+      workbox: { globPatterns: ['**/*.{js,css,html,svg,woff2,webp}'] },
       manifest: {
         name: 'VocApp – לימוד אוצר מילים',
         short_name: 'VocApp',
