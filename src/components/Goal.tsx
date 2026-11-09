@@ -1,9 +1,10 @@
 import { Flame, PartyPopper, Snowflake } from 'lucide-react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Link } from 'react-router-dom'
-import { dailyStatus, xpSince, type DailyStatus, type GoalType } from '../lib/goals'
+import { useState } from 'react'
+import { DEFAULT_GOAL, dailyStatus, GOAL_PRESETS, xpSince, type DailyStatus, type GoalType } from '../lib/goals'
 import { t } from '../lib/i18n'
-import { useSettings } from '../lib/settings'
+import { setSetting, useSettings } from '../lib/settings'
 import { homeMood, Mascot } from './Mascot'
 
 export function goalUnit(type: GoalType): string {
@@ -90,6 +91,7 @@ export function SessionReward({ since }: { since: number }) {
   const { value, goal, type, done, streak } = status
   return (
     <div className={`session-reward ${done ? 'done' : ''}`}>
+      <GoalPrompt />
       <Mascot mood={done ? 'party' : 'water'} size={240} />
       <div className="xp"><bdi dir="ltr">+{xp} XP</bdi></div>
       <div className="row center goal-line">
@@ -106,6 +108,72 @@ export function SessionReward({ since }: { since: number }) {
             </>
           )}
         </span>
+      </div>
+    </div>
+  )
+}
+
+const GOAL_TYPES: { type: GoalType; label: string; hint: string }[] = [
+  { type: 'xp', label: 'נקודות (XP)', hint: 'כל תשובה נכונה שווה 10' },
+  { type: 'minutes', label: 'דקות תרגול', hint: 'כמה זמן ביום' },
+  { type: 'answers', label: 'מספר תשובות', hint: 'כמה שאלות ביום' },
+]
+const LEVELS = ['קליל', 'רגיל', 'רציני', 'אינטנסיבי', 'אלוף']
+
+/** Pop-up after the first finished session: choose how the daily goal is measured and how big it is. */
+export function GoalPrompt() {
+  const settings = useSettings()
+  const [type, setType] = useState<GoalType | null>(null)
+  const [amount, setAmount] = useState<number | null>(null)
+  const [closed, setClosed] = useState(false)
+  if (!settings || settings.goalChosen || closed) return null
+  const chosenType = type ?? settings.dailyGoalType
+  const presets = GOAL_PRESETS[chosenType]
+  const chosenAmount = amount ?? DEFAULT_GOAL[chosenType]
+
+  async function save(keep: boolean) {
+    if (keep) {
+      await setSetting('dailyGoalType', chosenType)
+      await setSetting('dailyGoal', chosenAmount)
+    }
+    // "Later" also counts as an answer: the default goal stays and the question isn't asked again.
+    await setSetting('goalChosen', true)
+    setClosed(true)
+  }
+
+  return (
+    <div className="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="goal-prompt-title">
+      <div className="modal goal-prompt">
+        <h2 id="goal-prompt-title">{t('כמה רוצים לתרגל ביום?')}</h2>
+        <p className="muted">{t('יעד קטן וקבוע עדיף על יעד גדול שמוותרים עליו. כל יום שעומדים בו מאריך את הרצף.')}</p>
+        <div className="choice-row">
+          {GOAL_TYPES.map((g) => (
+            <button
+              key={g.type}
+              className={`choice ${g.type === chosenType ? 'on' : ''}`}
+              onClick={() => {
+                setType(g.type)
+                setAmount(null)
+              }}
+            >
+              <b>{t(g.label)}</b>
+              <span>{t(g.hint)}</span>
+            </button>
+          ))}
+        </div>
+        <div className="choice-row amounts">
+          {presets.map((n, i) => (
+            <button key={n} className={`choice ${n === chosenAmount ? 'on' : ''}`} onClick={() => setAmount(n)}>
+              <b><bdi>{n}</bdi> {goalUnit(chosenType)}</b>
+              <span>{t(LEVELS[Math.min(i, LEVELS.length - 1)])}</span>
+            </button>
+          ))}
+        </div>
+        <div className="row center">
+          <button className="btn" onClick={() => save(true)}>{t('שמירת היעד')}</button>
+          <button className="btn secondary" onClick={() => save(false)}>{t('אחר כך')}</button>
+        </div>
+        <p className="muted small">{t('אפשר לשנות בכל רגע בהגדרות.')}</p>
       </div>
     </div>
   )

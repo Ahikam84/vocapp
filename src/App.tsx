@@ -4,6 +4,7 @@ import { Link, NavLink, Route, Routes } from 'react-router-dom'
 import { detectUiLang, langName, setUiLang, t } from './lib/i18n'
 import { applyUpdate, useNeedRefresh } from './lib/pwa'
 import { useSettings } from './lib/settings'
+import { applyTheme } from './lib/theme'
 import { setTtsPreferences } from './lib/tts'
 import { useStudy, type Study } from './lib/useDeck'
 import Courses from './pages/Courses'
@@ -31,6 +32,9 @@ export default function App() {
   useEffect(() => {
     if (settings) setTtsPreferences(settings.voices, settings.speechRate)
   }, [settings])
+  useEffect(() => {
+    if (settings) applyTheme(settings.theme)
+  }, [settings?.theme]) // eslint-disable-line react-hooks/exhaustive-deps
   if (study === undefined || !settings) return null
   // Set before rendering children so every t() call below uses the chosen language.
   setUiLang(settings.uiLang ?? detectUiLang())

@@ -1,6 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from './db'
 import type { GoalType } from './goals'
+import type { Theme } from './theme'
 import type { UiLang } from './i18n'
 
 export interface Settings {
@@ -19,6 +20,9 @@ export interface Settings {
   /** What the daily goal counts, and how much of it */
   dailyGoalType: GoalType
   dailyGoal: number
+  /** Set once the user has picked a goal (in Settings or the after-first-session prompt) */
+  goalChosen: boolean
+  theme: Theme
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -33,6 +37,8 @@ export const DEFAULT_SETTINGS: Settings = {
   uiLang: null,
   dailyGoalType: 'xp',
   dailyGoal: 50,
+  goalChosen: false,
+  theme: 'auto',
 }
 
 export async function getSettings(): Promise<Settings> {

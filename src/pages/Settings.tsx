@@ -1,5 +1,6 @@
 import { goalUnit } from '../components/Goal'
 import { DEFAULT_GOAL, GOAL_PRESETS, type GoalType } from '../lib/goals'
+import type { Theme } from '../lib/theme'
 import { Lightbulb, Volume2 } from 'lucide-react'
 import { useState } from 'react'
 import { db, importData, type Deck } from '../lib/db'
@@ -79,6 +80,15 @@ export default function SettingsPage({ deck }: { deck: Deck | null }) {
         </select>
       </label>
 
+      <label className="inline">
+        {t('ערכת צבעים')}
+        <select className="auto-width" value={settings.theme} onChange={(e) => setSetting('theme', e.target.value as Theme)}>
+          <option value="auto">{t('אוטומטי (לפי המכשיר)')}</option>
+          <option value="light">{t('בהיר')}</option>
+          <option value="dark">{t('כהה')}</option>
+        </select>
+      </label>
+
       <h2>{t('יעד יומי')}</h2>
       <p className="muted">{t('הרצף ממשיך בכל יום שבו עומדים ביעד.')}</p>
       <label className="inline">
@@ -90,6 +100,7 @@ export default function SettingsPage({ deck }: { deck: Deck | null }) {
             const type = e.target.value as GoalType
             await setSetting('dailyGoalType', type)
             await setSetting('dailyGoal', DEFAULT_GOAL[type])
+            await setSetting('goalChosen', true)
           }}
         >
           <option value="xp">{t('נקודות (XP)')}</option>
@@ -99,7 +110,10 @@ export default function SettingsPage({ deck }: { deck: Deck | null }) {
       </label>
       <label className="inline">
         {t('כמה ביום')}
-        <select className="auto-width" value={settings.dailyGoal} onChange={(e) => setSetting('dailyGoal', Number(e.target.value))}>
+        <select className="auto-width" value={settings.dailyGoal} onChange={async (e) => {
+            await setSetting('dailyGoal', Number(e.target.value))
+            await setSetting('goalChosen', true)
+          }}>
           {[...new Set([...GOAL_PRESETS[settings.dailyGoalType], settings.dailyGoal])].sort((a, b) => a - b).map((n) => (
             <option key={n} value={n}>{n} {goalUnit(settings.dailyGoalType)}</option>
           ))}
