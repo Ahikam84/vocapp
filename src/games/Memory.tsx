@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { T } from '../components/common'
+import { T, Term } from '../components/common'
 import { normalize } from '../lib/answer'
 import type { Word } from '../lib/db'
 import { loadGameWords, logGameAnswer, MIN_GAME_WORDS, recordScore, shuffled } from '../lib/games'
@@ -124,7 +124,7 @@ function MemoryRound({ pool, lang, onAgain }: { pool: Word[]; lang: string; onAg
               <span className="mem-inner">
                 <span className="mem-back" />
                 <span className={`mem-front ${c.side}`}>
-                  <T>{c.side === 'term' ? c.word.term : c.word.translations[0]}</T>
+                  {c.side === 'term' ? <Term word={c.word} /> : <T>{c.word.translations[0]}</T>}
                 </span>
               </span>
             </button>

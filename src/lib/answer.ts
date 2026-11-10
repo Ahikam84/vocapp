@@ -3,6 +3,8 @@ export type AnswerResult = 'correct' | 'almost' | 'wrong'
 const HEBREW_NIKUD = /[\u0591-\u05C7]/g
 const PUNCT = /[.,;:!?¿¡"'()\-–—׳״]/g
 const MAQAF = /\u05BE/g
+/** Arabic vowel marks, shadda and the stretching stroke: optional in writing */
+export const ARABIC_MARKS = /[\u064B-\u065F\u0670\u0640]/g
 const FINAL_LETTERS: Record<string, string> = { ך: 'כ', ם: 'מ', ן: 'נ', ף: 'פ', ץ: 'צ' }
 
 /** Lowercase, trim, collapse spaces, drop punctuation and Hebrew vowel marks. */
@@ -11,6 +13,7 @@ export function normalize(s: string): string {
     .normalize('NFC')
     .replace(MAQAF, ' ')
     .replace(HEBREW_NIKUD, '')
+    .replace(ARABIC_MARKS, '')
     .replace(PUNCT, ' ')
     .toLowerCase()
     .replace(/\s+/g, ' ')
@@ -24,6 +27,12 @@ export function stripAccents(s: string): string {
     .replace(/[\u0300-\u036f]/g, '')
     .normalize('NFC')
     .replace(/[ךםןףץ]/g, (c) => FINAL_LETTERS[c])
+    // Arabic letters often written loosely: hamza seats, taa marbuta, alif maqsura
+    .replace(/[أإآ]/g, 'ا')
+    .replace(/ة/g, 'ه')
+    .replace(/ى/g, 'ي')
+    .replace(/ؤ/g, 'و')
+    .replace(/ئ/g, 'ي')
 }
 
 const ARTICLES = /^(el|la|los|las|un|una|unos|unas|l')\s+/
@@ -61,4 +70,20 @@ export function checkAnswer(input: string, accepted: string[]): { result: Answer
     if (target.length >= 4 && levenshtein(target, typedLoose) <= 1) return { result: 'almost', match: a }
   }
   return { result: 'wrong', match: accepted[0] }
+}
+
+const TO_FINAL: Record<string, string> = { כ: 'ך', מ: 'ם', נ: 'ן', פ: 'ף', צ: 'ץ' }
+
+/**
+ * Every spelling a typed answer may match: the word, its other accepted forms and – in a course
+ * with a Hebrew transliteration – that too, with or without geresh and final letters.
+ */
+export function acceptedTerms(w: { term: string; altTerms?: string[]; reading?: string }): string[] {
+  const out = [w.term, ...(w.altTerms ?? [])]
+  if (w.reading) {
+    const bare = w.reading.replace(HEBREW_NIKUD, '')
+    for (const r of [bare, bare.replace(/['׳]/g, '')])
+      out.push(r, r.replace(/[ךםןףץ]/g, (c) => FINAL_LETTERS[c]), r.replace(/[כמנפצ](?=$|[\s.,!?])/g, (c) => TO_FINAL[c]))
+  }
+  return [...new Set(out)]
 }

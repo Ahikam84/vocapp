@@ -85,7 +85,7 @@ describe('games', () => {
   })
 
   it('has plenty of sentences and el/la nouns in the Spanish courses', async () => {
-    for (const course of COURSES) {
+    for (const course of COURSES.filter((c) => c.targetLang === 'es')) {
       const words = courseToWords(course, await course.load())
       const cloze = words.filter((w) => clozeFor(w)).length
       const gender = words.filter((w) => genderOf(w)).length

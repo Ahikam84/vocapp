@@ -303,6 +303,14 @@ input[type='range'] { width: 160px; padding: 0; background: none; accent-color: 
 .tf-buttons .yes { background: var(--good); }
 .tf-buttons .no { background: var(--bad); }
 
+/* Transliteration under a word (Arabic courses) */
+.with-reading { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; line-height: 1.25; }
+.option .with-reading, .options .with-reading { align-items: flex-start; }
+.reading { font-size: 0.95rem; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+.term.huge + .reading { font-size: 1.15rem; }
+.reading.inline { margin-inline-start: 8px; font-size: 0.85rem; }
+.example .reading { margin-top: 2px; }
+
 /* Test */
 .test-setup h2 { font-size: 1rem; margin: 18px 0 6px; }
 .test-setup select { width: 100%; }

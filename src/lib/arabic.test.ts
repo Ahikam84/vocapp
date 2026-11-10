@@ -1,0 +1,36 @@
+import { describe, expect, it } from 'vitest'
+import { COURSES } from '../courses'
+import { acceptedTerms, checkAnswer } from './answer'
+import { courseToWords, courseWordId } from './courses'
+
+describe('Arabic courses', () => {
+  it('keeps Arabic letters in word ids, and Spanish ids as they were', () => {
+    expect(courseWordId('ar-lev-b1', 'على طول')).toBe('ar-lev-b1:على-طول')
+    expect(courseWordId('ar-lev-b1', 'هلّأ')).toBe('ar-lev-b1:هلأ')
+    expect(courseWordId('es-b1', '¿Qué tal?')).toBe('es-b1:que-tal')
+  })
+
+  it('accepts the Arabic, with or without shadda, and the transliteration however it is typed', () => {
+    const word = { term: 'سلامتك', reading: 'סַלַאמְתַכּ' }
+    const ok = (typed: string) => checkAnswer(typed, acceptedTerms(word)).result
+    expect(ok('سلامتك')).toBe('correct')
+    expect(ok('סלאמתכ')).toBe('correct')
+    expect(ok('סלאמתך')).toBe('correct')
+    expect(checkAnswer('هلأ', acceptedTerms({ term: 'هلّأ' })).result).toBe('correct')
+    const kh = { term: 'خلاص', reading: "ח'לַאץ" }
+    expect(checkAnswer("ח'לאץ", acceptedTerms(kh)).result).toBe('correct')
+    expect(checkAnswer('חלאץ', acceptedTerms(kh)).result).toBe('correct')
+    expect(checkAnswer('חלאצ', acceptedTerms(kh)).result).toBe('correct')
+  })
+
+  it('gives every word in the course a transliteration of the word and its example', async () => {
+    const course = COURSES.find((c) => c.id === 'ar-lev-b1')!
+    const words = courseToWords(course, await course.load())
+    expect(words.length).toBeGreaterThan(200)
+    for (const w of words) {
+      expect(w.reading, w.term).toMatch(/[א-ת]/)
+      expect(w.exampleReading, w.term).toMatch(/[א-ת]/)
+      expect(w.term, w.term).toMatch(/[ء-ي]/)
+    }
+  })
+})

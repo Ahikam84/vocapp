@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ProgressBar, T } from '../components/common'
+import { ProgressBar, T, Term } from '../components/common'
 import type { Word } from '../lib/db'
 import { loadGameWords, logGameAnswer, oddQuestion, recordScore, topicGroups, type OddQuestion } from '../lib/games'
 import { dirOf, t } from '../lib/i18n'
@@ -89,7 +89,7 @@ function OddRound({ pool, lang, onAgain }: { pool: Word[]; lang: string; onAgain
           const state = !chosen ? '' : w.id === q.odd.id ? 'right' : w.id === chosen.id ? 'wrong' : 'dim'
           return (
             <button key={w.id} className={`odd-card ${state}`} onClick={() => choose(w)} dir={dirOf(lang)}>
-              <b><T>{w.term}</T></b>
+              <b><Term word={w} /></b>
               {chosen && <small><T>{w.translations[0]}</T></small>}
             </button>
           )

@@ -2,7 +2,7 @@ import { CircleCheck, CircleX, ClipboardCheck, Timer, TriangleAlert } from 'luci
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ProgressBar, T } from '../components/common'
+import { ProgressBar, T, Term } from '../components/common'
 import { SessionReward } from '../components/Goal'
 import { TestQuestionView } from '../components/TestQuestion'
 import { db, newId, type TestRef, type Word } from '../lib/db'
@@ -305,7 +305,7 @@ function Runner({ running, lang, onDone }: { running: Running; lang: { target: s
 function Pair({ word, lang }: { word: Word; lang: { target: string; source: string } }) {
   return (
     <div className="fb-answer">
-      <span dir={dirOf(lang.target)}><T className="term">{word.term}</T></span>
+      <span dir={dirOf(lang.target)}><Term word={word} className="term" /></span>
       <span className="muted"> = <T>{word.translations.join(', ')}</T></span>
     </div>
   )
@@ -341,7 +341,7 @@ function Results({ results, since, marked, lang, onAgain }: { results: Answered[
             {mistakes.map((m, i) => (
               <li key={i} className={m.correct ? 'almost' : 'wrong'}>
                 <div>
-                  <span dir={dirOf(lang.target)}><T><b>{m.word.term}</b></T></span> = <T>{m.word.translations[0]}</T>
+                  <span dir={dirOf(lang.target)}><b><Term word={m.word} /></b></span> = <T>{m.word.translations[0]}</T>
                 </div>
                 {m.given ? (
                   <small className="muted">{t('ענית:')} <T>{m.given}</T></small>

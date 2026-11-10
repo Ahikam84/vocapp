@@ -1,12 +1,12 @@
 import { ArrowLeft, CircleCheck, CircleX, Delete, Keyboard, Lightbulb, TriangleAlert, Volume2 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Deck, ExerciseType, Word } from '../lib/db'
-import { checkAnswer, stripAccents, type AnswerResult } from '../lib/answer'
+import { acceptedTerms, type AnswerResult, checkAnswer, stripAccents } from '../lib/answer'
 import { pickDistractors, shuffle } from '../lib/session'
 import { dirOf, t } from '../lib/i18n'
 import { speak } from '../lib/tts'
 import { DECOY_LETTERS, HEBREW_KEYBOARD, SPECIAL_CHARS, toHebrewKeys } from '../lib/useDeck'
-import { Meter, SpeakButton, T } from './common'
+import { Meter, SpeakButton, T, Term } from './common'
 
 export interface ExerciseOutcome {
   correct: boolean
@@ -126,7 +126,7 @@ export default function Exercise(props: Props) {
             )}
           </div>
           <div className="fb-answer">
-            <T className="term">{word.term}</T> <SpeakButton text={word.term} lang={deck.targetLang} small />
+            <Term word={word} className="term" /> <SpeakButton text={word.term} lang={deck.targetLang} small />
             <span className="muted"> = <T>{word.translations.join(', ')}</T></span>
           </div>
           {feedback.given && feedback.result !== 'correct' && (
@@ -151,13 +151,14 @@ function Intro({ word, deck }: Props) {
   return (
     <div className="card intro">
       <div className="row center">
-        <T className="term huge">{word.term}</T>
+        <Term word={word} className="term huge" />
         <SpeakButton text={word.term} lang={deck.targetLang} />
       </div>
       <div className="translation"><T>{word.translations.join(', ')}</T></div>
       {word.example && (
         <div className="example">
           <T>{word.example}</T> <SpeakButton text={word.example} lang={deck.targetLang} small />
+          {word.exampleReading && <div className="reading" dir="rtl">{word.exampleReading}</div>}
           {word.exampleTranslation && <div className="muted"><T>{word.exampleTranslation}</T></div>}
         </div>
       )}
@@ -195,7 +196,7 @@ function Choice({
       <div className="card prompt">
         {exercise === 'choice-target' && (
           <div className="row center">
-            <T className="term huge">{word.term}</T>
+            <Term word={word} className="term huge" />
             <SpeakButton text={word.term} lang={deck.targetLang} />
           </div>
         )}
@@ -210,7 +211,7 @@ function Choice({
           return (
             <button key={o.id} className={`option ${state}`} onClick={() => pick(o)}>
               <span className="key">{i + 1}</span>
-              <T>{showTerms ? o.term : o.translations[0]}</T>
+              {showTerms ? <Term word={o} /> : <T>{o.translations[0]}</T>}
             </button>
           )
         })}
@@ -365,14 +366,14 @@ function Typing({ word, deck, answered, onAnswer }: Props & { answered: boolean;
   function submit() {
     if (answered) return
     if (!value.trim()) return onAnswer('wrong', '')
-    onAnswer(checkAnswer(value, [word.term, ...(word.altTerms ?? [])]).result, value)
+    onAnswer(checkAnswer(value, acceptedTerms(word)).result, value)
   }
 
   /** Updates the text and accepts it right away once it matches exactly – no need to press Check. */
   function update(next: string) {
     if (answered) return
     setValue(next)
-    if (checkAnswer(next, [word.term, ...(word.altTerms ?? [])]).result === 'correct') onAnswer('correct', next)
+    if (checkAnswer(next, acceptedTerms(word)).result === 'correct') onAnswer('correct', next)
   }
 
   return (

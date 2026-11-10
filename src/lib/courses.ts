@@ -1,15 +1,18 @@
 import type { CourseInfo, CourseWords } from '../courses/types'
 import { db, type Word } from './db'
-import { stripAccents } from './answer'
+import { ARABIC_MARKS, stripAccents } from './answer'
 
 export const courseDeckId = (courseId: string) => `course-${courseId}`
 
 /** Stable word id from the course and term, e.g. "es-c1:a-raiz-de". */
 export function courseWordId(courseId: string, term: string) {
-  const slug = stripAccents(term.toLowerCase())
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-  return `${courseId}:${slug}`
+  const latin = stripAccents(term.toLowerCase())
+  // Latin terms keep their a-z slugs. Other scripts (Arabic) keep their own letters, only without
+  // vowel marks – and nothing else, so ids never change when answer checking gets looser.
+  const slug = /[^\P{L}a-z]/u.test(latin)
+    ? term.toLowerCase().replace(ARABIC_MARKS, '').replace(/[^\p{L}\p{N}]+/gu, '-')
+    : latin.replace(/[^a-z0-9]+/g, '-')
+  return `${courseId}:${slug.replace(/^-|-$/g, '')}`
 }
 
 /** Round-robin across topics so a learning session mixes verbs, idioms, nouns… */
@@ -21,8 +24,9 @@ export function courseToWords(course: CourseInfo, data: CourseWords, now = Date.
     for (const [topic, entries] of topics) {
       const entry = entries[i]
       if (!entry) continue
-      const [term, translations, example, exampleTranslation] = entry
+      const [term, translations, example, exampleTranslation, reading, exampleReading] = entry
       words.push({
+        ...(reading ? { reading, exampleReading } : {}),
         id: courseWordId(course.id, term),
         deckId: courseDeckId(course.id),
         term,

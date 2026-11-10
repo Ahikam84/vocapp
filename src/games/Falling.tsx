@@ -1,7 +1,7 @@
 import { Heart } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { T } from '../components/common'
-import { checkAnswer } from '../lib/answer'
+import { T, Term } from '../components/common'
+import { acceptedTerms, checkAnswer } from '../lib/answer'
 import type { Word } from '../lib/db'
 import { loadGameWords, logGameAnswer, MIN_GAME_WORDS, recordScore, shuffled } from '../lib/games'
 import { dirOf, t } from '../lib/i18n'
@@ -112,7 +112,7 @@ function FallingRound({ pool, lang, onAgain }: { pool: Word[]; lang: string; onA
     logGameAnswer('falling', drop.word, true, Date.now() - drop.born, almost)
   }
 
-  const accepted = (w: Word) => [w.term, ...(w.altTerms ?? [])]
+  const accepted = (w: Word) => acceptedTerms(w)
 
   function onType(raw: string) {
     const v = lang === 'he' ? toHebrewKeys(raw) : raw
@@ -166,7 +166,7 @@ function FallingRound({ pool, lang, onAgain }: { pool: Word[]; lang: string; onA
         ))}
         {missed && (
           <div className="fall-missed" key={missed.id} onAnimationEnd={() => setMissed(null)}>
-            <T>{missed.term}</T> = <T>{missed.translations[0]}</T>
+            <Term word={missed} /> = <T>{missed.translations[0]}</T>
           </div>
         )}
       </div>

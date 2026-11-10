@@ -38,4 +38,13 @@ export const COURSES: CourseInfo[] = [
     targetLang: 'es',
     load: () => import('./es-c2').then((m) => m.default),
   },
+  {
+    id: 'ar-lev-b1',
+    name: 'ערבית מדוברת B1',
+    description: 'ערבית לבנטינית מדוברת לרמה בינונית: משפחה, בית, אוכל, עבודה, עיר, בריאות, רגשות וביטויים יומיומיים. בכתב ערבי עם תעתיק עברי',
+    level: 'B1',
+    sourceLang: 'he',
+    targetLang: 'ar',
+    load: () => import('./ar-lev-b1').then((m) => m.default),
+  },
 ]

@@ -73,6 +73,17 @@ export function T({ children, className }: { children: React.ReactNode; classNam
   )
 }
 
+/** A word in the language being learned, with its transliteration under it when it has one (Arabic courses). */
+export function Term({ word, className }: { word: { term: string; reading?: string }; className?: string }) {
+  if (!word.reading) return <T className={className}>{word.term}</T>
+  return (
+    <span className="with-reading">
+      <T className={className}>{word.term}</T>
+      <span className="reading" dir="rtl">{word.reading}</span>
+    </span>
+  )
+}
+
 export function ProgressBar({ value }: { value: number }) {
   return (
     <div className="progress">

@@ -57,4 +57,4 @@ export function toHebrewKeys(text: string): string {
   return [...text].map((c) => QWERTY_TO_HEBREW[c.toLowerCase()] ?? c).join('')
 }
 
-export const DECOY_LETTERS: Record<string, string> = { he: 'אבגדהוילמנרשת' }
+export const DECOY_LETTERS: Record<string, string> = { he: 'אבגדהוילמנרשת', ar: 'ابتدرسعفكلمنهوي' }

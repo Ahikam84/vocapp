@@ -1,6 +1,6 @@
 import { Check, Timer, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { T } from '../components/common'
+import { T, Term } from '../components/common'
 import type { Word } from '../lib/db'
 import { loadGameWords, logGameAnswer, MIN_GAME_WORDS, recordScore, shuffled, trueFalseFor, type TrueFalse as Question } from '../lib/games'
 import { dirOf, t } from '../lib/i18n'
@@ -95,7 +95,7 @@ function TrueFalseRound({ pool, lang, onAgain }: { pool: Word[]; lang: string; o
       </div>
       {!started && <p className="muted center-text">{t('האם זה התרגום של המילה? השעון מתחיל בתשובה הראשונה.')}</p>}
       <div className={`card tf-card ${feedback === null ? '' : feedback ? 'ok' : 'bad'}`}>
-        <div className="tf-term" dir={dirOf(lang)}><T>{q.word.term}</T></div>
+        <div className="tf-term" dir={dirOf(lang)}><Term word={q.word} /></div>
         <div className="tf-eq">=</div>
         <div className={`tf-shown ${feedback === false && !q.truth ? 'struck' : ''}`}><T>{q.shown}</T></div>
         {feedback === false && !q.truth && <div className="tf-right"><T>{q.word.translations[0]}</T></div>}

@@ -1,5 +1,8 @@
-/** [term, translations ("/"-separated), example, example translation] */
-export type CourseEntry = [string, string, string, string]
+/**
+ * [term, translations ("/"-separated), example, example translation,
+ *  and – for languages in another script – the term's and the example's transliteration]
+ */
+export type CourseEntry = [string, string, string, string] | [string, string, string, string, string, string]
 
 /** Entries grouped by topic; the topic becomes the word's tag. */
 export type CourseWords = Record<string, CourseEntry[]>

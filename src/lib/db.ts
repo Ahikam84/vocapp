@@ -34,6 +34,9 @@ export interface Word extends Synced {
   altTerms?: string[]
   example?: string
   exampleTranslation?: string
+  /** How the word and its example read in the learner's script (Arabic courses: a Hebrew transliteration) */
+  reading?: string
+  exampleReading?: string
   /** Mnemonic / memory hint */
   hint?: string
   tags?: string[]

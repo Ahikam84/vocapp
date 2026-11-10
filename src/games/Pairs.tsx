@@ -1,7 +1,7 @@
 import { Timer } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { T } from '../components/common'
+import { T, Term } from '../components/common'
 import { normalize } from '../lib/answer'
 import type { Word } from '../lib/db'
 import { loadGameWords, logGameAnswer, MIN_GAME_WORDS, recordScore, shuffled } from '../lib/games'
@@ -164,7 +164,7 @@ function PairsRound({ pool, lang, onAgain }: { pool: Word[]; lang: string; onAga
         <div className="pairs-col">
           {board.terms.map((w, i) => (
             <button key={`${w.id}-${i}`} className={cls('term', i)} onClick={() => tap('term', i)}>
-              <T>{w.term}</T>
+              <Term word={w} />
             </button>
           ))}
         </div>

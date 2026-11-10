@@ -1,6 +1,6 @@
 import { Snail, Volume2 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ProgressBar, T } from '../components/common'
+import { ProgressBar, T, Term } from '../components/common'
 import type { Word } from '../lib/db'
 import { listenOptions, loadGameWords, logGameAnswer, MIN_GAME_WORDS, recordScore, shuffled } from '../lib/games'
 import { dirOf, t } from '../lib/i18n'
@@ -122,7 +122,7 @@ function ListenRound({ pool, lang, onAgain }: { pool: Word[]; lang: string; onAg
         <button className="btn secondary small" onClick={() => speak(word.term, lang, 0.55)} aria-label={t('לאט')}><Snail size={18} /> {t('לאט')}</button>
       </div>
       <div className={`listen-word ${chosen ? (ok ? 'ok' : 'bad') : ''}`} dir={dirOf(lang)}>
-        {chosen ? <T>{word.term}</T> : '?'}
+        {chosen ? <Term word={word} /> : '?'}
       </div>
       <div className="options">
         {options.map((o, i) => {
@@ -131,7 +131,7 @@ function ListenRound({ pool, lang, onAgain }: { pool: Word[]; lang: string; onAg
             <button key={o.id} className={`option ${state}`} onClick={() => choose(o)}>
               <span className="key">{i + 1}</span>
               <span className="grow"><T>{o.translations[0]}</T></span>
-              {chosen && o.id !== word.id && <small className="muted" dir={dirOf(lang)}><T>{o.term}</T></small>}
+              {chosen && o.id !== word.id && <small className="muted" dir={dirOf(lang)}><Term word={o} /></small>}
             </button>
           )
         })}

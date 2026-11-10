@@ -1,13 +1,13 @@
 import { Check, Volume2, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { checkAnswer, type AnswerResult } from '../lib/answer'
+import { acceptedTerms, type AnswerResult, checkAnswer } from '../lib/answer'
 import type { Word } from '../lib/db'
 import { shuffled } from '../lib/games'
 import { dirOf, t } from '../lib/i18n'
 import type { ItemResult, QuestionKind, TestQuestion } from '../lib/test'
 import { speak } from '../lib/tts'
 import { SPECIAL_CHARS, toHebrewKeys } from '../lib/useDeck'
-import { T } from './common'
+import { T, Term } from './common'
 import { HebrewKeyboard } from './Exercise'
 
 export const PROMPTS: Record<QuestionKind, string> = {
@@ -63,7 +63,7 @@ export function TestQuestionView(props: Props) {
       <div className="prompt-label">{t(PROMPTS[kind])}</div>
 
       {(kind === 'choice-meaning' || kind === 'type-meaning') && (
-        <div className="card prompt" dir={dirOf(langs.target)}><T className="term huge">{word.term}</T></div>
+        <div className="card prompt" dir={dirOf(langs.target)}><Term word={word} className="term huge" /></div>
       )}
       {(kind === 'choice-term' || kind === 'type-term') && (
         <div className="card prompt"><T className="term huge">{word.translations[0]}</T></div>
@@ -71,7 +71,7 @@ export function TestQuestionView(props: Props) {
       {(kind === 'listen' || kind === 'dictation') && (
         <div className="test-play">
           <button className="play-big" onClick={() => speak(word.term, langs.target)} aria-label={t('השמע שוב')}><Volume2 size={40} /></button>
-          {answered && <div className="term huge" dir={dirOf(langs.target)}><T>{word.term}</T></div>}
+          {answered && <div dir={dirOf(langs.target)}><Term word={word} className="term huge" /></div>}
         </div>
       )}
       {(kind === 'cloze' || kind === 'cloze-type') && q.cloze && (
@@ -81,6 +81,7 @@ export function TestQuestionView(props: Props) {
             <span className={`cloze-blank ${answered ? (result?.correct ? 'ok' : 'reveal') : ''}`}>{answered ? q.cloze.answer : '   '}</span>
             {q.cloze.after}
           </div>
+          {answered && word.exampleReading && <p className="reading center-text" dir="rtl">{word.exampleReading}</p>}
           {word.exampleTranslation && <p className="muted center-text"><T>{word.exampleTranslation}</T></p>}
         </>
       )}
@@ -89,7 +90,7 @@ export function TestQuestionView(props: Props) {
         <Choices options={q.options!} right={word} label={(w) => w.translations[0]} dir={dirOf(langs.source)} answered={result} onPick={(w) => one(w.id === word.id, w.translations[0])} />
       )}
       {kind === 'choice-term' && (
-        <Choices options={q.options!} right={word} label={(w) => w.term} dir={dirOf(langs.target)} answered={result} onPick={(w) => one(w.id === word.id, w.term)} />
+        <Choices options={q.options!} right={word} label={(w) => w.term} show={(w) => <Term word={w} />} dir={dirOf(langs.target)} answered={result} onPick={(w) => one(w.id === word.id, w.term)} />
       )}
       {kind === 'cloze' && (
         <Choices
@@ -105,9 +106,11 @@ export function TestQuestionView(props: Props) {
       {kind === 'match' && <Match pairs={q.pairs!} langs={langs} answered={answered} timeUp={timeUp} onAnswer={onAnswer} />}
 
       {kind === 'type-term' || kind === 'dictation' ? (
-        <Typing accepted={[word.term, ...(word.altTerms ?? [])]} lang={langs.target} learner answered={result} onAnswer={typed} />
+        <Typing accepted={acceptedTerms(word)} lang={langs.target} learner answered={result} onAnswer={typed} />
       ) : kind === 'cloze-type' ? (
-        <Typing accepted={[q.cloze!.answer]} lang={langs.target} learner answered={result} onAnswer={typed} />
+        // The blank is the word as the sentence has it; when that's the word itself, its other spellings
+        // (and transliteration) count too
+        <Typing accepted={q.cloze!.bare ? [q.cloze!.answer] : [q.cloze!.answer, ...acceptedTerms(word)]} lang={langs.target} learner answered={result} onAnswer={typed} />
       ) : kind === 'type-meaning' ? (
         <Typing accepted={word.translations} lang={langs.source} answered={result} onAnswer={typed} />
       ) : null}
@@ -119,6 +122,7 @@ function Choices<O extends Word | string>({
   options,
   right,
   label,
+  show,
   dir,
   answered,
   onPick,
@@ -126,6 +130,8 @@ function Choices<O extends Word | string>({
   options: O[]
   right: O
   label: (o: O) => string
+  /** How an option looks, when it's more than its label */
+  show?: (o: O) => React.ReactNode
   dir: 'rtl' | 'ltr'
   answered?: ItemResult
   onPick: (o: O) => void
@@ -147,7 +153,7 @@ function Choices<O extends Word | string>({
         return (
           <button key={key(o)} className={`option ${state}`} disabled={!!answered} onClick={() => onPick(o)} dir={dir}>
             <span className="key">{i + 1}</span>
-            <T>{label(o)}</T>
+            {show ? show(o) : <T>{label(o)}</T>}
           </button>
         )
       })}
@@ -170,7 +176,7 @@ function TrueFalseQ({ q, langs, answered, onAnswer }: { q: TestQuestion; langs: 
   return (
     <>
       <div className={`card tf-card ${answered ? (answered.correct ? 'ok' : 'bad') : ''}`}>
-        <div className="tf-term" dir={dirOf(langs.target)}><T>{q.word.term}</T></div>
+        <div className="tf-term" dir={dirOf(langs.target)}><Term word={q.word} /></div>
         <div className="tf-eq">=</div>
         <div className={`tf-shown ${struck ? 'struck' : ''}`}><T>{tf.shown}</T></div>
         {struck && <div className="tf-right"><T>{q.word.translations[0]}</T></div>}
@@ -224,7 +230,7 @@ function Match({ pairs, langs, answered, timeUp, onAnswer }: { pairs: Word[]; la
     <div className="match-grid">
       <div>
         {terms.map((w) => (
-          <button key={w.id} className={cls('term', w.id)} onClick={() => tap('term', w.id)} dir={dirOf(langs.target)}><T>{w.term}</T></button>
+          <button key={w.id} className={cls('term', w.id)} onClick={() => tap('term', w.id)} dir={dirOf(langs.target)}><Term word={w} /></button>
         ))}
       </div>
       <div>
