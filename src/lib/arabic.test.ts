@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { COURSES } from '../courses'
-import { acceptedTerms, checkAnswer } from './answer'
+import { acceptedTerms, checkAnswer, normalize } from './answer'
 import { courseToWords, courseWordId } from './courses'
 
 describe('Arabic courses', () => {
@@ -23,14 +23,28 @@ describe('Arabic courses', () => {
     expect(checkAnswer('חלאצ', acceptedTerms(kh)).result).toBe('correct')
   })
 
-  it('gives every word in the course a transliteration of the word and its example', async () => {
-    const course = COURSES.find((c) => c.id === 'ar-lev-b1')!
-    const words = courseToWords(course, await course.load())
-    expect(words.length).toBeGreaterThan(200)
-    for (const w of words) {
-      expect(w.reading, w.term).toMatch(/[א-ת]/)
-      expect(w.exampleReading, w.term).toMatch(/[א-ת]/)
-      expect(w.term, w.term).toMatch(/[ء-ي]/)
-    }
+  const arabic = COURSES.filter((c) => c.targetLang === 'ar')
+
+  for (const course of arabic)
+    it(`${course.id}: every word has a transliteration of the word and its example`, async () => {
+      const words = courseToWords(course, await course.load())
+      expect(words.length).toBeGreaterThan(200)
+      for (const w of words) {
+        expect(w.reading, w.term).toMatch(/[א-ת]/)
+        expect(w.exampleReading, w.term).toMatch(/[א-ת]/)
+        expect(w.term, w.term).toMatch(/[ء-ي]/)
+      }
+    })
+
+  it('does not repeat a word across levels, even spelled with or without shadda', async () => {
+    const seen = new Map<string, string>()
+    const repeats: string[] = []
+    for (const course of arabic)
+      for (const w of courseToWords(course, await course.load())) {
+        const key = normalize(w.term)
+        if (seen.has(key)) repeats.push(`${w.term} (${seen.get(key)} & ${course.id})`)
+        else seen.set(key, course.id)
+      }
+    expect(repeats).toEqual([])
   })
 })
