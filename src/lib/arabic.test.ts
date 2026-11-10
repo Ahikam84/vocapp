@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { COURSES } from '../courses'
 import { acceptedTerms, checkAnswer, normalize } from './answer'
+import { audioKey } from './audioKey'
 import { courseToWords, courseWordId } from './courses'
 
 describe('Arabic courses', () => {
@@ -46,5 +47,20 @@ describe('Arabic courses', () => {
         else seen.set(key, course.id)
       }
     expect(repeats).toEqual([])
+  })
+})
+
+describe('recorded Arabic audio', () => {
+  it('gives every course text its own file name', async () => {
+    const texts = new Set<string>()
+    for (const course of COURSES.filter((c) => c.targetLang === 'ar'))
+      for (const w of courseToWords(course, await course.load())) {
+        texts.add(w.term.trim())
+        if (w.example) texts.add(w.example.trim())
+      }
+    const keys = new Set([...texts].map(audioKey))
+    expect(keys.size).toBe(texts.size)
+    expect(audioKey(' هلّأ ')).toBe(audioKey('هلّأ'))
+    expect(audioKey('هلّأ')).toMatch(/^[0-9a-z]+$/)
   })
 })

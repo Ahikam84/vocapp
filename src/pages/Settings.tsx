@@ -8,7 +8,7 @@ import { langName, t, type UiLang } from '../lib/i18n'
 import { setSetting, useSettings } from '../lib/settings'
 import { SyncSection } from '../components/SyncSection'
 import { APP_VERSION } from '../lib/pwa'
-import { setTtsPreferences, speak, useVoices } from '../lib/tts'
+import { setTtsPreferences, speak, useRecordedVoice, useVoices } from '../lib/tts'
 
 const SAMPLES: Record<string, string> = {
   es: 'Hola, ¿qué tal? Me gusta aprender español.',
@@ -156,6 +156,7 @@ export default function SettingsPage({ deck }: { deck: Deck | null }) {
 function VoiceSettings({ lang }: { lang: string }) {
   const settings = useSettings()
   const voices = useVoices(lang)
+  const recordedVoice = useRecordedVoice(lang)
   if (!settings) return null
   const sample = SAMPLES[lang] ?? 'Hello'
 
@@ -176,6 +177,11 @@ function VoiceSettings({ lang }: { lang: string }) {
   return (
     <>
       <h2>{t('הקראה ({lang})', { lang: langName(lang) })}</h2>
+      {recordedVoice && (
+        <p className="tip">
+          <Volume2 size={16} /> {t('המילים והמשפטים של הקורסים מוקלטים מראש בהגייה מדוברת ({voice}). הקול שנבחר כאן משמש רק למילים שהוספת בעצמך.', { voice: recordedVoice.replace(/^ar-|Neural$/g, '') })}
+        </p>
+      )}
       {voices.length === 0 ? (
         <p className="muted">{t('לא נמצאו קולות לשפה הזו בדפדפן. נסה את Edge או Chrome, או טלפון.')}</p>
       ) : (

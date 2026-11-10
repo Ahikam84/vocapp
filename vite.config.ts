@@ -26,7 +26,22 @@ export default defineConfig({
       registerType: 'prompt',
       includeAssets: ['icon.svg'],
       // Precache the font and the mascot images too, so the app looks the same offline.
-      workbox: { globPatterns: ['**/*.{js,css,html,svg,woff2,webp}'] },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,svg,woff2,webp}'],
+        // Recorded pronunciations: too many to precache, so each is kept once it has been played.
+        runtimeCaching: [
+          {
+            urlPattern: /\/audio\/.+\.mp3$/,
+            handler: 'CacheFirst',
+            options: { cacheName: 'audio', expiration: { maxEntries: 4000 }, cacheableResponse: { statuses: [200] } },
+          },
+          {
+            urlPattern: /\/audio\/.+\/index\.json$/,
+            handler: 'StaleWhileRevalidate',
+            options: { cacheName: 'audio-index', cacheableResponse: { statuses: [200] } },
+          },
+        ],
+      },
       manifest: {
         name: 'VocApp – לימוד אוצר מילים',
         short_name: 'VocApp',

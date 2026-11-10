@@ -432,6 +432,8 @@ export const EN: Record<string, string> = {
   'אוטומטי – {name}': 'Automatic – {name}',
   'השמעה': 'Play',
   'מהירות: {n}': 'Speed: {n}',
+  'המילים והמשפטים של הקורסים מוקלטים מראש בהגייה מדוברת ({voice}). הקול שנבחר כאן משמש רק למילים שהוספת בעצמך.':
+    'Course words and sentences are pre-recorded in spoken dialect ({voice}). The voice chosen here is only used for words you added yourself.',
   'הקולות כאן בסיסיים. ב-Microsoft Edge יש קולות "Natural" טבעיים יותר, וב-Chrome יש קול של Google.':
     'These voices are basic. Microsoft Edge has more natural "Natural" voices, and Chrome has a Google voice.',
   'גיבוי': 'Backup',

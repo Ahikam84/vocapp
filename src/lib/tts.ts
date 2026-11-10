@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
+import { audioKey, RECORDED_LANGS } from './audioKey'
 
 const LOCALES: Record<string, string> = {
   es: 'es-ES', ca: 'ca-ES', he: 'he-IL', en: 'en-US', fr: 'fr-FR', it: 'it-IT', de: 'de-DE', pt: 'pt-PT', ar: 'ar-SA',
 }
 
 export function ttsAvailable(lang: string): boolean {
+  if (loaded[lang]?.keys.size) return true
   if (typeof speechSynthesis === 'undefined') return false
   const voices = speechSynthesis.getVoices()
   // Voices load asynchronously; until they arrive assume the language is supported.
@@ -55,7 +57,84 @@ export function useVoices(lang: string): SpeechSynthesisVoice[] {
 let current: SpeechSynthesisUtterance | null = null
 let timer: ReturnType<typeof setTimeout> | undefined
 
+// --- Pre-recorded clips (scripts/arabic-audio.ts) ---------------------------------------
+// For the Arabic courses the device voice would read Modern Standard Arabic, so the course
+// texts come with recordings in a Levantine voice. Anything without one is still read by the device.
+
+interface RecordingIndex {
+  voice?: string
+  keys: Set<string>
+}
+const recordings: Record<string, Promise<RecordingIndex>> = {}
+const loaded: Record<string, RecordingIndex> = {}
+
+function recordingIndex(lang: string): Promise<RecordingIndex> {
+  if (!RECORDED_LANGS.includes(lang) || typeof fetch === 'undefined') return Promise.resolve({ keys: new Set() })
+  return (recordings[lang] ??= fetch(`audio/${lang}/index.json`)
+    .then((r) => (r.ok ? r.json() : { keys: [] }))
+    .then((index: { voice?: string; keys: string[] }) => (loaded[lang] = { voice: index.voice, keys: new Set(index.keys) }))
+    .catch(() => {
+      delete recordings[lang] // try again next time, e.g. once back online
+      return { keys: new Set<string>() }
+    }))
+}
+for (const lang of RECORDED_LANGS) void recordingIndex(lang)
+
+/** The voice the course recordings were made with, if this language has any. */
+export function useRecordedVoice(lang: string): string | undefined {
+  const [voice, setVoice] = useState(() => (loaded[lang]?.keys.size ? loaded[lang].voice : undefined))
+  useEffect(() => {
+    let live = true
+    void recordingIndex(lang).then((index) => live && setVoice(index.keys.size ? index.voice : undefined))
+    return () => {
+      live = false
+    }
+  }, [lang])
+  return voice
+}
+
+const clipUrls = new Map<string, string>()
+let audio: HTMLAudioElement | null = null
+let request = 0
+
+async function clipUrl(lang: string, key: string): Promise<string> {
+  const cached = clipUrls.get(key)
+  if (cached) return cached
+  // Fetched whole (not streamed) so the service worker can keep it for offline use.
+  const res = await fetch(`audio/${lang}/${key}.mp3`)
+  if (!res.ok) throw new Error(`audio ${res.status}`)
+  const url = URL.createObjectURL(await res.blob())
+  clipUrls.set(key, url)
+  return url
+}
+
 export function speak(text: string, lang: string, rate = defaultRate) {
+  const id = ++request
+  audio?.pause()
+  if (!RECORDED_LANGS.includes(lang)) return speakWithDevice(text, lang, rate)
+  const key = audioKey(text)
+  void recordingIndex(lang)
+    .then(async ({ keys }) => {
+      if (id !== request) return // another word was asked for meanwhile
+      if (!keys.has(key)) return speakWithDevice(text, lang, rate)
+      const url = await clipUrl(lang, key)
+      if (id !== request) return
+      clearTimeout(timer)
+      if (typeof speechSynthesis !== 'undefined' && (speechSynthesis.speaking || speechSynthesis.pending)) speechSynthesis.cancel()
+      audio ??= new Audio()
+      audio.src = url
+      audio.playbackRate = rate
+      audio.preservesPitch = true
+      await audio.play()
+    })
+    .catch((e) => {
+      if (id !== request || (e instanceof DOMException && e.name === 'AbortError')) return
+      console.warn('Recorded audio failed, using the device voice:', e)
+      speakWithDevice(text, lang, rate)
+    })
+}
+
+function speakWithDevice(text: string, lang: string, rate: number) {
   if (typeof speechSynthesis === 'undefined') return
   const u = new SpeechSynthesisUtterance(text)
   u.lang = LOCALES[lang] ?? lang
