@@ -20,6 +20,8 @@ export interface Medal {
   value: number
   target: number
   earned: boolean
+  /** What's left for this medal, or – on the highest earned one – for the next tier */
+  hint?: string
 }
 
 export interface MedalData {
@@ -33,29 +35,40 @@ export interface MedalData {
   now?: number
 }
 
+/** Every ladder has four steps: bronze → silver → gold → diamond. */
 const TIER_ORDER: Tier[] = ['bronze', 'silver', 'gold', 'diamond']
-/** Spread a ladder of thresholds over bronze → diamond. */
-function tierFor(i: number, count: number): Tier {
-  return TIER_ORDER[Math.min(3, Math.floor((i * 4) / count))]
+type Steps = [number, number, number, number]
+
+function tierMedalName(tier: Tier): string {
+  return tier === 'bronze' ? t('מדליית ארד') : tier === 'silver' ? t('מדליית כסף') : tier === 'gold' ? t('מדליית זהב') : t('מדליית יהלום')
 }
 
+/**
+ * `value` decides what's earned; `current` is where the learner stands now, for
+ * "what's left" (they differ for streaks: medals go by the record, the next one needs the current streak).
+ */
 function ladder(
   id: string,
   icon: MedalIcon,
-  steps: number[],
+  steps: Steps,
   value: number,
   title: (n: number) => string,
   description: (n: number) => string,
+  left: (n: number, medal: string) => string,
+  current = value,
 ): Medal[] {
+  const more = (i: number) => left(Math.max(1, steps[i] - current), tierMedalName(TIER_ORDER[i]))
+  const top = steps.filter((n) => value >= n).length - 1 // index of the highest earned step, -1 if none
   return steps.map((n, i) => ({
     id: `${id}-${n}`,
     icon,
-    tier: tierFor(i, steps.length),
+    tier: TIER_ORDER[i],
     title: title(n),
     description: description(n),
     value: Math.min(value, n),
     target: n,
     earned: value >= n,
+    hint: i > top ? more(i) : i === top ? (steps[i + 1] ? more(i + 1) : t('הגעת לדרגה הגבוהה ביותר!')) : undefined,
   }))
 }
 
@@ -101,17 +114,23 @@ export function evaluateMedals(d: MedalData): Medal[] {
   const languages = new Set(learned.map((p) => langOf.get(p.deckId)).filter(Boolean)).size
 
   return [
-    ...ladder('learned', 'sprout', [10, 50, 100, 250, 500, 1000], learned.length,
-      (n) => t('{n} מילים', { n }), (n) => t('למדת {n} מילים חדשות', { n })),
+    ...ladder('learned', 'sprout', [10, 100, 500, 1000], learned.length,
+      (n) => t('{n} מילים', { n }), (n) => t('למדת {n} מילים חדשות', { n }),
+      (n, medal) => (n === 1 ? t('עוד מילה אחת ל{medal}', { medal }) : t('עוד {n} מילים ל{medal}', { n, medal }))),
     ...ladder('longterm', 'brain', [10, 50, 200, 500], longTerm,
-      (n) => t('זיכרון ארוך · {n}', { n }), (n) => t('{n} מילים הגיעו לזיכרון ארוך', { n })),
+      (n) => t('זיכרון ארוך · {n}', { n }), (n) => t('{n} מילים הגיעו לזיכרון ארוך', { n }),
+      (n, medal) => (n === 1 ? t('עוד מילה אחת בזיכרון ארוך ל{medal}', { medal }) : t('עוד {n} מילים בזיכרון ארוך ל{medal}', { n, medal }))),
     ...ladder('streak', 'flame', [3, 7, 30, 100], streak.best,
-      (n) => t('{n} ימים ברצף', { n }), (n) => t('עמדת ביעד היומי {n} ימים ברצף', { n })),
+      (n) => t('{n} ימים ברצף', { n }), (n) => t('עמדת ביעד היומי {n} ימים ברצף', { n }),
+      (n, medal) => (n === 1 ? t('עוד יום אחד ברצף ל{medal}', { medal }) : t('עוד {n} ימים ברצף ל{medal}', { n, medal })),
+      streak.days),
     ...ladder('goal', 'target', [1, 10, 50, 100], streak.metDays,
       (n) => (n === 1 ? t('יעד ראשון') : t('{n} ימי יעד', { n })),
-      (n) => (n === 1 ? t('עמדת ביעד היומי בפעם הראשונה') : t('עמדת ביעד היומי ב-{n} ימים', { n }))),
-    ...ladder('answers', 'check', [100, 1000, 5000], d.reviews.length,
-      (n) => t('{n} תשובות', { n }), (n) => t('ענית על {n} שאלות', { n })),
+      (n) => (n === 1 ? t('עמדת ביעד היומי בפעם הראשונה') : t('עמדת ביעד היומי ב-{n} ימים', { n })),
+      (n, medal) => (n === 1 ? t('עוד יום יעד אחד ל{medal}', { medal }) : t('עוד {n} ימי יעד ל{medal}', { n, medal }))),
+    ...ladder('answers', 'check', [100, 1000, 5000, 10000], d.reviews.length,
+      (n) => t('{n} תשובות', { n }), (n) => t('ענית על {n} שאלות', { n }),
+      (n, medal) => (n === 1 ? t('עוד תשובה אחת ל{medal}', { medal }) : t('עוד {n} תשובות ל{medal}', { n, medal }))),
     single('perfect-day', 'sparkles', perfectDay, t('יום מושלם'), t('20 תשובות או יותר ביום אחד, בלי אף טעות')),
     single('night-owl', 'moon', nightOwl, t('ינשוף לילה'), t('תרגלת אחרי 23:00')),
     single('early-bird', 'sunrise', earlyBird, t('ציפור מוקדמת'), t('תרגלת לפני 7:00 בבוקר')),

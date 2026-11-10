@@ -14,6 +14,16 @@ function base(over: Partial<MedalData> = {}): MedalData {
 const earned = (d: MedalData) => new Set(evaluateMedals(d).filter((m) => m.earned).map((m) => m.id))
 
 describe('medals', () => {
+  it('gives every ladder bronze, silver, gold and diamond', () => {
+    const tiers = new Map<string, string[]>()
+    for (const m of evaluateMedals(base())) {
+      if (m.tier === 'special') continue
+      const group = m.id.split('-')[0]
+      tiers.set(group, [...(tiers.get(group) ?? []), m.tier])
+    }
+    for (const [group, list] of tiers) expect(list, group).toEqual(['bronze', 'silver', 'gold', 'diamond'])
+  })
+
   it('starts with nothing earned', () => {
     const medals = evaluateMedals(base())
     expect(medals.length).toBeGreaterThan(20)
@@ -25,10 +35,20 @@ describe('medals', () => {
     const words = [{ id: 'w0', deckId: 'd', known: true }]
     const got = earned(base({ progress, words }))
     expect(got.has('learned-10')).toBe(true) // 11 learned, one is "known"
-    expect(got.has('learned-50')).toBe(false)
+    expect(got.has('learned-100')).toBe(false)
     expect(got.has('longterm-10')).toBe(false) // 9 long-term after leaving out the known one
     const medal = evaluateMedals(base({ progress, words })).find((m) => m.id === 'longterm-10')!
     expect([medal.value, medal.target]).toEqual([9, 10])
+  })
+
+  it('says what is left for the next tier', () => {
+    const progress = Array.from({ length: 40 }, (_, i) => ({ wordId: `w${i}`, deckId: 'd', learnedAt: noon(1), card: card(1) }))
+    const medals = evaluateMedals(base({ progress }))
+    const bronze = medals.find((m) => m.id === 'learned-10')!
+    const silver = medals.find((m) => m.id === 'learned-100')!
+    expect(bronze.hint).toContain('60') // 40 learned: 60 more for silver
+    expect(silver.hint).toContain('60')
+    expect(medals.find((m) => m.id === 'learned-500')!.hint).toContain('460')
   })
 
   it('awards streak and goal-day medals from days the goal was met', () => {

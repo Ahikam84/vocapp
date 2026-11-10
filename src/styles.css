@@ -238,6 +238,8 @@ input[type='range'] { width: 160px; padding: 0; background: none; accent-color: 
 .medal-grid li.locked { padding-bottom: 26px; }
 .medals-link { display: flex; align-items: center; gap: 10px; padding: 10px 14px; margin-top: 12px; background: var(--surface); border-radius: var(--radius); color: var(--text); text-decoration: none; }
 .medals-row { display: inline-flex; gap: 2px; }
+.medals-next { display: block; font-size: 0.8rem; }
+.medal-next { margin-top: 4px; padding: 3px 8px; border-radius: 999px; background: var(--primary-soft); color: var(--primary); font-size: 0.75rem; font-weight: 600; }
 .new-medal { text-align: center; }
 .new-medal-badges { display: flex; justify-content: center; gap: 12px; margin: 4px 0 10px; }
 .new-medal-badges .medal { animation: medal-in 0.7s cubic-bezier(.3,1.6,.5,1) both; }

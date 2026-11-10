@@ -21,6 +21,7 @@ export default function Achievements() {
               <MedalBadge medal={m} />
               <b>{m.title}</b>
               <span className="muted">{m.description}</span>
+              {m.hint && <span className="medal-next">{m.hint}</span>}
             </li>
           ))}
         </ul>

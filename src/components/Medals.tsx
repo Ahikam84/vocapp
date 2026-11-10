@@ -45,12 +45,19 @@ export function MedalsLink() {
   const medals = useMedals()
   if (!medals) return null
   const earned = medals.filter((m) => m.earned)
+  // The closest medal still to win, as a nudge
+  const next = medals
+    .filter((m) => !m.earned && m.tier !== 'special' && m.hint)
+    .sort((a, b) => b.value / b.target - a.value / a.target)[0]
   return (
     <Link to="/medals" className="medals-link">
       <span className="medals-row">
         {earned.slice(-3).map((m) => <MedalBadge key={m.id} medal={m} size={28} />)}
       </span>
-      <span className="grow">{t('הישגים')}</span>
+      <span className="grow">
+        {t('הישגים')}
+        {next && <small className="muted medals-next">{next.hint}</small>}
+      </span>
       <b><bdi>{earned.length} / {medals.length}</bdi></b>
     </Link>
   )
