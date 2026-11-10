@@ -585,6 +585,11 @@ input[type='range'] { width: 160px; padding: 0; background: none; accent-color: 
 .lang-list a { display: flex; align-items: center; gap: 12px; padding: 16px 4px; color: var(--text); border-bottom: 1px solid var(--line); }
 .lang-list a:hover { background: var(--surface); border-radius: var(--radius-sm); }
 .lang-list b { display: block; font-size: 1.05rem; }
+.lang-group { background: var(--surface); border-radius: var(--radius); padding: 4px 14px; margin-bottom: 12px; }
+.lang-group h3 { font-size: 0.95rem; font-weight: 700; color: var(--primary); margin: 12px 0 2px; }
+.lang-group .lang-list a { padding: 12px 4px; }
+.lang-group .lang-list li:last-child a { border-bottom: none; }
+.lang-group .lang-list b { font-size: 1rem; font-weight: 600; }
 .back { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); font-size: 0.9rem; margin-bottom: 4px; }
 :root[dir='rtl'] .flip-back { transform: scaleX(-1); }
 .course-list li.current { background: var(--primary-soft); }

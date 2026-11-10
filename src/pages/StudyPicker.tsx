@@ -1,6 +1,8 @@
 import { ChevronLeft } from 'lucide-react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Link, useNavigate } from 'react-router-dom'
+import { COURSES } from '../courses'
+import { courseDeckId } from '../lib/courses'
 import { db, type Deck } from '../lib/db'
 import { langName, t } from '../lib/i18n'
 import { setSetting } from '../lib/settings'
@@ -13,7 +15,7 @@ import type { Study } from '../lib/useDeck'
 export default function StudyPicker({ study }: { study: Study }) {
   const navigate = useNavigate()
   const data = useLiveQuery(async () => {
-    const decks = (await db.decks.toArray()).sort((a, b) => a.createdAt - b.createdAt)
+    const decks = (await db.decks.toArray()).sort((a, b) => courseOrder(a) - courseOrder(b) || a.createdAt - b.createdAt)
     const counts = Object.fromEntries(
       await Promise.all(decks.map(async (d) => [d.id, await db.words.where('deckId').equals(d.id).count()] as const)),
     )
@@ -23,7 +25,9 @@ export default function StudyPicker({ study }: { study: Study }) {
 
   const lang = study.deck.targetLang
   const sameLang = data.decks.filter((d) => d.targetLang === lang)
-  const others = data.decks.filter((d) => d.targetLang !== lang)
+  // The other languages, each under its own heading.
+  const others = new Map<string, Deck[]>()
+  for (const d of data.decks) if (d.targetLang !== lang) others.set(d.targetLang, [...(others.get(d.targetLang) ?? []), d])
   const selected = new Set(study.deckIds)
 
   async function apply(ids: string[]) {
@@ -72,26 +76,37 @@ export default function StudyPicker({ study }: { study: Study }) {
         )}
       </div>
 
-      {others.length > 0 && (
+      {others.size > 0 && (
         <>
           <h2>{t('בשפות אחרות')}</h2>
-          <ul className="lang-list">
-            {others.map((d) => (
-              <li key={d.id}>
-                <a href="#" onClick={(e) => { e.preventDefault(); only(d) }}>
-                  <span className="grow">
-                    <b dir="auto">{d.name}</b>
-                    <span className="muted">{langName(d.targetLang)} · {t('{n} מילים', { n: data.counts[d.id] ?? 0 })}</span>
-                  </span>
-                  <ChevronLeft className="flip" size={20} />
-                </a>
-              </li>
-            ))}
-          </ul>
+          {[...others].map(([code, decks]) => (
+            <section key={code} className="lang-group">
+              <h3>{langName(code)}</h3>
+              <ul className="lang-list">
+                {decks.map((d) => (
+                  <li key={d.id}>
+                    <a href="#" onClick={(e) => { e.preventDefault(); only(d) }}>
+                      <span className="grow">
+                        <b dir="auto">{d.name}</b>
+                        <span className="muted">{t('{n} מילים', { n: data.counts[d.id] ?? 0 })}</span>
+                      </span>
+                      <ChevronLeft className="flip" size={20} />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
         </>
       )}
 
       <p className="muted center-text"><Link to="/courses">{t('קורסים')}</Link></p>
     </div>
   )
+}
+
+/** Ready-made courses in their level order (beginners first); the user's own decks after them. */
+function courseOrder(d: Deck) {
+  const i = COURSES.findIndex((c) => courseDeckId(c.id) === d.id)
+  return i < 0 ? COURSES.length : i
 }
