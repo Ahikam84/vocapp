@@ -22,7 +22,7 @@ const GAMES: GameInfo[] = [
   { id: 'pairs', icon: Link2, title: () => t('זוגות נגד השעון'), text: () => t('חברו כמה שיותר מילים לתרגום שלהן בדקה אחת') },
   { id: 'falling', icon: CloudRain, title: () => t('מילים נופלות'), text: () => t('כתבו את המילה לפני שהתרגום שלה נוחת') },
   { id: 'cloze', icon: TextCursorInput, title: () => t('השלם את המשפט'), text: () => t('בחרו את המילה שחסרה במשפט') },
-  { id: 'plant', icon: Sprout, title: () => t('הציל את הצמח'), text: () => t('נחשו את המילה אות אחר אות, לפני שהצמח נובל') },
+  { id: 'plant', icon: Sprout, title: () => t('הצילו את הצמח'), text: () => t('נחשו את המילה אות אחר אות, לפני שהצמח נובל') },
   { id: 'listen', icon: Headphones, title: () => t('האזנה'), text: () => t('שמעו מילה, בלי לראות אותה, ובחרו מה היא אומרת') },
   { id: 'truefalse', icon: CircleCheckBig, title: () => t('נכון או לא נכון'), text: () => t('האם זה התרגום הנכון? כמה שיותר בדקה אחת') },
   { id: 'memory', icon: LayoutGrid, title: () => t('זיכרון'), text: () => t('הפכו קלפים ומצאו כל מילה והתרגום שלה') },

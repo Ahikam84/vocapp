@@ -121,7 +121,7 @@ export const EN: Record<string, string> = {
   'שייכת לנושא': 'belongs to',
   'השלם את המשפט': 'Complete the sentence',
   'בחרו את המילה שחסרה במשפט': 'Pick the word missing from the sentence',
-  'הציל את הצמח': 'Save the plant',
+  'הצילו את הצמח': 'Save the plant',
   'נחשו את המילה אות אחר אות, לפני שהצמח נובל': 'Guess the word letter by letter before the plant wilts',
   'el או la?': 'el or la?',
   'בחרו את ה-article הנכון לכל מילה, בדקה אחת': 'Pick the right article for each word, in one minute',
