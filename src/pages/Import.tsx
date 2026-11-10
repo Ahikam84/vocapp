@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { CourseSelect, T } from '../components/common'
 import { db, newId } from '../lib/db'
 import { normalize } from '../lib/answer'
@@ -16,7 +16,9 @@ const SAMPLES: Record<string, string> = {
 export default function Import({ study }: { study: Study }) {
   const { deck } = study
   const navigate = useNavigate()
-  const [targetDeckId, setTargetDeckId] = useState(deck.id)
+  // Arriving right after creating a course: import into it (the study may not have switched yet).
+  const createdDeckId = (useLocation().state as { createdDeckId?: string } | null)?.createdDeckId
+  const [targetDeckId, setTargetDeckId] = useState(createdDeckId ?? deck.id)
   const [text, setText] = useState('')
   const [skipped, setSkipped] = useState<number | null>(null)
   const parsed = useMemo(() => parseWordList(text, deck.targetLang), [text, deck.targetLang])
@@ -42,6 +44,12 @@ export default function Import({ study }: { study: Study }) {
 
   return (
     <div className="page form">
+      {createdDeckId && (
+        <div className="toast">
+          <span className="grow">{t('הקורס נוצר! עכשיו מוסיפים לו מילים: מדביקים כאן רשימה, או מוסיפים אותן אחת-אחת.')}</span>
+          <Link className="btn secondary small" to="/words/new">{t('הוספת מילה')}</Link>
+        </div>
+      )}
       <h1>{t('ייבוא רשימת מילים')}</h1>
       <p className="muted">
         {t('שורה לכל מילה:')} <code>{t('מילה - תרגום')}</code>.{' '}

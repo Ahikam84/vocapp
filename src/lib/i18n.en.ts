@@ -39,6 +39,7 @@ export const EN: Record<string, string> = {
   'הבנתי, הלאה': 'Got it, next',
   'מחק': 'Delete',
   'רמז': 'Hint',
+  'הקורס נוצר! עכשיו מוסיפים לו מילים: מדביקים כאן רשימה, או מוסיפים אותן אחת-אחת.': 'Course created! Now add words to it: paste a list here, or add them one at a time.',
   'עברת את מכסת המילים החדשות להיום': "You've passed today's new-word limit",
   'הרבה מילים חדשות ביום אחד אומרות הרבה חזרות בימים הבאים. אפשר להמשיך בכל זאת, או לחזק את מה שכבר למדת.': 'Lots of new words in one day mean lots of reviews in the days ahead. You can keep going anyway, or strengthen what you already know.',
   'ללמוד עוד מילים': 'Learn more words',

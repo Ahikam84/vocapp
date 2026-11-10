@@ -66,6 +66,11 @@ function LanguageCourses({ lang, current }: { lang: string; current: Deck | null
     navigate('/')
   }
 
+  async function created(deckId: string) {
+    await setSetting('currentDeckId', deckId)
+    navigate('/import', { state: { createdDeckId: deckId } })
+  }
+
   const ready = COURSES.filter((c) => c.targetLang === lang)
   return (
     <div className="page form">
@@ -97,7 +102,7 @@ function LanguageCourses({ lang, current }: { lang: string; current: Deck | null
       )}
 
       <JoinByCode />
-      <NewCourse lang={lang} onCreated={choose} />
+      <NewCourse lang={lang} onCreated={created} />
     </div>
   )
 }
