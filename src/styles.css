@@ -163,6 +163,8 @@ input[type='range'] { width: 160px; padding: 0; background: none; accent-color: 
 .chips { display: flex; gap: 6px; margin-bottom: 16px; overflow-x: auto; scrollbar-width: none; }
 .chip { border: 0; background: var(--surface); color: var(--text); border-radius: 99px; padding: 6px 14px; font: inherit; font-size: 0.9rem; cursor: pointer; white-space: nowrap; }
 .chip.active { background: var(--text); color: var(--bg); }
+.chips.wrap { flex-wrap: wrap; overflow: visible; margin: 10px 0 0; }
+.course-langs { background: var(--surface); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 12px; }
 .word-list { list-style: none; padding: 0; margin: 0; }
 .word-list li {
   display: flex; align-items: center; gap: 14px; padding: 12px 4px; cursor: pointer;

@@ -2,7 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from './db'
 import type { GoalType } from './goals'
 import type { Theme } from './theme'
-import type { UiLang } from './i18n'
+import { uiLang, type UiLang } from './i18n'
 
 export interface Settings {
   wordsPerSession: number
@@ -27,6 +27,8 @@ export interface Settings {
   medalsSeen: string[] | null
   /** Best score per game on this device */
   gameBest: Record<string, number>
+  /** Show ready-made courses translated into these languages; null = the interface language */
+  courseLangs: string[] | null
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -45,6 +47,7 @@ export const DEFAULT_SETTINGS: Settings = {
   theme: 'auto',
   medalsSeen: null,
   gameBest: {},
+  courseLangs: null,
 }
 
 export async function getSettings(): Promise<Settings> {
@@ -59,4 +62,9 @@ export async function setSetting<K extends keyof Settings>(key: K, value: Settin
 
 export function useSettings(): Settings | undefined {
   return useLiveQuery(getSettings)
+}
+
+/** Languages whose ready-made courses are shown: the user's choice, or the interface language. */
+export function courseLanguages(settings: Settings): string[] {
+  return settings.courseLangs?.length ? settings.courseLangs : [uiLang()]
 }

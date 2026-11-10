@@ -7,7 +7,7 @@ import type { CourseInfo } from '../courses/types'
 import { addCourse, courseDeckId } from '../lib/courses'
 import { db, deleteDeck, newId, type Deck } from '../lib/db'
 import { LEARNABLE, langName, t, uiLang } from '../lib/i18n'
-import { setSetting } from '../lib/settings'
+import { courseLanguages, setSetting, useSettings } from '../lib/settings'
 import { fetchSharedCourse, joinSharedCourse, publishDeck, shareLink } from '../lib/sharing'
 
 /** Step 1: pick a language. Step 2 (/courses/:lang): that language's courses. */
@@ -18,7 +18,9 @@ export default function Courses({ deck }: { deck: Deck | null }) {
 
 function LanguagePicker({ hasCourse }: { hasCourse: boolean }) {
   const decks = useLiveQuery(() => db.decks.toArray())
-  if (!decks) return null
+  const settings = useSettings()
+  if (!decks || !settings) return null
+  const shown = courseLanguages(settings)
   const mine = (lang: string) => decks.filter((d) => d.targetLang === lang).length
   // Languages the user already studies come first.
   const langs = [...LEARNABLE].sort((a, b) => Number(mine(b) > 0) - Number(mine(a) > 0))
@@ -27,10 +29,11 @@ function LanguagePicker({ hasCourse }: { hasCourse: boolean }) {
     <div className="page">
       <h1>{hasCourse ? t('קורסים') : t('מה אתה רוצה ללמוד?')}</h1>
       {!hasCourse && <p className="muted">{t('בחר שפה, ואחר כך קורס מוכן, קורס שקיבלת ממורה, או קורס חדש משלך.')}</p>}
+      <CourseLanguages shown={shown} />
       <ul className="lang-list">
         {langs.map((code) => {
           const count = mine(code)
-          const ready = COURSES.filter((c) => c.targetLang === code).length
+          const ready = COURSES.filter((c) => c.targetLang === code && shown.includes(c.sourceLang)).length
           return (
             <li key={code}>
               <Link to={`/courses/${code}`}>
@@ -50,8 +53,42 @@ function LanguagePicker({ hasCourse }: { hasCourse: boolean }) {
   )
 }
 
+/**
+ * Which translation languages' ready-made courses to show – the interface language by default.
+ * Only offered when courses exist in more than one, so a Hebrew speaker with Hebrew courses sees nothing extra.
+ */
+function CourseLanguages({ shown }: { shown: string[] }) {
+  const [open, setOpen] = useState(false)
+  const options = [...new Set([uiLang(), ...COURSES.map((c) => c.sourceLang), ...shown])]
+  if (options.length < 2) return null
+
+  function toggle(code: string) {
+    const next = shown.includes(code) ? shown.filter((c) => c !== code) : [...shown, code]
+    if (next.length) setSetting('courseLangs', next)
+  }
+
+  return (
+    <div className="course-langs">
+      <div className="row between">
+        <span className="muted">{t('קורסים מוכנים עם תרגום ל: {langs}', { langs: shown.map(langName).join(', ') })}</span>
+        <button type="button" className="link-btn" onClick={() => setOpen(!open)}>{open ? t('סיום') : t('שינוי')}</button>
+      </div>
+      {open && (
+        <div className="chips wrap">
+          {options.map((code) => (
+            <button key={code} type="button" className={`chip ${shown.includes(code) ? 'active' : ''}`} onClick={() => toggle(code)} aria-pressed={shown.includes(code)}>
+              {langName(code)}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function LanguageCourses({ lang, current }: { lang: string; current: Deck | null }) {
   const navigate = useNavigate()
+  const settings = useSettings()
   const data = useLiveQuery(async () => {
     const decks = (await db.decks.toArray()).sort((a, b) => a.createdAt - b.createdAt).filter((d) => d.targetLang === lang)
     const counts = Object.fromEntries(
@@ -71,7 +108,11 @@ function LanguageCourses({ lang, current }: { lang: string; current: Deck | null
     navigate('/import', { state: { createdDeckId: deckId } })
   }
 
-  const ready = COURSES.filter((c) => c.targetLang === lang)
+  // Ready-made courses translated into the languages the user chose (by default the interface language);
+  // the rest – e.g. Spanish from Hebrew, for someone who reads English – only on request.
+  const shown = settings ? courseLanguages(settings) : [uiLang()]
+  const ready = COURSES.filter((c) => c.targetLang === lang && shown.includes(c.sourceLang))
+  const otherReady = COURSES.filter((c) => c.targetLang === lang && !shown.includes(c.sourceLang))
   return (
     <div className="page form">
       <Link to="/courses" className="back"><ChevronLeft className="flip-back" size={18} /> {t('כל השפות')}</Link>
@@ -90,15 +131,16 @@ function LanguageCourses({ lang, current }: { lang: string; current: Deck | null
 
       <ShareSeveral decks={data.decks.filter((d) => !d.sharedFrom && !d.id.startsWith('course-'))} />
 
+      {(ready.length > 0 || otherReady.length > 0) && <h2>{t('קורסים מוכנים')}</h2>}
       {ready.length > 0 && (
-        <>
-          <h2>{t('קורסים מוכנים')}</h2>
-          <ul className="course-list">
-            {ready.map((c) => (
-              <ReadyCourse key={c.id} course={c} have={data.counts[courseDeckId(c.id)] ?? 0} onChoose={choose} />
-            ))}
-          </ul>
-        </>
+        <ul className="course-list">
+          {ready.map((c) => (
+            <ReadyCourse key={c.id} course={c} have={data.counts[courseDeckId(c.id)] ?? 0} onChoose={choose} />
+          ))}
+        </ul>
+      )}
+      {otherReady.length > 0 && (
+        <OtherReadyCourses courses={otherReady} counts={data.counts} onChoose={choose} noneInUiLang={ready.length === 0} lang={lang} shown={shown} />
       )}
 
       <JoinByCode />
@@ -261,7 +303,37 @@ function ShareSeveral({ decks }: { decks: Deck[] }) {
   )
 }
 
-function ReadyCourse({ course, have, onChoose }: { course: CourseInfo; have: number; onChoose: (deckId: string) => void }) {
+/** Ready-made courses translated into a language other than the app's – hidden until asked for. */
+function OtherReadyCourses({ courses, counts, onChoose, noneInUiLang, lang, shown }: {
+  courses: CourseInfo[]
+  counts: Record<string, number>
+  onChoose: (deckId: string) => void
+  noneInUiLang: boolean
+  lang: string
+  shown: string[]
+}) {
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      {noneInUiLang && (
+        <p className="muted">{t('עדיין אין קורסים מוכנים ב{lang} עם תרגום ל{ui}.', { lang: langName(lang), ui: shown.map(langName).join(t(' או ')) })}</p>
+      )}
+      {open ? (
+        <ul className="course-list">
+          {courses.map((c) => (
+            <ReadyCourse key={c.id} course={c} have={counts[courseDeckId(c.id)] ?? 0} onChoose={onChoose} showSource />
+          ))}
+        </ul>
+      ) : (
+        <button type="button" className="btn secondary small" onClick={() => setOpen(true)}>
+          {t('הצגת קורסים עם תרגום לשפות אחרות ({n})', { n: courses.length })}
+        </button>
+      )}
+    </>
+  )
+}
+
+function ReadyCourse({ course, have, onChoose, showSource }: { course: CourseInfo; have: number; onChoose: (deckId: string) => void; showSource?: boolean }) {
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState<string | null>(null)
 
@@ -282,6 +354,7 @@ function ReadyCourse({ course, have, onChoose }: { course: CourseInfo; have: num
         <div className="grow">
           <b>{course.name}</b> <span className="badge level">{course.level}</span>
           <div className="muted">{course.description}</div>
+          {showSource && <div className="muted">{t('תרגום ל{lang}', { lang: langName(course.sourceLang) })}</div>}
           {have > 0 && <div className="muted">{t('נוסף · {n} מילים', { n: have })}</div>}
         </div>
         <button className={have ? 'btn secondary small' : 'btn small'} disabled={busy} onClick={add}>

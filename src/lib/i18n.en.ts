@@ -480,6 +480,11 @@ export const EN: Record<string, string> = {
   'סימון הכל': 'Select all',
   'סיום': 'Done',
   'בשפות אחרות': 'Other languages',
+  'עדיין אין קורסים מוכנים ב{lang} עם תרגום ל{ui}.': 'There are no ready-made {lang} courses translated into {ui} yet.',
+  'הצגת קורסים עם תרגום לשפות אחרות ({n})': 'Show courses translated into other languages ({n})',
+  'קורסים מוכנים עם תרגום ל: {langs}': 'Ready-made courses translated into: {langs}',
+  ' או ': ' or ',
+  'שינוי': 'Change',
   'לעוד קורסים ושפות': 'More courses and languages',
 
   // App updates
