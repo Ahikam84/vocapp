@@ -65,4 +65,13 @@ export const COURSES: CourseInfo[] = [
     targetLang: 'ar',
     load: () => import('./ar-lev-c1').then((m) => m.default),
   },
+  {
+    id: 'ar-lev-c2',
+    name: 'ערבית מדוברת C2',
+    description: 'ערבית לבנטינית מדוברת ברמת שליטה מלאה: טיעון ועמדה, משפט וכלכלה, רגשות עמוקים, פתגמים, ברכות וביטויי נימוס, תרבות וסלנג. בכתב ערבי עם תעתיק עברי',
+    level: 'C2',
+    sourceLang: 'he',
+    targetLang: 'ar',
+    load: () => import('./ar-lev-c2').then((m) => m.default),
+  },
 ]
