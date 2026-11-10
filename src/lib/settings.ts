@@ -23,6 +23,8 @@ export interface Settings {
   /** Set once the user has picked a goal (in Settings or the after-first-session prompt) */
   goalChosen: boolean
   theme: Theme
+  /** Medals already shown as "new" on this device; null until the first check */
+  medalsSeen: string[] | null
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -39,6 +41,7 @@ export const DEFAULT_SETTINGS: Settings = {
   dailyGoal: 50,
   goalChosen: false,
   theme: 'auto',
+  medalsSeen: null,
 }
 
 export async function getSettings(): Promise<Settings> {

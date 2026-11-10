@@ -1,5 +1,6 @@
 import { ChevronLeft, Repeat2, Sprout, Target } from 'lucide-react'
 import { DailyGoalCard } from '../components/Goal'
+import { MedalsLink, NewMedals } from '../components/Medals'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Link } from 'react-router-dom'
 import { t } from '../lib/i18n'
@@ -17,6 +18,7 @@ export default function Home({ study }: { study: Study }) {
   return (
     <div className="page home">
       <DailyGoalCard due={stats.due} />
+      <NewMedals />
 
       <Link to="/review" className={`action-card primary ${stats.due ? '' : 'disabled'}`}>
         <div className="icon"><Repeat2 size={22} /></div>
@@ -67,6 +69,7 @@ export default function Home({ study }: { study: Study }) {
         <div><b>{stats.learned}</b><span>{t('נלמדו')}</span></div>
         <div><b>{stats.longTerm}</b><span>{t('בזיכרון ארוך')}</span></div>
       </div>
+      <MedalsLink />
       {stats.known > 0 && (
         <p className="muted center-text">
           <Link to="/words?filter=known">{t('{n} מילים מסומנות כמוכרות', { n: stats.known })}</Link>

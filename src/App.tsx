@@ -7,6 +7,7 @@ import { useSettings } from './lib/settings'
 import { applyTheme } from './lib/theme'
 import { setTtsPreferences } from './lib/tts'
 import { useStudy, type Study } from './lib/useDeck'
+import Achievements from './pages/Achievements'
 import Courses from './pages/Courses'
 import Home from './pages/Home'
 import Import from './pages/Import'
@@ -74,6 +75,7 @@ export default function App() {
             <Route path="/words/:id" element={<WordForm study={study} />} />
             <Route path="/import" element={<Import study={study} />} />
             <Route path="/study" element={<StudyPicker study={study} />} />
+            <Route path="/medals" element={<Achievements />} />
             <Route path="/courses" element={<Courses deck={deck} />} />
             <Route path="/courses/:lang" element={<Courses deck={deck} />} />
             <Route path="/join/:code" element={<Join />} />

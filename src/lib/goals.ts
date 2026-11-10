@@ -62,6 +62,9 @@ export interface Streak {
   freezes: number
   /** Days saved by a freeze in the current streak. */
   frozen: number
+  /** Longest streak ever, and how many days in total the goal was met. */
+  best: number
+  metDays: number
 }
 
 /**
@@ -71,14 +74,18 @@ export interface Streak {
  */
 export function computeStreak(byDay: Map<number, DayActivity>, met: (a: DayActivity) => boolean, today: number): Streak {
   const keys = [...byDay.keys()]
-  if (!keys.length) return { days: 0, freezes: 0, frozen: 0 }
+  if (!keys.length) return { days: 0, freezes: 0, frozen: 0, best: 0, metDays: 0 }
   let days = 0
   let freezes = 0
   let frozen = 0
+  let best = 0
+  let metDays = 0
   for (let d = Math.min(...keys); d <= today; d++) {
     const a = byDay.get(d)
     if (a && met(a)) {
       days++
+      metDays++
+      best = Math.max(best, days)
       if (days % 7 === 0) freezes = Math.min(MAX_FREEZES, freezes + 1)
     } else if (d === today) {
       // not yet
@@ -90,7 +97,7 @@ export function computeStreak(byDay: Map<number, DayActivity>, met: (a: DayActiv
       frozen = 0
     }
   }
-  return { days, freezes, frozen }
+  return { days, freezes, frozen, best, metDays }
 }
 
 export interface DailyStatus {

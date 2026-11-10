@@ -6,6 +6,7 @@ import { DEFAULT_GOAL, dailyStatus, GOAL_PRESETS, xpSince, type DailyStatus, typ
 import { t } from '../lib/i18n'
 import { setSetting, useSettings } from '../lib/settings'
 import { homeMood, Mascot } from './Mascot'
+import { NewMedals } from './Medals'
 
 export function goalUnit(type: GoalType): string {
   return type === 'xp' ? 'XP' : type === 'minutes' ? t('דקות') : t('תשובות')
@@ -92,6 +93,7 @@ export function SessionReward({ since }: { since: number }) {
   return (
     <div className={`session-reward ${done ? 'done' : ''}`}>
       <GoalPrompt />
+      <NewMedals />
       <Mascot mood={done ? 'party' : 'water'} size={240} />
       <div className="xp"><bdi dir="ltr">+{xp} XP</bdi></div>
       <div className="row center goal-line">
