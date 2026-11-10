@@ -3,7 +3,7 @@ import { COURSES } from '../courses'
 import { pace } from '../games/Falling'
 import { courseToWords } from './courses'
 import type { Word } from './db'
-import { alphabetFor, baseLetters, clozeFor, genderOf, isRecord, oddQuestion, topicGroups } from './games'
+import { alphabetFor, baseLetters, clozeFor, genderOf, isRecord, listenOptions, oddQuestion, topicGroups, trueFalseFor } from './games'
 import { answerXp, XP } from './goals'
 
 const word = (term: string, example?: string): Word => ({ id: term, deckId: 'd', term, translations: ['x'], example, createdAt: 0 })
@@ -64,6 +64,24 @@ describe('games', () => {
       expect(q.odd.term).toBe('tren')
     }
     expect(oddQuestion(topicGroups([tagged('pan', 'food'), tagged('queso', 'food'), tagged('leche', 'food')]))).toBeNull()
+  })
+
+  it('offers listening options with one right meaning and no repeats', () => {
+    const w = (term: string, tr: string): Word => ({ ...word(term), translations: [tr] })
+    const pool = [w('perro', 'כלב'), w('can', 'כלב'), w('gato', 'חתול'), w('casa', 'בית'), w('mesa', 'שולחן'), w('libro', 'ספר'), w('hogar', 'בית')]
+    for (let i = 0; i < 20; i++) {
+      const opts = listenOptions(pool[0], pool)
+      expect(opts).toHaveLength(4)
+      expect(opts.filter((o) => o.translations[0] === 'כלב')).toEqual([pool[0]])
+      expect(new Set(opts.map((o) => o.translations[0])).size).toBe(4)
+    }
+  })
+
+  it('shows a true or a wrong translation, never a synonym as wrong', () => {
+    const w = (term: string, tr: string): Word => ({ ...word(term), translations: [tr] })
+    const pool = [w('perro', 'כלב'), w('can', 'כלב'), w('gato', 'חתול')]
+    expect(trueFalseFor(pool[0], pool, () => 0.1)).toMatchObject({ shown: 'כלב', truth: true })
+    expect(trueFalseFor(pool[0], pool, () => 0.9)).toMatchObject({ shown: 'חתול', truth: false })
   })
 
   it('has plenty of sentences and el/la nouns in the Spanish courses', async () => {

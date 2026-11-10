@@ -15,7 +15,7 @@ export const GOAL_PRESETS: Record<GoalType, number[]> = {
 }
 export const DEFAULT_GOAL: Record<GoalType, number> = { xp: 50, minutes: 10, answers: 30 }
 
-export const XP = { correct: 10, almost: 5, wrong: 1, learned: 15, game: 2 }
+export const XP = { correct: 10, almost: 5, wrong: 1, learned: 15, game: 2, test: 5, testAlmost: 3 }
 
 /** One answer counts for at most a minute, so a phone left open doesn't fill the goal. */
 const MAX_ANSWER_MS = 60_000
@@ -37,6 +37,7 @@ export function dayKey(ts: number): number {
 export function answerXp(r: Pick<ReviewLog, 'correct' | 'almost'> & { mode?: ReviewLog['mode'] }): number {
   // Games are quick-fire, so each answer is worth a little
   if (r.mode === 'game') return r.correct ? XP.game : 0
+  if (r.mode === 'test') return r.correct ? (r.almost ? XP.testAlmost : XP.test) : 0
   return r.correct ? (r.almost ? XP.almost : XP.correct) : XP.wrong
 }
 

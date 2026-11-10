@@ -1,9 +1,10 @@
-import { stripAccents } from './answer'
+import { normalize, stripAccents } from './answer'
 import { db, newId, type ExerciseType, type Word } from './db'
+import { pickDistractors } from './session'
 import { getSettings, setSetting } from './settings'
 
 /** Word games: quick, playful practice with words that have already been learned. */
-export type GameId = 'pairs' | 'falling' | 'cloze' | 'plant' | 'gender' | 'memory' | 'odd'
+export type GameId = 'pairs' | 'falling' | 'cloze' | 'plant' | 'gender' | 'memory' | 'odd' | 'listen' | 'truefalse'
 
 /** Games where a lower score is better (memory counts moves) */
 export const LOWER_IS_BETTER: GameId[] = ['memory']
@@ -21,7 +22,7 @@ export async function loadGameWords(deckIds: string[]): Promise<Word[]> {
 }
 
 const EXERCISE: Record<GameId, ExerciseType> = {
-  pairs: 'choice-target', falling: 'typing', cloze: 'choice-target', plant: 'tiles', gender: 'choice-target', memory: 'choice-target', odd: 'choice-source',
+  pairs: 'choice-target', falling: 'typing', cloze: 'choice-target', plant: 'tiles', gender: 'choice-target', memory: 'choice-target', odd: 'choice-source', listen: 'audio-choice', truefalse: 'choice-source',
 }
 
 /** Each answer counts towards the daily goal (a few XP) but leaves the review schedule alone. */
@@ -133,6 +134,18 @@ export function clozeFor(word: Word): Cloze | null {
   return null
 }
 
+/** Four ways to fill the blank: the answer and three other learned words, shaped like it. */
+export function clozeOptions(item: Cloze, pool: Word[]): string[] {
+  const shape = (w: Word) => {
+    const s = item.bare ? withoutArticle(w.term) : w.term
+    return item.answer[0] === item.answer[0].toUpperCase() && item.answer[0] !== item.answer[0].toLowerCase()
+      ? s[0].toUpperCase() + s.slice(1)
+      : s
+  }
+  const others = pickDistractors(item.word, pool, (w) => shape(w).toLowerCase(), 3).map(shape)
+  return shuffled([...new Set([item.answer, ...others.filter((o) => o.toLowerCase() !== item.answer.toLowerCase())])])
+}
+
 // ---- el or la? -------------------------------------------------------------
 
 /** "el perro" → { article: 'el', noun: 'perro' }; null for words without a singular el/la. */
@@ -157,4 +170,35 @@ export function alphabetFor(lang: string, words: Word[]): string[] {
 /** Lower-case, accents removed, Hebrew final letters as regular ones. */
 export function baseLetters(s: string): string {
   return stripAccents(s.toLowerCase())
+}
+
+// ---- Listening -------------------------------------------------------------
+
+const meaning = (w: Word) => normalize(w.translations[0] ?? '')
+
+/** The word's meaning and up to three others, shuffled; none share a meaning or spelling with the word. */
+export function listenOptions(word: Word, pool: Word[], random = Math.random): Word[] {
+  const own = new Set(word.translations.map(normalize))
+  const others = pool.filter((w) => w.id !== word.id && !own.has(meaning(w)) && normalize(w.term) !== normalize(word.term))
+  // one option per meaning
+  const unique = [...new Map(others.map((w) => [meaning(w), w])).values()]
+  return shuffled([word, ...pickDistractors(word, unique, meaning, 3, random)])
+}
+
+// ---- True or false ---------------------------------------------------------
+
+export interface TrueFalse {
+  word: Word
+  /** The translation shown next to the word */
+  shown: string
+  truth: boolean
+}
+
+/** The word with its own translation, or (about half the time) another word's. */
+export function trueFalseFor(word: Word, pool: Word[], random = Math.random): TrueFalse {
+  const own = new Set(word.translations.map(normalize))
+  const wrong = pool.filter((w) => w.id !== word.id && !own.has(meaning(w)))
+  if (!wrong.length || random() < 0.5) return { word, shown: word.translations[0], truth: true }
+  const [other] = pickDistractors(word, wrong, meaning, 1, random)
+  return { word, shown: other.translations[0], truth: false }
 }

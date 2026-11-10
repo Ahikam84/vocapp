@@ -281,6 +281,66 @@ input[type='range'] { width: 160px; padding: 0; background: none; accent-color: 
 .gender-buttons .btn { font-size: 1.4rem; padding: 18px; }
 .gender-buttons .la { background: #8b5cf6; }
 
+/* Listening */
+.listen .game-bar .progress { flex: 1; margin-inline-end: 12px; }
+.listen-play { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 8px 0 12px; }
+.listen-word { text-align: center; font-size: 1.6rem; font-weight: 700; min-height: 2.2em; color: var(--muted); }
+.listen-word.ok { color: var(--good); }
+.listen-word.bad { color: var(--primary); }
+.listen .option small { white-space: nowrap; }
+
+/* True or false */
+.tf-card { text-align: center; padding: 28px 16px; transition: background .2s; }
+.tf-card.ok { background: var(--good-soft); }
+.tf-card.bad { background: var(--bad-soft); animation: shake-x .35s ease; }
+.tf-term { font-size: 1.9rem; font-weight: 800; }
+.tf-eq { color: var(--muted); font-size: 1.2rem; margin: 4px 0; }
+.tf-shown { font-size: 1.35rem; font-weight: 600; }
+.tf-shown.struck { text-decoration: line-through; color: var(--bad); }
+.tf-right { margin-top: 6px; font-size: 1.35rem; font-weight: 700; color: var(--good); }
+.tf-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.tf-buttons .btn { font-size: 1.2rem; padding: 18px; gap: 8px; }
+.tf-buttons .yes { background: var(--good); }
+.tf-buttons .no { background: var(--bad); }
+
+/* Test */
+.test-setup h2 { font-size: 1rem; margin: 18px 0 6px; }
+.test-setup select { width: 100%; }
+.check-row { display: flex; align-items: center; gap: 8px; margin: 16px 0 4px; cursor: pointer; }
+.check-row input { width: auto; }
+.test-run .game-bar .progress { flex: 1; margin-inline-end: 12px; }
+.test-run .game-bar .game-timer { margin-inline-end: 12px; }
+.test-q .card { text-align: center; margin-bottom: 16px; padding: 28px 16px; }
+.test-play { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 6px 0 16px; }
+.test-q .options .option:disabled { cursor: default; }
+.test-q .tf-buttons .btn:disabled { opacity: .5; }
+.match-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.match-grid > div { display: grid; gap: 8px; }
+.match-card { min-height: 56px; padding: 10px; border: 2px solid transparent; border-radius: var(--radius-sm); background: var(--surface); color: var(--text); font: inherit; font-size: 1.02rem; cursor: pointer; overflow-wrap: anywhere; }
+.match-card.on { border-color: var(--primary); background: var(--primary-soft); }
+.match-card.bad { border-color: var(--bad); background: var(--bad-soft); animation: shake-x .35s ease; }
+.match-card.done { background: var(--good-soft); color: var(--good); cursor: default; }
+.match-card.done.late { background: var(--almost-soft); color: var(--text); }
+.test-percent { font-size: 4rem; font-weight: 800; line-height: 1.1; margin-top: 8px; }
+.test-percent.high, .test-list .high { color: var(--good); }
+.test-percent.mid, .test-list .mid { color: var(--almost); }
+.test-percent.low, .test-list .low { color: var(--bad); }
+.test-results h1 { margin: 4px 0; }
+.mistakes { list-style: none; padding: 0; margin: 0 0 12px; display: grid; gap: 6px; }
+.mistakes li { padding: 10px 14px; border-radius: var(--radius-sm); background: var(--surface); border-inline-start: 4px solid var(--bad); display: flex; flex-direction: column; gap: 2px; }
+.mistakes li.almost { border-color: var(--almost); }
+.test-history { margin-top: 28px; }
+.test-bars { display: flex; align-items: flex-end; gap: 6px; height: 120px; padding: 6px 0; border-bottom: 1px solid var(--surface-2); }
+.test-bar { flex: 1; max-width: 36px; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 2px; }
+.test-bar-value { font-size: .7rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.test-bar-fill { width: 100%; border-radius: 4px 4px 0 0; background: var(--primary); }
+.test-bar-fill.high { background: var(--good); }
+.test-bar-fill.mid { background: var(--almost); }
+.test-bar-fill.low { background: var(--bad); }
+.test-list { list-style: none; padding: 0; margin: 12px 0 0; }
+.test-list li { display: flex; gap: 10px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--surface-2); }
+.test-list li .muted { flex: 1; font-size: .9rem; }
+
 /* Memory */
 .memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; max-width: 440px; margin-inline: auto; }
 .mem-card { aspect-ratio: 4 / 5; padding: 0; border: 0; background: none; perspective: 600px; cursor: pointer; font: inherit; }

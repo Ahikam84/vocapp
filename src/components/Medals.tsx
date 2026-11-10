@@ -1,4 +1,4 @@
-import { Brain, CheckCheck, Flame, Globe, GraduationCap, Lock, Moon, Sparkles, Sprout, Sunrise, Target } from 'lucide-react'
+import { Award, Brain, CheckCheck, ClipboardCheck, Flame, Globe, GraduationCap, Lock, Moon, Sparkles, Sprout, Sunrise, Target } from 'lucide-react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
@@ -17,6 +17,8 @@ const ICONS: Record<MedalIcon, typeof Sprout> = {
   sunrise: Sunrise,
   graduation: GraduationCap,
   globe: Globe,
+  clipboard: ClipboardCheck,
+  award: Award,
 }
 
 export function useMedals(): Medal[] | undefined {

@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ProgressBar, T } from '../components/common'
 import type { Word } from '../lib/db'
-import { clozeFor, loadGameWords, logGameAnswer, recordScore, shuffled, withoutArticle, type Cloze } from '../lib/games'
+import { clozeFor, clozeOptions, loadGameWords, logGameAnswer, recordScore, shuffled, type Cloze } from '../lib/games'
 import { dirOf, t } from '../lib/i18n'
-import { pickDistractors } from '../lib/session'
 import { getSettings } from '../lib/settings'
 import { speak } from '../lib/tts'
 import type { Study } from '../lib/useDeck'
@@ -30,16 +29,6 @@ export default function ClozeGame({ study }: { study: Study }) {
 }
 
 /** Options shaped like the blank: same article use and same capital letter. */
-function optionsFor(item: Cloze, pool: Word[]): string[] {
-  const shape = (w: Word) => {
-    const s = item.bare ? withoutArticle(w.term) : w.term
-    return item.answer[0] === item.answer[0].toUpperCase() && item.answer[0] !== item.answer[0].toLowerCase()
-      ? s[0].toUpperCase() + s.slice(1)
-      : s
-  }
-  const others = pickDistractors(item.word, pool, (w) => shape(w).toLowerCase(), 3).map(shape)
-  return shuffled([...new Set([item.answer, ...others.filter((o) => o.toLowerCase() !== item.answer.toLowerCase())])])
-}
 
 function ClozeRound({ items, pool, lang, onAgain }: { items: Cloze[]; pool: Word[]; lang: string; onAgain: () => void }) {
   // Fixed for the whole round
@@ -58,7 +47,7 @@ function ClozeRound({ items, pool, lang, onAgain }: { items: Cloze[]; pool: Word
   }, [])
 
   const item = questions[n]
-  const options = useMemo(() => optionsFor(item, pool), [n]) // eslint-disable-line react-hooks/exhaustive-deps
+  const options = useMemo(() => clozeOptions(item, pool), [n]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function next() {
     if (n + 1 >= questions.length) {

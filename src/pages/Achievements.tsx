@@ -8,6 +8,7 @@ const TRACKS: { group: Exclude<MedalGroup, 'special'>; title: () => string }[] =
   { group: 'streak', title: () => t('רצף ימים') },
   { group: 'goal', title: () => t('ימים שעמדת ביעד') },
   { group: 'answers', title: () => t('מספר תשובות') },
+  { group: 'tests', title: () => t('מבחנים') },
 ]
 
 /**

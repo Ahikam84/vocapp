@@ -1,6 +1,7 @@
 import { db, type Deck, type Progress, type ReviewLog, type Word } from './db'
 import { activityByDay, computeStreak, dayKey, goalValue, type GoalType } from './goals'
 import { t } from './i18n'
+import { testHistory } from './test'
 
 /**
  * Achievements. Every medal is worked out from data the app already keeps
@@ -8,9 +9,9 @@ import { t } from './i18n'
  */
 
 export type Tier = 'bronze' | 'silver' | 'gold' | 'diamond' | 'special'
-export type MedalIcon = 'sprout' | 'brain' | 'flame' | 'target' | 'check' | 'sparkles' | 'moon' | 'sunrise' | 'graduation' | 'globe'
+export type MedalIcon = 'sprout' | 'brain' | 'flame' | 'target' | 'check' | 'sparkles' | 'moon' | 'sunrise' | 'graduation' | 'globe' | 'clipboard' | 'award'
 
-export type MedalGroup = 'learned' | 'longterm' | 'streak' | 'goal' | 'answers' | 'special'
+export type MedalGroup = 'learned' | 'longterm' | 'streak' | 'goal' | 'answers' | 'tests' | 'special'
 
 export interface Medal {
   id: string
@@ -29,7 +30,7 @@ export interface Medal {
 }
 
 export interface MedalData {
-  reviews: Pick<ReviewLog, 'correct' | 'almost' | 'responseMs' | 'at'>[]
+  reviews: Pick<ReviewLog, 'correct' | 'almost' | 'responseMs' | 'at' | 'test'>[]
   progress: Pick<Progress, 'wordId' | 'deckId' | 'learnedAt' | 'card'>[]
   words: Pick<Word, 'id' | 'deckId' | 'known'>[]
   decks: Pick<Deck, 'id' | 'targetLang'>[]
@@ -115,6 +116,9 @@ export function evaluateMedals(d: MedalData): Medal[] {
   }
   const finished = [...perDeck.values()].filter((x) => x.total >= 20 && x.done === x.total).length
 
+  const tests = testHistory(d.reviews)
+  const ace = tests.some((x) => x.percent === 100 && x.questions >= 10)
+
   const langOf = new Map(d.decks.map((x) => [x.id, x.targetLang]))
   const languages = new Set(learned.map((p) => langOf.get(p.deckId)).filter(Boolean)).size
 
@@ -136,10 +140,15 @@ export function evaluateMedals(d: MedalData): Medal[] {
     ...ladder('answers', 'check', [100, 1000, 5000, 10000], d.reviews.length,
       (n) => t('{n} תשובות', { n }), (n) => t('ענית על {n} שאלות', { n }),
       (n, medal) => (n === 1 ? t('עוד תשובה אחת ל{medal}', { medal }) : t('עוד {n} תשובות ל{medal}', { n, medal }))),
+    ...ladder('tests', 'clipboard', [1, 10, 25, 50], tests.length,
+      (n) => (n === 1 ? t('מבחן ראשון') : t('{n} מבחנים', { n })),
+      (n) => (n === 1 ? t('סיימת מבחן ראשון') : t('סיימת {n} מבחנים', { n })),
+      (n, medal) => (n === 1 ? t('עוד מבחן אחד ל{medal}', { medal }) : t('עוד {n} מבחנים ל{medal}', { n, medal }))),
     single('perfect-day', 'sparkles', perfectDay, t('יום מושלם'), t('20 תשובות או יותר ביום אחד, בלי אף טעות')),
     single('night-owl', 'moon', nightOwl, t('ינשוף לילה'), t('תרגלת אחרי 23:00')),
     single('early-bird', 'sunrise', earlyBird, t('ציפור מוקדמת'), t('תרגלת לפני 7:00 בבוקר')),
     single('course-done', 'graduation', finished > 0, t('סיימת קורס'), t('למדת את כל המילים בקורס')),
+    single('ace', 'award', ace, t('ציון 100'), t('100 במבחן של 10 שאלות או יותר')),
     single('polyglot', 'globe', languages >= 2, t('רב-לשוני'), t('למדת מילים בשתי שפות או יותר')),
   ]
 }

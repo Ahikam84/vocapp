@@ -1,4 +1,4 @@
-import { ChevronLeft, Gamepad2, Repeat2, Sprout, Target } from 'lucide-react'
+import { ChevronLeft, ClipboardCheck, Gamepad2, Repeat2, Sprout, Target } from 'lucide-react'
 import { DailyGoalCard } from '../components/Goal'
 import { MedalsLink, NewMedals } from '../components/Medals'
 import { useLiveQuery } from 'dexie-react-hooks'
@@ -70,6 +70,17 @@ export default function Home({ study }: { study: Study }) {
           <div className="grow">
             <h2>{t('משחקים')}</h2>
             <p>{t('המילים שלמדת, בדרך משחקית')}</p>
+          </div>
+          <ChevronLeft className="chev flip" size={20} />
+        </Link>
+      )}
+
+      {stats.learned > 0 && (
+        <Link to="/test" className="action-card">
+          <div className="icon"><ClipboardCheck size={22} /></div>
+          <div className="grow">
+            <h2>{t('מבחן')}</h2>
+            <p>{t('בדקו כמה אתם יודעים, עם ציון באחוזים')}</p>
           </div>
           <ChevronLeft className="chev flip" size={20} />
         </Link>

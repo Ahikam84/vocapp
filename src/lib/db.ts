@@ -59,14 +59,25 @@ export interface ReviewLog extends Synced {
   id: string
   wordId: string
   deckId: string
-  /** 'game': an answer in one of the word games (doesn't touch the review schedule) */
-  mode: 'learn' | 'review' | 'practice' | 'game'
+  /** 'game' / 'test': an answer in a word game or a test (neither touches the review schedule) */
+  mode: 'learn' | 'review' | 'practice' | 'game' | 'test'
   exercise: ExerciseType
   correct: boolean
   /** Right but not quite: a small spelling slip, or built with a hint. */
   almost?: boolean
   responseMs: number
   at: number
+  /** Answers given in a test: which test, and which of its questions (a matching question logs one answer per word) */
+  test?: TestRef
+}
+
+export interface TestRef {
+  id: string
+  level: 'easy' | 'medium' | 'hard'
+  /** Number of questions in the test */
+  questions: number
+  /** This answer's question, 0-based */
+  q: number
 }
 
 /** Device-local settings – never synced (e.g. voice choice depends on the device). */

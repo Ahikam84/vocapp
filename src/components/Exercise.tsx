@@ -436,7 +436,7 @@ function Typing({ word, deck, answered, onAnswer }: Props & { answered: boolean;
 }
 
 /** Compact on-screen Hebrew keyboard for learners whose device has no Hebrew layout. */
-function HebrewKeyboard({ onKey }: { onKey: (c: string) => void }) {
+export function HebrewKeyboard({ onKey }: { onKey: (c: string) => void }) {
   return (
     <div className="he-keyboard" dir="rtl">
       {HEBREW_KEYBOARD.map((row, i) => (

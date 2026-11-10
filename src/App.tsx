@@ -14,6 +14,9 @@ import Falling from './games/Falling'
 import Gender from './games/Gender'
 import Memory from './games/Memory'
 import OddOneOut from './games/OddOneOut'
+import Listen from './games/Listen'
+import TrueFalse from './games/TrueFalse'
+import Test from './pages/Test'
 import Plant from './games/Plant'
 import Pairs from './games/Pairs'
 import Games from './pages/Games'
@@ -92,6 +95,9 @@ export default function App() {
             <Route path="/games/gender" element={<Gender study={study} />} />
             <Route path="/games/memory" element={<Memory study={study} />} />
             <Route path="/games/odd" element={<OddOneOut study={study} />} />
+            <Route path="/games/listen" element={<Listen study={study} />} />
+            <Route path="/games/truefalse" element={<TrueFalse study={study} />} />
+            <Route path="/test" element={<Test study={study} />} />
             <Route path="/courses" element={<Courses deck={deck} />} />
             <Route path="/courses/:lang" element={<Courses deck={deck} />} />
             <Route path="/join/:code" element={<Join />} />
