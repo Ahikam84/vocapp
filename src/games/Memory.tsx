@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { T } from '../components/common'
 import { normalize } from '../lib/answer'
 import type { Word } from '../lib/db'
@@ -22,9 +22,12 @@ interface Card {
 export default function Memory({ study }: { study: Study }) {
   const [pool, setPool] = useState<Word[] | null>(null)
   const [round, setRound] = useState(0)
+  // Keyed on the course ids, not `study` itself: that object is renewed on every database
+  // change (sync bookkeeping after each answer), which would reload and reshuffle mid-game.
+  const deckKey = study.deckIds.join()
   useEffect(() => {
-    loadGameWords(study.deckIds).then(setPool)
-  }, [study])
+    loadGameWords(deckKey.split(',')).then(setPool)
+  }, [deckKey])
   if (!pool) return null
   if (pool.length < MIN_GAME_WORDS) return <NotEnough count={pool.length} />
   return <MemoryRound key={round} pool={pool} lang={study.deck.targetLang} onAgain={() => setRound((r) => r + 1)} />
@@ -46,10 +49,11 @@ function pickWords(pool: Word[]): Word[] {
 }
 
 function MemoryRound({ pool, lang, onAgain }: { pool: Word[]; lang: string; onAgain: () => void }) {
-  const cards = useMemo<Card[]>(() => {
+  // Dealt once per round
+  const [cards] = useState<Card[]>(() => {
     const words = pickWords(pool)
     return shuffled(words.flatMap((word) => [{ word, side: 'term' as const }, { word, side: 'meaning' as const }])).map((c, key) => ({ ...c, key }))
-  }, [pool])
+  })
   const [open, setOpen] = useState<number[]>([])
   const [found, setFound] = useState<string[]>([])
   const [moves, setMoves] = useState(0)

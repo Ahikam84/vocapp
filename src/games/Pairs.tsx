@@ -28,9 +28,12 @@ interface Flash {
 export default function Pairs({ study }: { study: Study }) {
   const [pool, setPool] = useState<Word[] | null>(null)
   const [round, setRound] = useState(0)
+  // Keyed on the course ids, not `study` itself: that object is renewed on every database
+  // change (sync bookkeeping after each answer), which would reload and reshuffle mid-game.
+  const deckKey = study.deckIds.join()
   useEffect(() => {
-    loadGameWords(study.deckIds).then(setPool)
-  }, [study])
+    loadGameWords(deckKey.split(',')).then(setPool)
+  }, [deckKey])
   if (!pool) return null
   if (pool.length < MIN_GAME_WORDS) return <NotEnough count={pool.length} />
   return <PairsRound key={round} pool={pool} lang={study.deck.targetLang} onAgain={() => setRound((r) => r + 1)} />

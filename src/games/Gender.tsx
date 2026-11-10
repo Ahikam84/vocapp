@@ -15,9 +15,12 @@ export const MIN_GENDER = 6
 export default function Gender({ study }: { study: Study }) {
   const [pool, setPool] = useState<Word[] | null>(null)
   const [round, setRound] = useState(0)
+  // Keyed on the course ids, not `study` itself: that object is renewed on every database
+  // change (sync bookkeeping after each answer), which would reload and reshuffle mid-game.
+  const deckKey = study.deckIds.join()
   useEffect(() => {
-    loadGameWords(study.deckIds).then(setPool)
-  }, [study])
+    loadGameWords(deckKey.split(',')).then(setPool)
+  }, [deckKey])
   const nouns = useMemo(() => (pool ?? []).filter((w) => genderOf(w)), [pool])
   if (!pool) return null
   if (nouns.length < MIN_GENDER) return <NotEnough count={nouns.length} need={MIN_GENDER} />

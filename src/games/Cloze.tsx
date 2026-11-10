@@ -17,9 +17,12 @@ export const MIN_CLOZE = 4
 export default function ClozeGame({ study }: { study: Study }) {
   const [pool, setPool] = useState<Word[] | null>(null)
   const [round, setRound] = useState(0)
+  // Keyed on the course ids, not `study` itself: that object is renewed on every database
+  // change (sync bookkeeping after each answer), which would reload and reshuffle mid-game.
+  const deckKey = study.deckIds.join()
   useEffect(() => {
-    loadGameWords(study.deckIds).then(setPool)
-  }, [study])
+    loadGameWords(deckKey.split(',')).then(setPool)
+  }, [deckKey])
   const items = useMemo(() => (pool ?? []).map(clozeFor).filter((c): c is Cloze => !!c), [pool])
   if (!pool) return null
   if (items.length < MIN_CLOZE) return <NotEnough count={items.length} need={MIN_CLOZE} sentences />
@@ -39,7 +42,8 @@ function optionsFor(item: Cloze, pool: Word[]): string[] {
 }
 
 function ClozeRound({ items, pool, lang, onAgain }: { items: Cloze[]; pool: Word[]; lang: string; onAgain: () => void }) {
-  const questions = useMemo(() => shuffled(items).slice(0, QUESTIONS), [items])
+  // Fixed for the whole round
+  const [questions] = useState(() => shuffled(items).slice(0, QUESTIONS))
   const [n, setN] = useState(0)
   const [chosen, setChosen] = useState<string | null>(null)
   const [score, setScore] = useState(0)
@@ -54,7 +58,7 @@ function ClozeRound({ items, pool, lang, onAgain }: { items: Cloze[]; pool: Word
   }, [])
 
   const item = questions[n]
-  const options = useMemo(() => optionsFor(item, pool), [item, pool])
+  const options = useMemo(() => optionsFor(item, pool), [n]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function next() {
     if (n + 1 >= questions.length) {

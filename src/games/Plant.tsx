@@ -22,16 +22,19 @@ const isLetter = (c: string) => /\p{L}/u.test(c)
 export default function Plant({ study }: { study: Study }) {
   const [pool, setPool] = useState<Word[] | null>(null)
   const [round, setRound] = useState(0)
+  // Keyed on the course ids, not `study` itself: that object is renewed on every database
+  // change (sync bookkeeping after each answer), which would reload and reshuffle mid-game.
+  const deckKey = study.deckIds.join()
   useEffect(() => {
-    loadGameWords(study.deckIds).then(setPool)
-  }, [study])
+    loadGameWords(deckKey.split(',')).then(setPool)
+  }, [deckKey])
   if (!pool) return null
   if (pool.length < MIN_GAME_WORDS) return <NotEnough count={pool.length} />
   return <PlantRound key={round} pool={pool} lang={study.deck.targetLang} onAgain={() => setRound((r) => r + 1)} />
 }
 
 function PlantRound({ pool, lang, onAgain }: { pool: Word[]; lang: string; onAgain: () => void }) {
-  const order = useMemo(() => shuffled(pool), [pool])
+  const [order] = useState(() => shuffled(pool))
   const alphabet = useMemo(() => alphabetFor(lang, pool), [lang, pool])
   const [idx, setIdx] = useState(0)
   const [guessed, setGuessed] = useState<string[]>([])

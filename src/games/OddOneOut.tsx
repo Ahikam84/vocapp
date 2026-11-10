@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ProgressBar, T } from '../components/common'
 import type { Word } from '../lib/db'
 import { loadGameWords, logGameAnswer, oddQuestion, recordScore, topicGroups, type OddQuestion } from '../lib/games'
@@ -17,9 +17,12 @@ export function canPlayOdd(words: Word[]): boolean {
 export default function OddOneOut({ study }: { study: Study }) {
   const [pool, setPool] = useState<Word[] | null>(null)
   const [round, setRound] = useState(0)
+  // Keyed on the course ids, not `study` itself: that object is renewed on every database
+  // change (sync bookkeeping after each answer), which would reload and reshuffle mid-game.
+  const deckKey = study.deckIds.join()
   useEffect(() => {
-    loadGameWords(study.deckIds).then(setPool)
-  }, [study])
+    loadGameWords(deckKey.split(',')).then(setPool)
+  }, [deckKey])
   if (!pool) return null
   if (!canPlayOdd(pool))
     return (
@@ -31,7 +34,7 @@ export default function OddOneOut({ study }: { study: Study }) {
 }
 
 function OddRound({ pool, lang, onAgain }: { pool: Word[]; lang: string; onAgain: () => void }) {
-  const questions = useMemo(() => {
+  const [questions] = useState(() => {
     const groups = topicGroups(pool)
     const list: OddQuestion[] = []
     // Avoid asking about the same odd word twice in one round
@@ -40,7 +43,7 @@ function OddRound({ pool, lang, onAgain }: { pool: Word[]; lang: string; onAgain
       if (!list.some((x) => x.odd.id === q.odd.id)) list.push(q)
     }
     return list
-  }, [pool])
+  })
   const [n, setN] = useState(0)
   const [chosen, setChosen] = useState<Word | null>(null)
   const [score, setScore] = useState(0)
