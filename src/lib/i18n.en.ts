@@ -480,6 +480,7 @@ export const EN: Record<string, string> = {
   'סימון הכל': 'Select all',
   'סיום': 'Done',
   'בשפות אחרות': 'Other languages',
+  'לעוד קורסים ושפות': 'More courses and languages',
 
   // App updates
   'יש גרסה חדשה – לחץ לרענון': 'A new version is available – tap to refresh',

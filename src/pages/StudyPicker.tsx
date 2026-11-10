@@ -100,7 +100,7 @@ export default function StudyPicker({ study }: { study: Study }) {
         </>
       )}
 
-      <p className="muted center-text"><Link to="/courses">{t('קורסים')}</Link></p>
+      <p className="muted center-text"><Link to="/courses">{t('לעוד קורסים ושפות')}</Link></p>
     </div>
   )
 }
