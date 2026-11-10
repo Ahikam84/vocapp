@@ -213,6 +213,96 @@ input[type='range'] { width: 160px; padding: 0; background: none; accent-color: 
 .deck-switch { width: auto; padding: 6px 10px; font-size: 0.9rem; font-weight: 500; }
 
 /* Home */
+/* Games */
+.game { display: flex; flex-direction: column; gap: 12px; }
+.game-bar { display: flex; justify-content: space-between; align-items: center; font-weight: 700; }
+.game-timer { display: inline-flex; align-items: center; gap: 6px; font-size: 1.2rem; font-variant-numeric: tabular-nums; }
+.game-timer.low { color: var(--bad); animation: tick 1s steps(2) infinite; }
+@keyframes tick { 50% { opacity: .55; } }
+.game-points { color: var(--muted); }
+.pairs-board { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pairs-col { display: grid; gap: 10px; }
+.pair-card { min-height: 58px; padding: 8px; border: 2px solid transparent; border-radius: var(--radius-sm); background: var(--surface); color: var(--text); font: inherit; font-size: 1.05rem; font-weight: 600; cursor: pointer; transition: transform .15s, background .15s; }
+.pair-card.picked { border-color: var(--primary); background: var(--primary-soft); }
+.pair-card.ok { background: var(--good-soft); border-color: var(--good); animation: pair-out .28s ease forwards; }
+.pair-card.bad { background: var(--bad-soft); border-color: var(--bad); animation: shake-x .35s ease; }
+@keyframes pair-out { to { transform: scale(.85); opacity: 0; } }
+@keyframes shake-x { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+.game-lives { display: inline-flex; gap: 4px; color: var(--surface-2); }
+.game-lives .on { color: var(--bad); fill: var(--bad); }
+.fall-field { position: relative; height: min(52vh, 440px); overflow: hidden; border-radius: var(--radius); background: var(--surface); }
+.drop { position: absolute; top: 0; max-width: 34%; padding: 6px 12px; border-radius: 999px; background: var(--bg); color: var(--text); font-weight: 700; box-shadow: 0 2px 8px rgb(0 0 0 / .12); animation-name: fall; animation-timing-function: linear; animation-fill-mode: forwards; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@keyframes fall { from { transform: translateY(-110%); } to { transform: translateY(min(52vh, 440px)); } }
+.fall-start { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 20px; text-align: center; }
+.fall-missed { position: absolute; bottom: 10px; inset-inline: 10px; padding: 8px 12px; border-radius: var(--radius-sm); background: var(--bad-soft); color: var(--bad); font-weight: 600; text-align: center; animation: missed 2.4s ease forwards; }
+@keyframes missed { 0% { opacity: 0; transform: translateY(8px); } 12%, 80% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+.fall-input { width: 100%; font-size: 1.3rem; text-align: center; padding: 14px; }
+.fall-input.shake { animation: shake-x .35s ease; }
+.game-over .game-score { font-size: 3.4rem; font-weight: 800; line-height: 1; color: var(--primary); }
+.game-record { display: inline-flex; align-items: center; gap: 6px; color: #d97706; font-weight: 700; }
+@media (prefers-reduced-motion: reduce) { .pair-card, .drop { transition: none; } }
+
+/* Complete the sentence */
+.cloze-sentence { font-size: 1.3rem; line-height: 1.8; text-align: center; padding: 20px 16px; }
+.cloze-blank { display: inline-block; min-width: 3em; padding: 0 6px; margin: 0 2px; border-bottom: 3px solid var(--primary); font-weight: 700; }
+.cloze-blank.ok { color: var(--good); border-color: var(--good); background: var(--good-soft); border-radius: 6px; }
+.cloze-blank.reveal { color: var(--primary); border-color: var(--primary); background: var(--primary-soft); border-radius: 6px; }
+.cloze .option { justify-content: center; text-align: center; }
+.cloze .game-bar .progress { flex: 1; margin-inline-end: 12px; }
+
+/* Save the plant */
+.plant-scene { display: flex; align-items: flex-end; justify-content: center; gap: 6px; height: 170px; direction: ltr; }
+.plant-cat { height: 150px; }
+.plant-pot { height: 120px; transform-origin: 50% 100%; transition: filter .5s, transform .5s cubic-bezier(.3,1.4,.5,1); }
+.plant-water { height: 165px; animation: m-pop .4s cubic-bezier(.3,1.4,.5,1) both; }
+.plant-health { display: inline-flex; gap: 3px; }
+.plant-health i { width: 10px; height: 16px; border-radius: 10px 0 10px 0; background: var(--surface-2); }
+.plant-health i.on { background: #639922; }
+.plant-clue { text-align: center; font-size: 1.15rem; font-weight: 600; margin: 4px 0 0; }
+.plant-word { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 4px 0 8px; font-size: 1.6rem; font-weight: 700; }
+.plant-word .slot { min-width: 1.1em; padding: 0 2px; text-align: center; border-bottom: 3px solid var(--muted); }
+.plant-word .slot.shown { border-color: var(--primary); }
+.plant-word .slot.missed { color: var(--bad); border-color: var(--bad); }
+.plant-word.won .slot { color: var(--good); border-color: var(--good); }
+.plant-word .gap { min-width: .6em; }
+.plant-keys { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.plant-keys button { width: 40px; height: 44px; border: 0; border-radius: var(--radius-sm); background: var(--surface); color: var(--text); font: inherit; font-size: 1.1rem; font-weight: 600; cursor: pointer; }
+.plant-keys button.hit { background: var(--good-soft); color: var(--good); }
+.plant-keys button.miss { opacity: .3; }
+
+/* el or la? */
+.gender-card { text-align: center; padding: 28px 16px; font-size: 2rem; font-weight: 800; transition: background .2s; }
+.gender-card.ok { background: var(--good-soft); }
+.gender-card.bad { background: var(--bad-soft); animation: shake-x .35s ease; }
+.gender-article { color: var(--primary); }
+.gender-card.bad .gender-article { color: var(--bad); }
+.gender-meaning { font-size: 1rem; font-weight: 500; margin-top: 6px; }
+.gender-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.gender-buttons .btn { font-size: 1.4rem; padding: 18px; }
+.gender-buttons .la { background: #8b5cf6; }
+
+/* Memory */
+.memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; max-width: 440px; margin-inline: auto; }
+.mem-card { aspect-ratio: 4 / 5; padding: 0; border: 0; background: none; perspective: 600px; cursor: pointer; font: inherit; }
+.mem-inner { position: relative; display: block; width: 100%; height: 100%; transition: transform .35s ease; transform-style: preserve-3d; }
+.mem-card.up .mem-inner { transform: rotateY(180deg); }
+.mem-back, .mem-front { position: absolute; inset: 0; display: grid; place-items: center; padding: 6px; border-radius: var(--radius-sm); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.mem-back { background: var(--primary); background-image: radial-gradient(circle at 50% 50%, rgb(255 255 255 / .22) 0 18%, transparent 19%); }
+.mem-front { transform: rotateY(180deg); background: var(--surface); color: var(--text); font-weight: 700; font-size: 0.95rem; line-height: 1.2; overflow-wrap: anywhere; text-align: center; }
+.mem-front.meaning { font-weight: 500; }
+.mem-card.found .mem-front { background: var(--good-soft); color: var(--good); }
+.mem-card.wrong .mem-front { background: var(--bad-soft); }
+
+/* Odd one out */
+.odd .game-bar .progress { flex: 1; margin-inline-end: 12px; }
+.odd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.odd-card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 84px; padding: 10px; border: 2px solid transparent; border-radius: var(--radius-sm); background: var(--surface); color: var(--text); font: inherit; font-size: 1.1rem; cursor: pointer; }
+.odd-card small { color: var(--muted); font-size: 0.85rem; }
+.odd-card.right { background: var(--good-soft); border-color: var(--good); }
+.odd-card.wrong { background: var(--bad-soft); border-color: var(--bad); }
+.odd-card.dim { opacity: .6; }
+@media (prefers-reduced-motion: reduce) { .mem-inner { transition: none; } }
+
 /* Medals */
 .medal { position: relative; display: inline-flex; flex-direction: column; align-items: center; justify-content: flex-end; flex-shrink: 0; }
 .medal-ribbon { position: absolute; top: 0; left: 50%; width: 46%; height: 42%; transform: translateX(-50%); }

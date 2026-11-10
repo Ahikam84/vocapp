@@ -59,7 +59,8 @@ export interface ReviewLog extends Synced {
   id: string
   wordId: string
   deckId: string
-  mode: 'learn' | 'review' | 'practice'
+  /** 'game': an answer in one of the word games (doesn't touch the review schedule) */
+  mode: 'learn' | 'review' | 'practice' | 'game'
   exercise: ExerciseType
   correct: boolean
   /** Right but not quite: a small spelling slip, or built with a hint. */

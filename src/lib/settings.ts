@@ -25,6 +25,8 @@ export interface Settings {
   theme: Theme
   /** Medals already shown as "new" on this device; null until the first check */
   medalsSeen: string[] | null
+  /** Best score per game on this device */
+  gameBest: Record<string, number>
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -42,6 +44,7 @@ export const DEFAULT_SETTINGS: Settings = {
   goalChosen: false,
   theme: 'auto',
   medalsSeen: null,
+  gameBest: {},
 }
 
 export async function getSettings(): Promise<Settings> {

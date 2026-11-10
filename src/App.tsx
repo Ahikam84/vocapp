@@ -9,6 +9,14 @@ import { setTtsPreferences } from './lib/tts'
 import { useStudy, type Study } from './lib/useDeck'
 import Achievements from './pages/Achievements'
 import Courses from './pages/Courses'
+import ClozeGame from './games/Cloze'
+import Falling from './games/Falling'
+import Gender from './games/Gender'
+import Memory from './games/Memory'
+import OddOneOut from './games/OddOneOut'
+import Plant from './games/Plant'
+import Pairs from './games/Pairs'
+import Games from './pages/Games'
 import Home from './pages/Home'
 import Import from './pages/Import'
 import Join from './pages/Join'
@@ -76,6 +84,14 @@ export default function App() {
             <Route path="/import" element={<Import study={study} />} />
             <Route path="/study" element={<StudyPicker study={study} />} />
             <Route path="/medals" element={<Achievements />} />
+            <Route path="/games" element={<Games study={study} />} />
+            <Route path="/games/pairs" element={<Pairs study={study} />} />
+            <Route path="/games/falling" element={<Falling study={study} />} />
+            <Route path="/games/cloze" element={<ClozeGame study={study} />} />
+            <Route path="/games/plant" element={<Plant study={study} />} />
+            <Route path="/games/gender" element={<Gender study={study} />} />
+            <Route path="/games/memory" element={<Memory study={study} />} />
+            <Route path="/games/odd" element={<OddOneOut study={study} />} />
             <Route path="/courses" element={<Courses deck={deck} />} />
             <Route path="/courses/:lang" element={<Courses deck={deck} />} />
             <Route path="/join/:code" element={<Join />} />
