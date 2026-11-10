@@ -10,8 +10,12 @@ import { t } from './i18n'
 export type Tier = 'bronze' | 'silver' | 'gold' | 'diamond' | 'special'
 export type MedalIcon = 'sprout' | 'brain' | 'flame' | 'target' | 'check' | 'sparkles' | 'moon' | 'sunrise' | 'graduation' | 'globe'
 
+export type MedalGroup = 'learned' | 'longterm' | 'streak' | 'goal' | 'answers' | 'special'
+
 export interface Medal {
   id: string
+  /** Topic: one of the four-tier tracks, or a one-off special medal */
+  group: MedalGroup
   icon: MedalIcon
   tier: Tier
   title: string
@@ -48,7 +52,7 @@ function tierMedalName(tier: Tier): string {
  * "what's left" (they differ for streaks: medals go by the record, the next one needs the current streak).
  */
 function ladder(
-  id: string,
+  id: Exclude<MedalGroup, 'special'>,
   icon: MedalIcon,
   steps: Steps,
   value: number,
@@ -61,6 +65,7 @@ function ladder(
   const top = steps.filter((n) => value >= n).length - 1 // index of the highest earned step, -1 if none
   return steps.map((n, i) => ({
     id: `${id}-${n}`,
+    group: id,
     icon,
     tier: TIER_ORDER[i],
     title: title(n),
@@ -73,7 +78,7 @@ function ladder(
 }
 
 function single(id: string, icon: MedalIcon, earned: boolean, title: string, description: string): Medal {
-  return { id, icon, tier: 'special', title, description, value: earned ? 1 : 0, target: 1, earned }
+  return { id, group: 'special', icon, tier: 'special', title, description, value: earned ? 1 : 0, target: 1, earned }
 }
 
 export function evaluateMedals(d: MedalData): Medal[] {

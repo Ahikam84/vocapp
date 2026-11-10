@@ -228,6 +228,13 @@ input[type='range'] { width: 160px; padding: 0; background: none; accent-color: 
 .medal.special { --disc: #8b5cf6; --rim: #c4b5fd; --rib: #0f9f6e; }
 .medal.locked { --disc: var(--surface-2); --rim: var(--line); --rib: var(--surface-2); }
 .medal.locked .medal-disc { color: var(--muted); box-shadow: inset 0 0 0 4px var(--rim); }
+.tracks { list-style: none; padding: 0; margin: 12px 0 24px; display: grid; gap: 10px; }
+.track { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px 16px; background: var(--surface); border-radius: var(--radius); }
+.track-head { display: flex; justify-content: space-between; align-items: baseline; width: 100%; }
+.track-steps { display: grid; grid-template-columns: repeat(4, 1fr); width: 100%; }
+.track-step { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.track-step small { font-size: 0.75rem; color: var(--muted); font-weight: 600; }
+.track-step.on small { color: var(--text); }
 .medal-grid { list-style: none; padding: 0; margin: 12px 0 24px; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
 .medal-grid li { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 10px; background: var(--surface); border-radius: var(--radius); text-align: center; }
 .medal-grid li b { font-size: 0.95rem; }
