@@ -1,3 +1,4 @@
+import { COURSES } from '../courses'
 import type { CourseInfo, CourseWords } from '../courses/types'
 import { db, type Word } from './db'
 import { ARABIC_MARKS, stripAccents } from './answer'
@@ -66,4 +67,22 @@ export async function addCourse(course: CourseInfo): Promise<{ deckId: string; a
 
 export async function courseWordCount(course: CourseInfo) {
   return Object.values(await course.load()).reduce((n, entries) => n + entries.length, 0)
+}
+
+/** Names the courses had before levels got Hebrew names, e.g. "ספרדית B1". */
+const OLD_COURSE_NAMES: Record<string, string> = {
+  'es-b1': 'ספרדית B1', 'es-b2': 'ספרדית B2', 'es-c1': 'ספרדית C1', 'es-c2': 'ספרדית C2',
+  'ar-lev-b1': 'ערבית מדוברת B1', 'ar-lev-b2': 'ערבית מדוברת B2',
+  'ar-lev-c1': 'ערבית מדוברת C1', 'ar-lev-c2': 'ערבית מדוברת C2',
+}
+
+/** Give course decks added under an old name the new one – unless the user renamed the deck themselves. */
+export async function renameCourseDecks() {
+  for (const course of COURSES) {
+    const old = OLD_COURSE_NAMES[course.id]
+    if (!old) continue
+    const deckId = courseDeckId(course.id)
+    const deck = await db.decks.get(deckId)
+    if (deck?.name === old) await db.decks.update(deckId, { name: course.name })
+  }
 }

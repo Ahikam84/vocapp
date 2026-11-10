@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { HashRouter } from 'react-router-dom'
 import App from './App'
 import { migrateFromV1 } from './lib/db'
+import { renameCourseDecks } from './lib/courses'
 import { getSettings } from './lib/settings'
 import { detectUiLang, setUiLang } from './lib/i18n'
 import { completeAuthRedirect, startSync } from './lib/sync'
@@ -16,6 +17,7 @@ navigator.storage?.persist?.()
 // New users start with no course and pick a language first; existing data is migrated as before.
 completeAuthRedirect()
   .then(migrateFromV1)
+  .then(renameCourseDecks)
   .then(getSettings)
   .then((settings) => {
     setUiLang(settings.uiLang ?? detectUiLang())

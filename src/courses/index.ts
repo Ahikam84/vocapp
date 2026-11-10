@@ -3,8 +3,26 @@ import type { CourseInfo } from './types'
 /** Ready-made courses. Word lists load on demand so they don't weigh down the app. */
 export const COURSES: CourseInfo[] = [
   {
+    id: 'es-a1',
+    name: 'ספרדית – רמת מתחילים',
+    description: 'המילים הראשונות: ברכות, מספרים, משפחה, אוכל, בית, בגדים, ימים וצבעים, ופעלים בסיסיים',
+    level: 'A1',
+    sourceLang: 'he',
+    targetLang: 'es',
+    load: () => import('./es-a1').then((m) => m.default),
+  },
+  {
+    id: 'es-a2',
+    name: 'ספרדית – רמת מתחילים המשך',
+    description: 'שגרת יום, מזג אוויר, התמצאות בעיר, קניות, לימודים ועבודה, פנאי, רגשות ודיבור על עבר ותכניות',
+    level: 'A2',
+    sourceLang: 'he',
+    targetLang: 'es',
+    load: () => import('./es-a2').then((m) => m.default),
+  },
+  {
     id: 'es-b1',
-    name: 'ספרדית B1',
+    name: 'ספרדית – רמת בינוניים',
     description: 'אוצר מילים לרמה בינונית: נסיעות, אוכל, בית, בריאות, קניות וביטויים יומיומיים',
     level: 'B1',
     sourceLang: 'he',
@@ -13,7 +31,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'es-b2',
-    name: 'ספרדית B2',
+    name: 'ספרדית – רמת בינוניים המשך',
     description: 'אוצר מילים לרמה בינונית-גבוהה: עבודה, חברה, בריאות, יחסים וביטויים נפוצים',
     level: 'B2',
     sourceLang: 'he',
@@ -22,7 +40,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'es-c1',
-    name: 'ספרדית C1',
+    name: 'ספרדית – רמת מתקדמים',
     description: 'אוצר מילים מתקדם: מילות קישור, פעלים, ביטויים, חברה, כלכלה ועוד',
     level: 'C1',
     sourceLang: 'he',
@@ -31,7 +49,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'es-c2',
-    name: 'ספרדית C2',
+    name: 'ספרדית – רמת מתקדמים המשך',
     description: 'משלב גבוה: שפה ספרותית, משפט וכלכלה, ביטויים ושפה מדוברת מספרד',
     level: 'C2',
     sourceLang: 'he',
@@ -39,8 +57,26 @@ export const COURSES: CourseInfo[] = [
     load: () => import('./es-c2').then((m) => m.default),
   },
   {
+    id: 'ar-lev-a1',
+    name: 'ערבית מדוברת – רמת מתחילים',
+    description: 'ערבית לבנטינית מדוברת למתחילים: ברכות, כינויים, מספרים, משפחה, אוכל, בית, צבעים, ימים ופעלים בסיסיים. בכתב ערבי עם תעתיק עברי',
+    level: 'A1',
+    sourceLang: 'he',
+    targetLang: 'ar',
+    load: () => import('./ar-lev-a1').then((m) => m.default),
+  },
+  {
+    id: 'ar-lev-a2',
+    name: 'ערבית מדוברת – רמת מתחילים המשך',
+    description: 'ערבית לבנטינית מדוברת למתחילים, המשך: שגרת יום, שמות החודשים, קניות, תחבורה, לימודים ועבודה, בית, מזג אוויר, חיות, פעלים וביטויים. בכתב ערבי עם תעתיק עברי',
+    level: 'A2',
+    sourceLang: 'he',
+    targetLang: 'ar',
+    load: () => import('./ar-lev-a2').then((m) => m.default),
+  },
+  {
     id: 'ar-lev-b1',
-    name: 'ערבית מדוברת B1',
+    name: 'ערבית מדוברת – רמת בינוניים',
     description: 'ערבית לבנטינית מדוברת לרמה בינונית: משפחה, בית, אוכל, עבודה, עיר, בריאות, רגשות וביטויים יומיומיים. בכתב ערבי עם תעתיק עברי',
     level: 'B1',
     sourceLang: 'he',
@@ -49,7 +85,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'ar-lev-b2',
-    name: 'ערבית מדוברת B2',
+    name: 'ערבית מדוברת – רמת בינוניים המשך',
     description: 'ערבית לבנטינית מדוברת לרמה בינונית-גבוהה: הבעת דעה, יחסים, כסף, עבודה, חדשות, טכנולוגיה, בריאות וביטויים. בכתב ערבי עם תעתיק עברי',
     level: 'B2',
     sourceLang: 'he',
@@ -58,7 +94,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'ar-lev-c1',
-    name: 'ערבית מדוברת C1',
+    name: 'ערבית מדוברת – רמת מתקדמים',
     description: 'ערבית לבנטינית מדוברת לרמה מתקדמת: מילות שיח, רגשות ואופי, חברה, ביורוקרטיה, פתגמים, אירוח וסלנג. בכתב ערבי עם תעתיק עברי',
     level: 'C1',
     sourceLang: 'he',
@@ -67,7 +103,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'ar-lev-c2',
-    name: 'ערבית מדוברת C2',
+    name: 'ערבית מדוברת – רמת מתקדמים המשך',
     description: 'ערבית לבנטינית מדוברת ברמת שליטה מלאה: טיעון ועמדה, משפט וכלכלה, רגשות עמוקים, פתגמים, ברכות וביטויי נימוס, תרבות וסלנג. בכתב ערבי עם תעתיק עברי',
     level: 'C2',
     sourceLang: 'he',

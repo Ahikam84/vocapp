@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { COURSES } from '../courses'
 import { db } from './db'
-import { addCourse, courseToWords } from './courses'
+import { addCourse, courseDeckId, courseToWords, renameCourseDecks } from './courses'
 
 beforeEach(async () => {
   await Promise.all(db.tables.map((t) => t.clear()))
@@ -46,5 +46,15 @@ describe('ready-made courses', () => {
     expect(await db.words.where('deckId').equals(first.deckId).count()).toBe(first.added)
     expect((await db.words.get(anyWord.id))!.translations).toEqual(['תרגום שלי'])
     expect(await db.decks.count()).toBe(1)
+  })
+
+  it('renames decks still called by an old course name, but not ones the user renamed', async () => {
+    await db.decks.bulkAdd([
+      { id: courseDeckId('es-b1'), name: 'ספרדית B1', sourceLang: 'he', targetLang: 'es', createdAt: 1 },
+      { id: courseDeckId('es-b2'), name: 'הספרדית שלי', sourceLang: 'he', targetLang: 'es', createdAt: 1 },
+    ])
+    await renameCourseDecks()
+    expect((await db.decks.get(courseDeckId('es-b1')))!.name).toBe('ספרדית – רמת בינוניים')
+    expect((await db.decks.get(courseDeckId('es-b2')))!.name).toBe('הספרדית שלי')
   })
 })
