@@ -1,7 +1,8 @@
 import 'fake-indexeddb/auto'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { COURSES } from '../courses'
-import { db } from './db'
+import type { CourseInfo, CourseWords } from '../courses/types'
+import { db, markRemote } from './db'
 import { addCourse, courseDeckId, courseToWords, renameCourseDecks } from './courses'
 
 beforeEach(async () => {
@@ -56,5 +57,51 @@ describe('ready-made courses', () => {
     await renameCourseDecks()
     expect((await db.decks.get(courseDeckId('es-b1')))!.name).toBe('ספרדית – רמת בינוניים')
     expect((await db.decks.get(courseDeckId('es-b2')))!.name).toBe('הספרדית שלי')
+  })
+
+  describe('course corrections', () => {
+    let data: CourseWords
+    const course: CourseInfo = {
+      id: 'test', name: 'Test', description: '', level: 'A1', sourceLang: 'he', targetLang: 'es',
+      load: async () => data,
+    }
+    const id = (term: string) => `test:${term}`
+    beforeEach(() => {
+      data = { t: [['uno', 'אחת', 'Uno.', 'אחת.'], ['dos', 'שתיים', 'Dos.', 'שתיים.'], ['tres', 'שלוש', 'Tres.', 'שלוש.']] }
+    })
+
+    it('reach words the user has not edited, and leave edited ones and "known" marks alone', async () => {
+      await addCourse(course)
+      await db.words.update(id('dos'), { translations: ['שתיים שלי'] })
+      await db.words.update(id('tres'), { known: true })
+
+      data = { t: [['uno', 'אחד', 'Uno.', 'אחד.'], ['dos', 'זוג', 'Dos.', 'שתיים.'], ['tres', 'שלושה', 'Tres.', 'שלוש.'], ['cuatro', 'ארבע', 'Cuatro.', 'ארבע.']] }
+      const result = await addCourse(course)
+      expect(result).toMatchObject({ added: 1, updated: 2 })
+      expect((await db.words.get(id('uno')))!).toMatchObject({ translations: ['אחד'], exampleTranslation: 'אחד.' })
+      expect((await db.words.get(id('dos')))!.translations).toEqual(['שתיים שלי'])
+      expect((await db.words.get(id('tres')))!).toMatchObject({ translations: ['שלושה'], known: true })
+
+      // A second correction still reaches a word updated by the first.
+      data.t[0][1] = 'אחת/אחד'
+      await addCourse(course)
+      expect((await db.words.get(id('uno')))!.translations).toEqual(['אחת', 'אחד'])
+    })
+
+    it('treat words added before corrections existed as unedited only if never changed since', async () => {
+      await addCourse(course)
+      // Strip the fingerprint, as on words added by an older version; "dos" was edited a day later.
+      // (Written as a sync would, so the database keeps these timestamps instead of stamping "now".)
+      await db.transaction('rw', db.words, async (tx) => {
+        markRemote(tx)
+        await db.words.toCollection().modify((w) => { delete w.courseHash; w.updatedAt = w.createdAt })
+        await db.words.where('id').equals(id('dos')).modify((w) => { w.updatedAt = w.createdAt + 86_400_000; w.translations = ['שתיים שלי'] })
+      })
+
+      data = { t: [['uno', 'אחד', 'Uno.', 'אחת.'], ['dos', 'זוג', 'Dos.', 'שתיים.'], ['tres', 'שלוש', 'Tres.', 'שלוש.']] }
+      expect((await addCourse(course)).updated).toBe(1)
+      expect((await db.words.get(id('uno')))!.translations).toEqual(['אחד'])
+      expect((await db.words.get(id('dos')))!.translations).toEqual(['שתיים שלי'])
+    })
   })
 })

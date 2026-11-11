@@ -2,6 +2,7 @@ import { COURSES } from '../courses'
 import type { CourseInfo, CourseWords } from '../courses/types'
 import { db, type Word } from './db'
 import { ARABIC_MARKS, stripAccents } from './answer'
+import { audioKey } from './audioKey'
 
 export const courseDeckId = (courseId: string) => `course-${courseId}`
 
@@ -41,28 +42,70 @@ export function courseToWords(course: CourseInfo, data: CourseWords, now = Date.
   return words
 }
 
+/** The parts of a course word that a course correction may change. */
+function courseContent(w: Word) {
+  return {
+    translations: w.translations, example: w.example, exampleTranslation: w.exampleTranslation,
+    reading: w.reading, exampleReading: w.exampleReading, tags: w.tags,
+  }
+}
+const contentHash = (w: Word) => audioKey(JSON.stringify(courseContent(w)))
+
+/** Words copied in before courseHash existed and never changed since count as unedited. */
+const UNTOUCHED_MS = 5 * 60_000
+
 /**
- * Add a ready-made course as a deck. Safe to run again: words already present
- * (including ones the user edited) are left alone and only new ones are added.
- * Deterministic ids mean adding it on two devices syncs into one copy.
+ * Add a ready-made course as a deck, or bring it up to date. Safe to run again: new words are added,
+ * and corrections to the course reach words the user hasn't edited – their own edits, "already known"
+ * marks and progress are kept. Deterministic ids mean adding it on two devices syncs into one copy.
  */
-export async function addCourse(course: CourseInfo): Promise<{ deckId: string; added: number }> {
+export async function addCourse(course: CourseInfo): Promise<{ deckId: string; added: number; updated: number }> {
   const data = await course.load()
   const deckId = courseDeckId(course.id)
-  const words = courseToWords(course, data)
+  const words = courseToWords(course, data).map((w) => ({ ...w, courseHash: contentHash(w) }))
 
   let added = 0
+  let updated = 0
   await db.transaction('rw', db.decks, db.words, async () => {
     if (!(await db.decks.get(deckId)))
       await db.decks.add({
         id: deckId, name: course.name, sourceLang: course.sourceLang, targetLang: course.targetLang, createdAt: Date.now(),
       })
-    const existing = new Set((await db.words.where('deckId').equals(deckId).primaryKeys()) as string[])
+    const existing = new Map((await db.words.where('deckId').equals(deckId).toArray()).map((w) => [w.id, w]))
     const fresh = words.filter((w) => !existing.has(w.id))
     await db.words.bulkAdd(fresh)
     added = fresh.length
+
+    for (const w of words) {
+      const mine = existing.get(w.id)
+      if (!mine) continue
+      const current = contentHash(mine)
+      const unedited = mine.courseHash
+        ? mine.courseHash === current
+        : (mine.updatedAt ?? mine.createdAt) - mine.createdAt < UNTOUCHED_MS
+      if (!unedited) continue
+      if (current !== w.courseHash) {
+        await db.words.update(w.id, { ...courseContent(w), courseHash: w.courseHash })
+        updated++
+      } else if (mine.courseHash !== w.courseHash) {
+        await db.words.update(w.id, { courseHash: w.courseHash }) // older copy: remember it is unedited
+      }
+    }
   })
-  return { deckId, added }
+  return { deckId, added, updated }
+}
+
+/**
+ * Bring every ready-made course the user has up to date – once per app version, in the background,
+ * so corrections and new words reach students without them having to look for updates.
+ */
+export async function refreshCourses(version: string) {
+  const key = 'coursesRefreshedFor'
+  const done = await db.settings.get(key)
+  if (done?.value === version) return
+  for (const course of COURSES)
+    if (await db.decks.get(courseDeckId(course.id))) await addCourse(course)
+  await db.settings.put({ key, value: version })
 }
 
 export async function courseWordCount(course: CourseInfo) {

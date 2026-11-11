@@ -42,6 +42,9 @@ export interface Word extends Synced {
   tags?: string[]
   /** "I already know this word" – skipped by learning and reviews until restored */
   known?: boolean
+  /** Ready-made course words: fingerprint of the course's content when it was last copied in, so a
+   *  later course correction can tell whether the user has edited the word (then it is left alone). */
+  courseHash?: string
   createdAt: number
 }
 

@@ -340,9 +340,13 @@ function ReadyCourse({ course, have, onChoose, showSource }: { course: CourseInf
   async function add() {
     setBusy(true)
     try {
-      const { deckId, added } = await addCourse(course)
+      const { deckId, added, updated } = await addCourse(course)
       if (!have) return onChoose(deckId)
-      setMsg(added ? t('נוספו {n} מילים.', { n: added }) : t('הקורס מעודכן – אין מילים חדשות.'))
+      const parts = [
+        added ? t('נוספו {n} מילים.', { n: added }) : '',
+        updated ? t('עודכנו {n} מילים.', { n: updated }) : '',
+      ].filter(Boolean)
+      setMsg(parts.length ? parts.join(' ') : t('הקורס מעודכן – אין מילים חדשות.'))
     } finally {
       setBusy(false)
     }

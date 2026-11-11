@@ -382,6 +382,7 @@ export const EN: Record<string, string> = {
   'השיתוף יוצר קישור. כל מי שיש לו את הקישור יכול להוסיף את הקורס. שינויים שתעשה אחר כך יגיעו לתלמידים אחרי "עדכון הגרסה המשותפת".':
     'Sharing creates a link. Anyone with the link can add the course. Changes you make later reach students after "Update the shared version".',
   'יצירת קישור שיתוף': 'Create a share link',
+  'עודכנו {n} מילים.': '{n} words updated.',
   'נוספו {n} מילים.': '{n} words added.',
   'הקורס מעודכן – אין מילים חדשות.': 'Up to date – no new words.',
   'נוסף · {n} מילים': 'Added · {n} words',
