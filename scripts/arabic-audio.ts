@@ -134,10 +134,15 @@ async function courseTexts(): Promise<{ text: string; word: string }[]> {
   return [...texts].map(([text, word]) => ({ text, word }))
 }
 
-/** index.json lists the clips that exist, so the app knows which texts have a recording. */
+/** A clip's file is "<key>.mp3", or "<key>~<version>.mp3" once re-recorded. */
+const clipKey = (file: string) => file.replace(/\.mp3$/, '').split('~')[0]
+
+/** index.json lists the clips that exist, so the app knows which texts have a recording (and re-recorded files' names). */
 function writeIndex(voiceId: string, voiceName: string) {
-  const keys = readdirSync(outDir).filter((f) => f.endsWith('.mp3')).map((f) => f.slice(0, -4)).sort()
-  writeFileSync(indexFile, JSON.stringify({ voice: voiceId, voiceName, keys }) + '\n')
+  const clips = readdirSync(outDir).filter((f) => f.endsWith('.mp3'))
+  const keys = clips.map(clipKey).sort()
+  const files = Object.fromEntries(clips.filter((f) => f.includes('~')).map((f) => [clipKey(f), f.slice(0, -4)]))
+  writeFileSync(indexFile, JSON.stringify({ voice: voiceId, voiceName, keys, ...(Object.keys(files).length ? { files } : {}) }) + '\n')
 }
 
 const safeName = (s: string) => s.replace(/[^\p{L}\p{N}_-]+/gu, '_')
@@ -175,6 +180,27 @@ async function main() {
     return
   }
 
+  // Re-record one clip that came out badly, in another voice and optionally from a vowelled spelling:
+  //   --redo="تورّط" --voice=<id> [--say="تْوَرَّط"]   (the clip stays filed under the course's own text)
+  const redo = args.find((a) => a.startsWith('--redo='))?.slice(7).trim()
+  if (redo) {
+    const id = args.find((a) => a.startsWith('--voice='))?.slice(8)
+    const voice = voices.find((v) => v.id === id || v.name.toLowerCase() === id?.toLowerCase())
+    if (!voice) throw new Error('--redo needs --voice=<id or name> of one of your voices.')
+    const say = args.find((a) => a.startsWith('--say='))?.slice(6).trim() || redo
+    const key = audioKey(redo)
+    const old = readdirSync(outDir).filter((f) => clipKey(f) === key)
+    if (!old.length) throw new Error(`No clip for "${redo}" – check the spelling against the course.`)
+    // A new file name, so devices that already cached the old clip fetch this one.
+    const file = `${key}~${Date.now().toString(36)}.mp3`
+    writeFileSync(join(outDir, file), await provider.synthesize(say, voice))
+    for (const f of old) rmSync(join(outDir, f))
+    const index = JSON.parse(readFileSync(indexFile, 'utf8'))
+    writeIndex(index.voice, index.voiceName)
+    console.log(`Re-recorded "${redo}" with ${voice.name}${say !== redo ? ` (from "${say}")` : ''}: public/audio/ar/${file}`)
+    return
+  }
+
   // One voice, or several separated by commas – each word (with its example) then gets one of them.
   const wanted = args.find((a) => a.startsWith('--voice='))?.slice(8).split(',').map((v) => v.trim()).filter(Boolean)
   if (!wanted?.length) {
@@ -207,7 +233,8 @@ async function main() {
   const keys = texts.map((t) => audioKey(t.text))
   if (new Set(keys).size !== keys.length) throw new Error('Two texts got the same file name – this should never happen.')
 
-  const todo = texts.map((t, i) => ({ ...t, i })).filter(({ i }) => !existsSync(join(outDir, `${keys[i]}.mp3`)))
+  const have = new Set(readdirSync(outDir).filter((f) => f.endsWith('.mp3')).map(clipKey))
+  const todo = texts.map((t, i) => ({ ...t, i })).filter(({ i }) => !have.has(keys[i]))
   const chars = todo.reduce((n, { text }) => n + text.length, 0)
   console.log(`${voiceNames}: ${texts.length} clips, ${todo.length} to make (${chars.toLocaleString()} characters).\n`)
 
@@ -230,10 +257,10 @@ async function main() {
     writeIndex(voiceId, voiceNames)
   }
 
-  const used = new Set(keys.map((k) => `${k}.mp3`))
+  const used = new Set(keys)
   let removed = 0
   for (const f of readdirSync(outDir))
-    if (f.endsWith('.mp3') && !used.has(f)) {
+    if (f.endsWith('.mp3') && !used.has(clipKey(f))) {
       rmSync(join(outDir, f))
       removed++
     }

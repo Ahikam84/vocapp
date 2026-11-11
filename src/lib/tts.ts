@@ -65,6 +65,8 @@ interface RecordingIndex {
   /** The voice's display name, e.g. "ar-JO-SanaNeural" or an ElevenLabs voice's name */
   voice?: string
   keys: Set<string>
+  /** Re-recorded clips live under a new file name, so devices that cached the old one fetch it */
+  files?: Record<string, string>
 }
 const recordings: Record<string, Promise<RecordingIndex>> = {}
 const loaded: Record<string, RecordingIndex> = {}
@@ -73,8 +75,8 @@ function recordingIndex(lang: string): Promise<RecordingIndex> {
   if (!RECORDED_LANGS.includes(lang) || typeof fetch === 'undefined') return Promise.resolve({ keys: new Set() })
   return (recordings[lang] ??= fetch(`audio/${lang}/index.json`)
     .then((r) => (r.ok ? r.json() : { keys: [] }))
-    .then((index: { voice?: string; voiceName?: string; keys: string[] }) =>
-      (loaded[lang] = { voice: index.voiceName ?? index.voice, keys: new Set(index.keys) }))
+    .then((index: { voice?: string; voiceName?: string; keys: string[]; files?: Record<string, string> }) =>
+      (loaded[lang] = { voice: index.voiceName ?? index.voice, keys: new Set(index.keys), files: index.files }))
     .catch(() => {
       delete recordings[lang] // try again next time, e.g. once back online
       return { keys: new Set<string>() }
@@ -116,10 +118,10 @@ export function speak(text: string, lang: string, rate = defaultRate) {
   if (!RECORDED_LANGS.includes(lang)) return speakWithDevice(text, lang, rate)
   const key = audioKey(text)
   void recordingIndex(lang)
-    .then(async ({ keys }) => {
+    .then(async ({ keys, files }) => {
       if (id !== request) return // another word was asked for meanwhile
       if (!keys.has(key)) return speakWithDevice(text, lang, rate)
-      const url = await clipUrl(lang, key)
+      const url = await clipUrl(lang, files?.[key] ?? key)
       if (id !== request) return
       clearTimeout(timer)
       if (typeof speechSynthesis !== 'undefined' && (speechSynthesis.speaking || speechSynthesis.pending)) speechSynthesis.cancel()
