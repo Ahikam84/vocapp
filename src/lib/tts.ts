@@ -62,6 +62,7 @@ let timer: ReturnType<typeof setTimeout> | undefined
 // texts come with recordings in a Levantine voice. Anything without one is still read by the device.
 
 interface RecordingIndex {
+  /** The voice's display name, e.g. "ar-JO-SanaNeural" or an ElevenLabs voice's name */
   voice?: string
   keys: Set<string>
 }
@@ -72,7 +73,8 @@ function recordingIndex(lang: string): Promise<RecordingIndex> {
   if (!RECORDED_LANGS.includes(lang) || typeof fetch === 'undefined') return Promise.resolve({ keys: new Set() })
   return (recordings[lang] ??= fetch(`audio/${lang}/index.json`)
     .then((r) => (r.ok ? r.json() : { keys: [] }))
-    .then((index: { voice?: string; keys: string[] }) => (loaded[lang] = { voice: index.voice, keys: new Set(index.keys) }))
+    .then((index: { voice?: string; voiceName?: string; keys: string[] }) =>
+      (loaded[lang] = { voice: index.voiceName ?? index.voice, keys: new Set(index.keys) }))
     .catch(() => {
       delete recordings[lang] // try again next time, e.g. once back online
       return { keys: new Set<string>() }
