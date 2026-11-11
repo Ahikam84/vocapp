@@ -1,0 +1,101 @@
+/**
+ * Latin transliteration of spoken Arabic, derived from the courses' fully vowelled Hebrew
+ * transliteration – so the English and Hebrew versions of a course always agree.
+ *
+ *   הַלַּא → halla   בִּדִּי → biddi   ח'לַאץ → khalas   בַּעְדֵין → ba'dein   כִּיפַכּ → kifak
+ *
+ * ' marks ע (ain) and a glottal stop. In these transliterations a dagesh in בּ / כּ only
+ * tells the letter apart (b, k) and does not double it; in any other letter it marks a shadda.
+ */
+
+const GERESH = /['׳]/
+const POINTS = /[ְ-ׇּׁׂ]/
+
+const BASE: Record<string, string> = {
+  א: '', ב: 'b', ג: 'g', ד: 'd', ה: 'h', ו: 'w', ז: 'z', ח: 'h', ט: 't', י: 'y',
+  כ: 'k', ך: 'k', ל: 'l', מ: 'm', ם: 'm', נ: 'n', ן: 'n', ס: 's', ע: "'", פ: 'f', ף: 'f',
+  צ: 's', ץ: 's', ק: 'q', ר: 'r', ש: 'sh', ת: 't',
+}
+const WITH_GERESH: Record<string, string> = {
+  ג: 'j', ח: 'kh', ך: 'kh', כ: 'kh', ע: 'gh', ת: 'th', ד: 'dh', צ: 'd', ץ: 'd', ט: 'z', ז: 'zh',
+}
+const VOWEL: Record<string, string> = {
+  'ַ': 'a', 'ָ': 'a', 'ִ': 'i', 'ֵ': 'e', 'ֶ': 'e', 'ֻ': 'u', 'ֹ': 'o', 'ֺ': 'o',
+  'ֲ': 'a', 'ֱ': 'e', 'ֳ': 'o',
+}
+const DAGESH = 'ּ'
+
+interface Letter {
+  ch: string
+  geresh: boolean
+  dagesh: boolean
+  vowel: string // '' = none, 'shva' = shva
+}
+
+function parseWord(word: string): (Letter | string)[] {
+  const out: (Letter | string)[] = []
+  for (const c of word) {
+    const last = out[out.length - 1]
+    if (BASE[c] !== undefined) out.push({ ch: c, geresh: false, dagesh: false, vowel: '' })
+    else if (typeof last === 'object' && GERESH.test(c)) last.geresh = true
+    else if (typeof last === 'object' && POINTS.test(c)) {
+      if (c === DAGESH) last.dagesh = true
+      else if (c === 'ְ') last.vowel = 'shva'
+      else if (VOWEL[c]) last.vowel = VOWEL[c]
+    } else out.push(c)
+  }
+  return out
+}
+
+function word(w: string): string {
+  const letters = parseWord(w)
+  let out = ''
+  for (let i = 0; i < letters.length; i++) {
+    const l = letters[i]
+    if (typeof l === 'string') {
+      out += l
+      continue
+    }
+    const prev = letters[i - 1]
+    const prevLetter = typeof prev === 'object' ? prev : null
+    const prevVowel = prevLetter && prevLetter.vowel && prevLetter.vowel !== 'shva' ? prevLetter.vowel : ''
+    const next = letters[i + 1]
+    const atEnd = !next || typeof next === 'string'
+    const vowel = l.vowel === 'shva' ? '' : l.vowel
+
+    // Vav: וּ is u (or w after a vowel, as in לַוּ = law), וֹ is o; with a vowel of its own it is w.
+    if (l.ch === 'ו') {
+      // …and "w" before a vowel at the start of a word: וּאִנְכַּסְרַת = winkasrat.
+      const nextIsVowelAlef = typeof next === 'object' && next.ch === 'א' && next.vowel && next.vowel !== 'shva'
+      if (l.dagesh && !l.vowel) { out += prevVowel || (!prevLetter && nextIsVowelAlef) ? 'w' : 'u'; continue }
+      if (l.vowel === 'o' && !l.dagesh) { out += prevLetter && !prevVowel ? 'o' : 'wo'; continue }
+      out += (l.dagesh && prevVowel ? 'ww' : 'w') + vowel
+      continue
+    }
+    // Yod without points: the long vowel after i / e / a (פִי = fi, בֵּית = beit, שַאי = shai).
+    const nextIsVowelVav = typeof next === 'object' && next.ch === 'ו' && (next.dagesh || next.vowel === 'o') && !atEnd
+    if (l.ch === 'י' && !l.vowel && !l.dagesh && prevLetter && prevVowel && !nextIsVowelVav) {
+      out += prevVowel === 'i' ? '' : 'i'
+      continue
+    }
+    // Alef: carries a vowel at the start of a word, lengthens one after a vowel, else a glottal stop.
+    if (l.ch === 'א') {
+      if (!l.vowel) { out += prevLetter && !prevVowel ? "'" : ''; continue }
+      const afterInitialW = prevLetter?.ch === 'ו' && prevLetter.dagesh && i === 1
+      const afterCarrier = prevLetter?.ch === 'א' && !prevLetter.vowel // تفاءل: תְפַאאַל = tfa'al
+      out += (prevLetter && !afterInitialW && (prevVowel || afterCarrier || prevLetter.vowel === 'shva') ? "'" : '') + vowel
+      continue
+    }
+    // Final ה after a vowel is the silent feminine ending (عيلة = eile).
+    if (l.ch === 'ה' && !l.vowel && atEnd && prevVowel) continue
+
+    const sound = l.geresh && WITH_GERESH[l.ch] ? WITH_GERESH[l.ch] : BASE[l.ch]
+    const doubled = l.dagesh && prevVowel && l.ch !== 'ב' && l.ch !== 'כ' && l.ch !== 'ך'
+    out += (doubled ? sound + sound : sound) + vowel
+  }
+  return out
+}
+
+export function hebrewToLatin(hebrew: string): string {
+  return hebrew.normalize('NFC').split(/(\s+)/).map((part) => (/\s/.test(part) ? part : word(part))).join('')
+}

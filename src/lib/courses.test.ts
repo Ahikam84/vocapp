@@ -28,12 +28,29 @@ describe('ready-made courses', () => {
     const repeats: string[] = []
     for (const course of COURSES)
       for (const w of courseToWords(course, await course.load())) {
-        const key = `${course.targetLang}:${w.term.toLowerCase()}`
+        const key = `${course.sourceLang}>${course.targetLang}:${w.term.toLowerCase()}`
         if (seen.has(key)) repeats.push(`${w.term} (${seen.get(key)} & ${course.id})`)
         else seen.set(key, course.id)
       }
     expect(repeats).toEqual([])
   })
+
+  for (const course of COURSES.filter((c) => c.sourceLang === 'en'))
+    it(`${course.id}: has every word of the Hebrew version, all in English`, async () => {
+      const hebrew = COURSES.find((c) => c.id === course.id.replace(/-en$/, ''))!
+      const he = courseToWords(hebrew, await hebrew.load())
+      const en = courseToWords(course, await course.load())
+      const enEntries = (await import(`../courses/en/${hebrew.id}.ts`)).default.words as Record<string, unknown>
+      expect(Object.keys(enEntries).filter((term) => !he.some((w) => w.term === term)), 'English entries for words not in the course').toEqual([])
+      expect(en.map((w) => w.term)).toEqual(he.map((w) => w.term).filter((t) => en.some((w) => w.term === t)))
+      expect(he.filter((w) => !en.some((x) => x.term === w.term)).map((w) => w.term), 'words without English').toEqual([])
+      for (const w of en) {
+        for (const text of [...w.translations, w.exampleTranslation!, ...(w.tags ?? []), w.reading ?? '', w.exampleReading ?? ''])
+          expect(text, w.term).not.toMatch(/[֐-׿]/)
+        expect(w.translations.join(' ') + w.exampleTranslation, w.term).toMatch(/[a-z]/i)
+        if (course.targetLang === 'ar') expect(w.reading! + w.exampleReading, w.term).toMatch(/^[^؀-ۿ]*[a-z][^؀-ۿ]*$/i)
+      }
+    })
 
   it('adding a course twice keeps one copy and preserves user edits', async () => {
     const course = COURSES[0]

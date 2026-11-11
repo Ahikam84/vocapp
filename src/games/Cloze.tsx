@@ -89,7 +89,7 @@ function ClozeRound({ items, pool, lang, onAgain }: { items: Cloze[]; pool: Word
         <span className={`cloze-blank ${chosen ? (ok ? 'ok' : 'reveal') : ''}`}>{chosen ? item.answer : '   '}</span>
         {item.after}
       </div>
-      {chosen && item.word.exampleReading && <p className="reading center-text" dir="rtl">{item.word.exampleReading}</p>}
+      {chosen && item.word.exampleReading && <p className="reading center-text" dir="auto">{item.word.exampleReading}</p>}
       {item.word.exampleTranslation && <p className="muted center-text"><T>{item.word.exampleTranslation}</T></p>}
       <div className="options">
         {options.map((o) => {

@@ -158,7 +158,7 @@ function Intro({ word, deck }: Props) {
       {word.example && (
         <div className="example">
           <T>{word.example}</T> <SpeakButton text={word.example} lang={deck.targetLang} small />
-          {word.exampleReading && <div className="reading" dir="rtl">{word.exampleReading}</div>}
+          {word.exampleReading && <div className="reading" dir="auto">{word.exampleReading}</div>}
           {word.exampleTranslation && <div className="muted"><T>{word.exampleTranslation}</T></div>}
         </div>
       )}

@@ -17,3 +17,14 @@ export interface CourseInfo {
   targetLang: string
   load: () => Promise<CourseWords>
 }
+
+/**
+ * The English version of a course taught from Hebrew: the same words and examples, with English in
+ * place of the Hebrew. Per term: [translations ("/"-separated), example translation], and for Arabic
+ * optionally a Latin reading of the word and the example, overriding the one derived automatically.
+ */
+export interface EnglishVersion {
+  /** Hebrew topic name → English topic name */
+  topics: Record<string, string>
+  words: Record<string, [string, string] | [string, string, string, string]>
+}

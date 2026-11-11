@@ -79,7 +79,7 @@ export function Term({ word, className }: { word: { term: string; reading?: stri
   return (
     <span className="with-reading">
       <T className={className}>{word.term}</T>
-      <span className="reading" dir="rtl">{word.reading}</span>
+      <span className="reading" dir="auto">{word.reading}</span>
     </span>
   )
 }

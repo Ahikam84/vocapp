@@ -24,7 +24,7 @@ describe('Arabic courses', () => {
     expect(checkAnswer('חלאצ', acceptedTerms(kh)).result).toBe('correct')
   })
 
-  const arabic = COURSES.filter((c) => c.targetLang === 'ar')
+  const arabic = COURSES.filter((c) => c.targetLang === 'ar' && c.sourceLang === 'he')
 
   for (const course of arabic)
     it(`${course.id}: every word has a transliteration of the word and its example`, async () => {

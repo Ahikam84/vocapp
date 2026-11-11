@@ -91,7 +91,7 @@ export default function Words({ study }: { study: Study }) {
               {w.known ? <span className="known-mark" title={t('מסומנת כמוכרת')}><Check size={18} /></span> : <Strength level={strength(p)} />}
               <div className="grow">
                 <T className="term">{w.term}</T>
-                {w.reading && <span className="reading inline" dir="rtl">{w.reading}</span>}
+                {w.reading && <span className="reading inline" dir="auto">{w.reading}</span>}
                 <div className="muted">
                   <T>{w.translations.join(', ')}</T>
                   {several && <span className="course-tag" dir="auto">{courseName.get(w.deckId)}</span>}

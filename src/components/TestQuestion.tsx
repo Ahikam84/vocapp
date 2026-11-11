@@ -81,7 +81,7 @@ export function TestQuestionView(props: Props) {
             <span className={`cloze-blank ${answered ? (result?.correct ? 'ok' : 'reveal') : ''}`}>{answered ? q.cloze.answer : '   '}</span>
             {q.cloze.after}
           </div>
-          {answered && word.exampleReading && <p className="reading center-text" dir="rtl">{word.exampleReading}</p>}
+          {answered && word.exampleReading && <p className="reading center-text" dir="auto">{word.exampleReading}</p>}
           {word.exampleTranslation && <p className="muted center-text"><T>{word.exampleTranslation}</T></p>}
         </>
       )}
