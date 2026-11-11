@@ -73,7 +73,7 @@ const loaded: Record<string, RecordingIndex> = {}
 
 function recordingIndex(lang: string): Promise<RecordingIndex> {
   if (!RECORDED_LANGS.includes(lang) || typeof fetch === 'undefined') return Promise.resolve({ keys: new Set() })
-  return (recordings[lang] ??= fetch(`audio/${lang}/index.json`)
+  return (recordings[lang] ??= fetch(`audio/${lang}/index.json`, { cache: 'no-cache' })
     .then((r) => (r.ok ? r.json() : { keys: [] }))
     .then((index: { voice?: string; voiceName?: string; keys: string[]; files?: Record<string, string> }) =>
       (loaded[lang] = { voice: index.voiceName ?? index.voice, keys: new Set(index.keys), files: index.files }))

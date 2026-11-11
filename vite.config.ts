@@ -36,9 +36,11 @@ export default defineConfig({
             options: { cacheName: 'audio', expiration: { maxEntries: 4000 }, cacheableResponse: { statuses: [200] } },
           },
           {
+            // The list of clips: always the latest when online (it names re-recorded clips' new files),
+            // the stored copy only when offline.
             urlPattern: /\/audio\/.+\/index\.json$/,
-            handler: 'StaleWhileRevalidate',
-            options: { cacheName: 'audio-index', cacheableResponse: { statuses: [200] } },
+            handler: 'NetworkFirst',
+            options: { cacheName: 'audio-index', networkTimeoutSeconds: 4, cacheableResponse: { statuses: [200] } },
           },
         ],
       },
