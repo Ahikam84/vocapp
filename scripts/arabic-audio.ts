@@ -24,6 +24,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { audioKey } from '../src/lib/audioKey.ts'
+import { hebrewToVowelledArabic } from '../src/lib/translit.ts'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const outDir = join(root, 'public', 'audio', 'ar')
@@ -119,19 +120,33 @@ function loadEnvFile() {
 }
 
 /** Every Arabic text the courses speak – each word and its example sentence – with the word it belongs to. */
-async function courseTexts(): Promise<{ text: string; word: string }[]> {
-  const texts = new Map<string, string>()
+async function courseTexts(): Promise<{ text: string; word: string; say: string }[]> {
+  // text → the word it belongs to, and the fully vowelled spelling the voice is given
+  const texts = new Map<string, { word: string; say: string }>()
   const dir = join(root, 'src', 'courses')
   for (const file of readdirSync(dir).filter((f) => /^ar-.*\.ts$/.test(f))) {
     const words = (await import(pathToFileURL(join(dir, file)).href)).default as Record<string, string[][]>
     for (const entries of Object.values(words))
-      for (const [term, , example] of entries) {
+      for (const [term, , example, , reading, exampleReading] of entries) {
         const word = term.trim()
-        if (word && !texts.has(word)) texts.set(word, word)
-        if (example?.trim() && !texts.has(example.trim())) texts.set(example.trim(), word)
+        const vowelled = (r: string | undefined, plain: string) => (r ? hebrewToVowelledArabic(r) : plain)
+        if (word && !texts.has(word)) texts.set(word, { word, say: vowelled(reading, word) })
+        if (example?.trim() && !texts.has(example.trim()))
+          texts.set(example.trim(), { word, say: vowelled(exampleReading, example.trim()) })
       }
   }
-  return [...texts].map(([text, word]) => ({ text, word }))
+  return [...texts].map(([text, t]) => ({ text, ...t }))
+}
+
+/** Each Arabic course word's Hebrew transliteration. */
+async function courseReadings(): Promise<Map<string, string>> {
+  const readings = new Map<string, string>()
+  const dir = join(root, 'src', 'courses')
+  for (const file of readdirSync(dir).filter((f) => /^ar-.*\.ts$/.test(f))) {
+    const words = (await import(pathToFileURL(join(dir, file)).href)).default as Record<string, string[][]>
+    for (const entries of Object.values(words)) for (const e of entries) if (e[4]) readings.set(e[0].trim(), e[4])
+  }
+  return readings
 }
 
 /** A clip's file is "<key>.mp3", or "<key>~<version>.mp3" once re-recorded. */
@@ -162,12 +177,14 @@ async function main() {
   const args = process.argv.slice(2)
   const voices = await provider.voices()
 
-  if (args.includes('--samples')) {
+  const samplesArg = args.find((a) => a === '--samples' || a.startsWith('--samples='))
+  if (samplesArg) {
+    const only = samplesArg.includes('=') ? samplesArg.split('=')[1].toLowerCase() : ''
     const dir = join(root, 'audio-samples')
     mkdirSync(dir, { recursive: true })
     // The voices the user added; ElevenLabs' built-in ones only if there are none.
     const added = voices.filter((v) => v.category !== 'premade')
-    for (const voice of added.length ? added : voices) {
+    for (const voice of (added.length ? added : voices).filter((v) => !only || v.name.toLowerCase().includes(only))) {
       const file = `${safeName(voice.name)}.mp3`
       try {
         writeFileSync(join(dir, file), await provider.synthesize(SAMPLE, voice))
@@ -177,6 +194,76 @@ async function main() {
       }
     }
     console.log('\nListen to them, then run:  node scripts/arabic-audio.ts --voice=<the one you liked>')
+    return
+  }
+
+  // Replace one voice by another, recording the vowelled spelling: every word is re-recorded (with
+  // vowels, in its own voice), and the examples of the replaced voice's words in the new voice.
+  //   --swap=<old voice>:<new voice>      Resumes where it stopped; other clips are left alone.
+  const swap = args.find((a) => a.startsWith('--swap='))?.slice(7).split(':')
+  if (swap) {
+    const index = JSON.parse(readFileSync(indexFile, 'utf8')) as { voice: string }
+    const ids = index.voice.split(',').map((v) => v.split(':')[1] ?? v)
+    const find = (w: string) => voices.find((v) => v.id === w || v.name.toLowerCase().startsWith(w.toLowerCase()))
+    const from = find(swap[0])
+    const to = find(swap[1] ?? '')
+    const slot = from ? ids.indexOf(from.id) : -1
+    if (!from || !to || slot < 0) throw new Error(`--swap=<old>:<new> – the old voice must be one used now (${ids.join(', ')}).`)
+    const chosen = ids.map((id, n) => (n === slot ? to : voices.find((v) => v.id === id)!))
+    const slotOf = (word: string) => parseInt(audioKey(word).slice(-6), 36) % chosen.length
+    const tag = `v${audioKey(chosen.map((v) => v.id).join()).slice(0, 6)}`
+    const texts = (await courseTexts()).filter((t) => t.text === t.word || slotOf(t.word) === slot)
+    // The replaced voice's clips first – if the run stops early, the worst ones are already fixed.
+    const todo = texts
+      .filter((t) => !existsSync(join(outDir, `${audioKey(t.text)}~${tag}.mp3`)))
+      .sort((a, b) => Number(slotOf(b.word) === slot) - Number(slotOf(a.word) === slot))
+    const voiceId = chosen.map((v) => provider.id(v)).join(',')
+    const names = chosen.map((v) => v.name.split(' - ')[0]).join(', ')
+    console.log(`${from.name} → ${to.name}: ${todo.length} of ${texts.length} clips to record (${todo.reduce((n, t) => n + t.say.length, 0).toLocaleString()} characters).
+`)
+    let done = 0
+    let next = 0
+    const worker = async () => {
+      while (next < todo.length) {
+        const t = todo[next++]
+        const key = audioKey(t.text)
+        writeFileSync(join(outDir, `${key}~${tag}.mp3`), await provider.synthesize(t.say, chosen[slotOf(t.word)]))
+        for (const f of readdirSync(outDir)) if (clipKey(f) === key && f !== `${key}~${tag}.mp3`) rmSync(join(outDir, f))
+        done++
+        process.stdout.write(`[${done}/${todo.length}] ${t.say}
+`)
+        if (done % 25 === 0) writeIndex(voiceId, names)
+      }
+    }
+    try {
+      await Promise.all([worker(), worker()])
+    } finally {
+      writeIndex(voiceId, names)
+    }
+    console.log(`
+Done: ${names}.`)
+    return
+  }
+
+  // Try vowelled recordings of a few words, next to the current clips, without changing anything:
+  //   --try="لمس,كتب"  → audio-samples/try/<word>-1-now.mp3 and <word>-2-vowelled.mp3
+  const trial = args.find((a) => a.startsWith('--try='))?.slice(6).split(',').map((w) => w.trim()).filter(Boolean)
+  if (trial) {
+    const index = JSON.parse(readFileSync(indexFile, 'utf8')) as { voice: string; files?: Record<string, string> }
+    const ids = index.voice.split(',').map((v) => v.split(':')[1] ?? v)
+    const readings = await courseReadings()
+    const dir = join(root, 'audio-samples', 'try')
+    mkdirSync(dir, { recursive: true })
+    for (const word of trial) {
+      const reading = readings.get(word)
+      if (!reading) { console.log(`(no word "${word}" in the courses)`); continue }
+      const key = audioKey(word)
+      const voice = voices.find((v) => v.id === ids[parseInt(key.slice(-6), 36) % ids.length])!
+      const say = hebrewToVowelledArabic(reading)
+      writeFileSync(join(dir, `${safeName(word)}-1-now.mp3`), readFileSync(join(outDir, `${index.files?.[key] ?? key}.mp3`)))
+      writeFileSync(join(dir, `${safeName(word)}-2-vowelled.mp3`), await provider.synthesize(say, voice))
+      console.log(`${word}  →  ${say}   (${voice.name})`)
+    }
     return
   }
 
@@ -243,8 +330,8 @@ async function main() {
   let next = 0
   async function worker() {
     while (next < todo.length) {
-      const { text, word, i } = todo[next++]
-      writeFileSync(join(outDir, `${keys[i]}.mp3`), await provider!.synthesize(text, voiceFor(word)))
+      const { text, word, say, i } = todo[next++]
+      writeFileSync(join(outDir, `${keys[i]}.mp3`), await provider!.synthesize(say, voiceFor(word)))
       made++
       process.stdout.write(`[${made}/${todo.length}] ${text}\n`)
       // Save progress as we go, so stopping halfway still leaves a working set.

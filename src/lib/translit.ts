@@ -25,14 +25,14 @@ const VOWEL: Record<string, string> = {
 }
 const DAGESH = 'ּ'
 
-interface Letter {
+export interface Letter {
   ch: string
   geresh: boolean
   dagesh: boolean
   vowel: string // '' = none, 'shva' = shva
 }
 
-function parseWord(word: string): (Letter | string)[] {
+export function parseWord(word: string): (Letter | string)[] {
   const out: (Letter | string)[] = []
   for (const c of word) {
     const last = out[out.length - 1]
@@ -98,4 +98,69 @@ function word(w: string): string {
 
 export function hebrewToLatin(hebrew: string): string {
   return hebrew.normalize('NFC').split(/(\s+)/).map((part) => (/\s/.test(part) ? part : word(part))).join('')
+}
+
+// --- Fully vowelled Arabic, for the voice only -------------------------------------------------
+// Unvowelled Arabic is ambiguous to a speech engine (لمس: lamas "touched" or lams "touch"), so clips
+// are generated from a vowelled spelling rebuilt from the Hebrew transliteration, which already
+// spells out the spoken pronunciation. The course keeps showing the plain spelling.
+
+const AR: Record<string, string> = {
+  ב: 'ب', ג: 'ج', ד: 'د', ה: 'ه', ו: 'و', ז: 'ز', ח: 'ح', ט: 'ط', י: 'ي', כ: 'ك', ך: 'ك',
+  ל: 'ل', מ: 'م', ם: 'م', נ: 'ن', ן: 'ن', ס: 'س', ע: 'ع', פ: 'ف', ף: 'ف', צ: 'ص', ץ: 'ص', ק: 'ق',
+  ר: 'ر', ש: 'ش', ת: 'ت',
+}
+const AR_GERESH: Record<string, string> = {
+  ג: 'ج', ח: 'خ', כ: 'خ', ך: 'خ', ע: 'غ', ת: 'ث', ד: 'ذ', צ: 'ض', ץ: 'ض', ט: 'ظ', ז: 'ج',
+}
+const FATHA = 'َ', KASRA = 'ِ', DAMMA = 'ُ', SUKUN = 'ْ', SHADDA = 'ّ'
+const HARAKA: Record<string, string> = { a: FATHA, i: KASRA, e: KASRA, u: DAMMA, o: DAMMA, shva: SUKUN }
+
+function vowelledWord(w: string): string {
+  const letters = parseWord(w)
+  let out = ''
+  for (let i = 0; i < letters.length; i++) {
+    const l = letters[i]
+    if (typeof l === 'string') {
+      out += l === '-' ? '' : l === '?' ? '؟' : l === ',' ? '،' : l
+      continue
+    }
+    const prev = letters[i - 1]
+    const prevLetter = typeof prev === 'object' ? prev : null
+    const prevVowel = prevLetter && prevLetter.vowel && prevLetter.vowel !== 'shva' ? prevLetter.vowel : ''
+    const next = letters[i + 1]
+    const nextLetter = typeof next === 'object' ? next : null
+    const atEnd = !nextLetter
+    // e before an unpointed yod is the diphthong "ei" (בֵּית = bayt), written fatha + ي.
+    const beforeDiphthong = nextLetter?.ch === 'י' && !nextLetter.vowel && !nextLetter.dagesh
+    const mark = (v: string) => (v === 'e' && beforeDiphthong ? FATHA : HARAKA[v] ?? '')
+
+    if (l.ch === 'ו') {
+      if (l.dagesh && !l.vowel) { out += prevVowel ? 'و' + SUKUN : (prevLetter ? DAMMA : '') + 'و'; continue }
+      if (l.vowel === 'o' && !l.dagesh) { out += (prevLetter && !prevVowel ? DAMMA : prevLetter ? '' : 'أُ') + 'و'; continue }
+      out += 'و' + (l.dagesh && prevVowel ? SHADDA : '') + mark(l.vowel)
+      continue
+    }
+    if (l.ch === 'י' && !l.vowel && !l.dagesh && prevLetter && prevVowel) {
+      out += prevVowel === 'i' ? 'ي' : 'ي' + SUKUN
+      continue
+    }
+    if (l.ch === 'א') {
+      if (!l.vowel) { out += prevVowel ? 'ا' : prevLetter ? 'ء' : 'أ'; continue } // אוֹ at the start: أُو
+      const seat = l.vowel === 'i' || l.vowel === 'e' ? 'إ' : 'أ'
+      out += seat + mark(l.vowel)
+      continue
+    }
+    if (l.ch === 'ה' && !l.vowel && atEnd && prevVowel) { out += 'ة'; continue }
+
+    const letter = l.geresh && AR_GERESH[l.ch] ? AR_GERESH[l.ch] : AR[l.ch] ?? ''
+    const doubled = l.dagesh && prevVowel && l.ch !== 'ב' && l.ch !== 'כ' && l.ch !== 'ך'
+    out += letter + (doubled ? SHADDA : '') + mark(l.vowel)
+  }
+  return out
+}
+
+/** Fully vowelled Arabic rebuilt from a Hebrew transliteration: לַמַס → لَمَس, בֵּית → بَيْت. */
+export function hebrewToVowelledArabic(hebrew: string): string {
+  return hebrew.normalize('NFC').split(/(\s+)/).map((part) => (/\s/.test(part) ? part : vowelledWord(part))).join('')
 }
