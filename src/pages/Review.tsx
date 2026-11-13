@@ -7,6 +7,7 @@ import { SessionReward } from '../components/Goal'
 import { db, newId, setKnown, type ExerciseType, type Progress, type Word } from '../lib/db'
 import { t } from '../lib/i18n'
 import { getSettings, useSettings, type Settings } from '../lib/settings'
+import { nextRetry } from '../lib/retry'
 import { DIFFICULT_LAPSES, gradeAnswer, recordReview, strength, strengthAfter } from '../lib/srs'
 import { ttsAvailable } from '../lib/tts'
 import type { Study } from '../lib/useDeck'
@@ -90,10 +91,11 @@ export default function Review({ study, mode }: { study: Study; mode: Mode }) {
       }
       setScore((s) => (outcome.correct ? { ...s, right: s.right + 1 } : { ...s, wrong: s.wrong + 1 }))
     }
-    if (!outcome.correct) {
-      // Ask again a few items later, always as typed recall.
+    // A missed word comes back a few items later, first as an easier exercise, climbing back to typing.
+    const again = item.retry || !outcome.correct ? nextRetry(item.exercise, outcome.correct, pool.length >= 3) : null
+    if (again) {
       const next = [...queue]
-      next.splice(Math.min(next.length, pos + 4), 0, { word: item.word, exercise: 'typing', retry: true })
+      next.splice(Math.min(next.length, pos + (outcome.correct ? 3 : 4)), 0, { word: item.word, exercise: again, retry: true })
       setQueue(next)
     }
     setPos((p) => p + 1)
