@@ -26,6 +26,7 @@ import {
   type TestQuestion,
 } from '../lib/test'
 import { ttsAvailable } from '../lib/tts'
+import { writingModeFor } from '../lib/writing'
 import type { Study } from '../lib/useDeck'
 
 const LEVEL_NAMES: Record<TestLevel, () => string> = { easy: () => t('קל'), medium: () => t('בינוני'), hard: () => t('קשה') }
@@ -103,9 +104,10 @@ export default function Test({ study }: { study: Study }) {
       difficult={data.difficult}
       setup={setup}
       onChange={(patch) => setSetup((s) => ({ ...s, ...patch }))}
-      onStart={(words) => {
+      onStart={async (words) => {
         const audio = ttsAvailable(lang.target)
-        const questions = buildTest(words, data.pool, setup.level, setup.length, audio)
+        const transliteration = (await writingModeFor(lang.target)) === 'reading'
+        const questions = buildTest(words, data.pool, setup.level, setup.length, audio, transliteration)
         setRunning({ ref: { id: newId(), level: setup.level, questions: questions.length }, questions, timed: setup.timed })
       }}
     />

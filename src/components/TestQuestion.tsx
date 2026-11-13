@@ -7,7 +7,8 @@ import { dirOf, t } from '../lib/i18n'
 import type { ItemResult, QuestionKind, TestQuestion } from '../lib/test'
 import { speak } from '../lib/tts'
 import { SPECIAL_CHARS, toHebrewKeys } from '../lib/useDeck'
-import { T, Term } from './common'
+import { T, Term, WritingToggle } from './common'
+import { useWritingMode, writingLang } from '../lib/writing'
 import { HebrewKeyboard } from './Exercise'
 
 export const PROMPTS: Record<QuestionKind, string> = {
@@ -57,6 +58,9 @@ export function TestQuestionView(props: Props) {
   const one = (correct: boolean, given: string, almost = false) => onAnswer([{ word, correct, almost, given }])
   const typed = (r: AnswerResult, given: string) => one(r !== 'wrong', given, r === 'almost')
   const result = answered?.[0]
+  const writing = useWritingMode(langs.target)
+  const keyLang = writingLang(word, writing, langs.target)
+  const typesWord = kind === 'type-term' || kind === 'dictation' || kind === 'cloze-type'
 
   return (
     <div className={`test-q ${result ? `fb-${result.correct ? (result.almost ? 'almost' : 'correct') : 'wrong'}` : ''}`}>
@@ -105,12 +109,13 @@ export function TestQuestionView(props: Props) {
       {kind === 'truefalse' && <TrueFalseQ q={q} langs={langs} answered={result} onAnswer={(ok, given) => one(ok, given)} />}
       {kind === 'match' && <Match pairs={q.pairs!} langs={langs} answered={answered} timeUp={timeUp} onAnswer={onAnswer} />}
 
+      {typesWord && word.reading && !result && <WritingToggle lang={langs.target} mode={writing} />}
       {kind === 'type-term' || kind === 'dictation' ? (
-        <Typing accepted={acceptedTerms(word)} lang={langs.target} learner answered={result} onAnswer={typed} />
+        <Typing accepted={acceptedTerms(word)} lang={keyLang} learner={keyLang === langs.target} hint={keyLang !== langs.target ? t('הקלידו בתעתיק') : undefined} answered={result} onAnswer={typed} />
       ) : kind === 'cloze-type' ? (
         // The blank is the word as the sentence has it; when that's the word itself, its other spellings
         // (and transliteration) count too
-        <Typing accepted={q.cloze!.bare ? [q.cloze!.answer] : [q.cloze!.answer, ...acceptedTerms(word)]} lang={langs.target} learner answered={result} onAnswer={typed} />
+        <Typing accepted={q.cloze!.bare ? [q.cloze!.answer] : [q.cloze!.answer, ...acceptedTerms(word)]} lang={keyLang} learner={keyLang === langs.target} answered={result} onAnswer={typed} />
       ) : kind === 'type-meaning' ? (
         <Typing accepted={word.translations} lang={langs.source} answered={result} onAnswer={typed} />
       ) : null}
@@ -246,7 +251,7 @@ function Match({ pairs, langs, answered, timeUp, onAnswer }: { pairs: Word[]; la
  * A typed answer. Accepted at once when it matches exactly; otherwise checked on Enter.
  * `learner`: typed in the language being learned (Hebrew then gets the on-screen keyboard).
  */
-function Typing({ accepted, lang, learner, answered, onAnswer }: { accepted: string[]; lang: string; learner?: boolean; answered?: ItemResult; onAnswer: (r: AnswerResult, given: string) => void }) {
+function Typing({ accepted, lang, learner, hint, answered, onAnswer }: { accepted: string[]; lang: string; learner?: boolean; hint?: string; answered?: ItemResult; onAnswer: (r: AnswerResult, given: string) => void }) {
   const [value, setValue] = useState('')
   const input = useRef<HTMLInputElement>(null)
 
@@ -273,6 +278,7 @@ function Typing({ accepted, lang, learner, answered, onAnswer }: { accepted: str
         ref={input}
         dir={dirOf(lang)}
         lang={lang}
+        placeholder={hint}
         autoFocus
         autoComplete="off"
         autoCorrect="off"

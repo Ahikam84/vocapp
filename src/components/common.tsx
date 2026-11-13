@@ -1,8 +1,9 @@
 import { Check, Undo2, Volume2, VolumeX } from 'lucide-react'
 import { useEffect } from 'react'
-import { t } from '../lib/i18n'
+import { langName, t } from '../lib/i18n'
 import { setSetting, useSettings } from '../lib/settings'
 import { speak } from '../lib/tts'
+import { setWritingMode, type WritingMode } from '../lib/writing'
 
 export function SpeakButton({ text, lang, small }: { text: string; lang: string; small?: boolean }) {
   return (
@@ -168,5 +169,19 @@ export function CourseSelect({ decks, value, onChange }: { decks: { id: string; 
         ))}
       </select>
     </label>
+  )
+}
+
+/** Switch between answering in the course's script and in its transliteration (shown on courses that have one). */
+export function WritingToggle({ lang, mode }: { lang: string; mode: WritingMode }) {
+  return (
+    <div className="writing-toggle" role="group" aria-label={t('איך לכתוב')}>
+      <button type="button" className={mode === 'script' ? 'on' : ''} aria-pressed={mode === 'script'} onClick={() => setWritingMode(lang, 'script')}>
+        {t('כתיבה ב{lang}', { lang: langName(lang) })}
+      </button>
+      <button type="button" className={mode === 'reading' ? 'on' : ''} aria-pressed={mode === 'reading'} onClick={() => setWritingMode(lang, 'reading')}>
+        {t('כתיבה בתעתיק')}
+      </button>
+    </div>
   )
 }

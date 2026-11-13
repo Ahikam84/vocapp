@@ -29,6 +29,8 @@ export interface Settings {
   gameBest: Record<string, number>
   /** Show ready-made courses translated into these languages; null = the interface language */
   courseLangs: string[] | null
+  /** Per target language: write answers in its script, or in the courses' transliteration */
+  writing: Record<string, 'script' | 'reading'>
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -48,6 +50,7 @@ export const DEFAULT_SETTINGS: Settings = {
   medalsSeen: null,
   gameBest: {},
   courseLangs: null,
+  writing: {},
 }
 
 export async function getSettings(): Promise<Settings> {

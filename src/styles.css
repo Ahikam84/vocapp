@@ -644,3 +644,8 @@ input[type='range'] { width: 160px; padding: 0; background: none; accent-color: 
 .study-lang { color: var(--muted); font-size: 0.8rem; flex-shrink: 0; }
 .study-lang::after { content: ' ·'; }
 .known-btn.muted-on { background: var(--almost-soft); color: var(--almost); }
+
+/* Answer in the course's script or in transliteration */
+.writing-toggle { display: flex; justify-content: center; gap: 4px; margin: 0 auto 10px; padding: 3px; background: var(--surface); border-radius: 99px; width: fit-content; }
+.writing-toggle button { border: 0; background: none; color: var(--muted); font: inherit; font-size: 0.85rem; padding: 5px 12px; border-radius: 99px; cursor: pointer; }
+.writing-toggle button.on { background: var(--bg); color: var(--text); font-weight: 600; box-shadow: 0 1px 2px rgb(0 0 0 / 0.12); }

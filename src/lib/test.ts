@@ -90,7 +90,11 @@ function matchPartners(word: Word, pool: Word[]): Word[] {
  * The questions of a test: one per word (as many words as asked for, if there are enough),
  * each word asked in one way. `pool` is every learned word, for the wrong options.
  */
-export function buildTest(words: Word[], pool: Word[], level: TestLevel, count: number, audio: boolean): TestQuestion[] {
+/**
+ * `transliteration`: the learner writes in transliteration, so no "type the word as the sentence has
+ * it" question for words that have one – the sentence's form of the word has no transliteration.
+ */
+export function buildTest(words: Word[], pool: Word[], level: TestLevel, count: number, audio: boolean, transliteration = false): TestQuestion[] {
   const chosen = shuffled(words).slice(0, count)
   const kinds = kindsFor(level, chosen.length)
   return chosen.map((word, i) => {
@@ -99,6 +103,7 @@ export function buildTest(words: Word[], pool: Word[], level: TestLevel, count: 
     for (let guard = 0; guard < 3; guard++) {
       const impossible =
         ((kind === 'cloze' || kind === 'cloze-type') && !cloze) ||
+        (kind === 'cloze-type' && transliteration && !!word.reading) ||
         ((kind === 'listen' || kind === 'dictation') && !audio) ||
         (kind === 'match' && matchPartners(word, pool).length < 3)
       if (!impossible) break

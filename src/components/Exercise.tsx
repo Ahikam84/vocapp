@@ -6,7 +6,8 @@ import { pickDistractors, shuffle } from '../lib/session'
 import { dirOf, t } from '../lib/i18n'
 import { speak } from '../lib/tts'
 import { DECOY_LETTERS, HEBREW_KEYBOARD, SPECIAL_CHARS, toHebrewKeys } from '../lib/useDeck'
-import { Meter, SpeakButton, T, Term } from './common'
+import { Meter, SpeakButton, T, Term, WritingToggle } from './common'
+import { useWritingMode, writingLang, writtenForm, type WritingMode } from '../lib/writing'
 
 export interface ExerciseOutcome {
   correct: boolean
@@ -47,6 +48,7 @@ export default function Exercise(props: Props) {
   // With sound off, a listening question can't be answered – show the word instead.
   const exercise: ExerciseType = props.exercise === 'audio-choice' && !autoPlay ? 'choice-target' : props.exercise
   const startedAt = useRef(performance.now())
+  const writing = useWritingMode(deck.targetLang)
   const [feedback, setFeedback] = useState<{ result: AnswerResult; given?: string } | null>(null)
   const [meterLevel, setMeterLevel] = useState<number | null>(null)
 
@@ -111,8 +113,8 @@ export default function Exercise(props: Props) {
       {(exercise === 'choice-target' || exercise === 'choice-source' || exercise === 'audio-choice') && (
         <Choice {...props} exercise={exercise} answered={feedback} onAnswer={finish} />
       )}
-      {exercise === 'tiles' && <Tiles {...props} answered={!!feedback} onAnswer={finish} />}
-      {exercise === 'typing' && <Typing {...props} answered={!!feedback} onAnswer={finish} />}
+      {exercise === 'tiles' && <Tiles {...props} writing={writing} answered={!!feedback} onAnswer={finish} />}
+      {exercise === 'typing' && <Typing {...props} writing={writing} answered={!!feedback} onAnswer={finish} />}
 
       {feedback && pending.current && (
         <div className={`feedback ${feedback.result}`}>
@@ -220,13 +222,18 @@ function Choice({
   )
 }
 
-function Tiles({ word, deck, answered, onAnswer }: Props & { answered: boolean; onAnswer: (r: AnswerResult, given?: string, helped?: boolean) => void }) {
+function Tiles({ word, deck, writing, answered, onAnswer }: Props & { writing: WritingMode; answered: boolean; onAnswer: (r: AnswerResult, given?: string, helped?: boolean) => void }) {
+  // In transliteration mode the tiles spell the word's transliteration, in its letters.
+  const written = writtenForm(word, writing).toLowerCase()
+  const keyLang = writingLang(word, writing, deck.targetLang)
   const tiles = useMemo(() => {
-    const letters = [...word.term.toLowerCase()]
-    const decoys = DECOY_LETTERS[deck.targetLang] ?? 'aeioulnrst'
+    const letters = [...written]
+    const decoys = DECOY_LETTERS[keyLang] ?? 'aeioulnrst'
     const extra = shuffle([...decoys].filter((c) => !letters.includes(c))).slice(0, 2)
     return shuffle([...letters, ...extra]).map((c, i) => ({ c, i }))
-  }, [word.id])
+  }, [word.id, written]) // eslint-disable-line react-hooks/exhaustive-deps
+  // Switching between script and transliteration starts the word again.
+  useEffect(() => setUsed([]), [written]) // eslint-disable-line react-hooks/exhaustive-deps
   const [used, setUsedState] = useState<number[]>([])
   // Mirrors `used` synchronously so fast typing never reads a stale value.
   const usedRef = useRef<number[]>([])
@@ -237,7 +244,7 @@ function Tiles({ word, deck, answered, onAnswer }: Props & { answered: boolean; 
   const built = used.map((i) => tiles[i].c).join('')
 
   const hinted = useRef(false)
-  const answer = [...word.term.toLowerCase()]
+  const answer = [...written]
   // Phones: a hidden text field brings up the built-in keyboard. It always holds one
   // space, so a Backspace on it can be noticed (the field gets shorter).
   const phoneInput = useRef<HTMLInputElement>(null)
@@ -249,7 +256,7 @@ function Tiles({ word, deck, answered, onAnswer }: Props & { answered: boolean; 
     setUsed(next)
     if (next.length === answer.length) {
       const given = next.map((j) => tiles[j].c).join('')
-      const right = checkAnswer(given, [word.term]).result === 'correct'
+      const right = checkAnswer(given, writing === 'reading' ? acceptedTerms(word) : [word.term]).result === 'correct'
       // With help from the hint button it's right, but not fully remembered.
       onAnswer(right ? 'correct' : 'wrong', given, hinted.current)
     }
@@ -261,7 +268,7 @@ function Tiles({ word, deck, answered, onAnswer }: Props & { answered: boolean; 
 
   /** Uses up the tile for a typed character; returns false when no tile has it. */
   function typeChar(raw: string): boolean {
-    const key = deck.targetLang === 'he' ? toHebrewKeys(raw) : raw.toLowerCase()
+    const key = keyLang === 'he' ? toHebrewKeys(raw) : raw.toLowerCase()
     const free = tiles.filter((x) => !usedRef.current.includes(x.i))
     // Exact letter first; otherwise "n" also finds "ñ", "e" finds "é", "מ" finds "ם".
     const hit = free.find((x) => x.c === key) ?? free.find((x) => stripAccents(x.c) === stripAccents(key))
@@ -317,17 +324,18 @@ function Tiles({ word, deck, answered, onAnswer }: Props & { answered: boolean; 
 
   return (
     <>
+      {word.reading && !answered && <WritingToggle lang={deck.targetLang} mode={writing} />}
       <div className="card prompt">
         <T className="term huge">{word.translations[0]}</T>
       </div>
-      <div className="tiles-answer" dir={dirOf(deck.targetLang)} onClick={() => (touch ? openKeyboard() : erase())}>
+      <div className="tiles-answer" dir={dirOf(keyLang)} onClick={() => (touch ? openKeyboard() : erase())}>
         {built || <span className="muted">&nbsp;</span>}
         {!answered && <span className="caret" />}
         {touch && !answered && (
           <input
             ref={phoneInput}
             className="phone-keys"
-            lang={deck.targetLang}
+            lang={keyLang}
             defaultValue=" "
             autoComplete="off"
             autoCorrect="off"
@@ -338,7 +346,7 @@ function Tiles({ word, deck, answered, onAnswer }: Props & { answered: boolean; 
           />
         )}
       </div>
-      <div className="tiles" dir={dirOf(deck.targetLang)}>
+      <div className="tiles" dir={dirOf(keyLang)}>
         {tiles.map(({ c, i }) => (
           <button key={i} className="tile" disabled={used.includes(i) || answered} onClick={() => tap(i)}>
             {c === ' ' ? '␣' : c}
@@ -359,7 +367,9 @@ function Tiles({ word, deck, answered, onAnswer }: Props & { answered: boolean; 
   )
 }
 
-function Typing({ word, deck, answered, onAnswer }: Props & { answered: boolean; onAnswer: (r: AnswerResult, given?: string) => void }) {
+function Typing({ word, deck, writing, answered, onAnswer }: Props & { writing: WritingMode; answered: boolean; onAnswer: (r: AnswerResult, given?: string) => void }) {
+  // Both the word and its transliteration are always accepted; the mode sets the hint and direction.
+  const keyLang = writingLang(word, writing, deck.targetLang)
   const [value, setValue] = useState('')
   const input = useRef<HTMLInputElement>(null)
 
@@ -378,6 +388,7 @@ function Typing({ word, deck, answered, onAnswer }: Props & { answered: boolean;
 
   return (
     <>
+      {word.reading && !answered && <WritingToggle lang={deck.targetLang} mode={writing} />}
       <div className="card prompt">
         <T className="term huge">{word.translations.join(', ')}</T>
       </div>
@@ -390,8 +401,9 @@ function Typing({ word, deck, answered, onAnswer }: Props & { answered: boolean;
       >
         <input
           ref={input}
-          dir={dirOf(deck.targetLang)}
-          lang={deck.targetLang}
+          dir={dirOf(keyLang)}
+          lang={keyLang}
+          placeholder={keyLang !== deck.targetLang ? t('הקלידו בתעתיק') : undefined}
           autoFocus
           autoComplete="off"
           autoCorrect="off"
@@ -399,9 +411,9 @@ function Typing({ word, deck, answered, onAnswer }: Props & { answered: boolean;
           spellCheck={false}
           value={value}
           readOnly={answered}
-          onChange={(e) => update(deck.targetLang === 'he' ? toHebrewKeys(e.target.value) : e.target.value)}
+          onChange={(e) => update(keyLang === 'he' ? toHebrewKeys(e.target.value) : e.target.value)}
         />
-        {deck.targetLang === 'he' && !answered && (
+        {deck.targetLang === 'he' && keyLang === 'he' && !answered && (
           <HebrewKeyboard
             onKey={(c) => {
               update(c === '⌫' ? value.slice(0, -1) : value + c)
@@ -409,9 +421,9 @@ function Typing({ word, deck, answered, onAnswer }: Props & { answered: boolean;
             }}
           />
         )}
-        {SPECIAL_CHARS[deck.targetLang] && !answered && (
+        {SPECIAL_CHARS[keyLang] && !answered && (
           <div className="char-row">
-            {SPECIAL_CHARS[deck.targetLang].map((c) => (
+            {SPECIAL_CHARS[keyLang].map((c) => (
               <button
                 type="button"
                 key={c}

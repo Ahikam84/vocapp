@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import cat from '../assets/mascot/cat.webp'
 import pot3 from '../assets/mascot/pot3.webp'
 import water from '../assets/mascot/water.webp'
-import { T } from '../components/common'
+import { T, WritingToggle } from '../components/common'
+import { useWritingMode, writingLang, writtenForm } from '../lib/writing'
 import type { Word } from '../lib/db'
 import { alphabetFor, baseLetters, loadGameWords, logGameAnswer, MIN_GAME_WORDS, recordScore, shuffled } from '../lib/games'
 import { dirOf, t } from '../lib/i18n'
@@ -35,7 +36,9 @@ export default function Plant({ study }: { study: Study }) {
 
 function PlantRound({ pool, lang, onAgain }: { pool: Word[]; lang: string; onAgain: () => void }) {
   const [order] = useState(() => shuffled(pool))
-  const alphabet = useMemo(() => alphabetFor(lang, pool), [lang, pool])
+  // In transliteration mode the word to guess is its transliteration, on a keyboard of its letters.
+  const writing = useWritingMode(lang)
+  const hasReadings = pool.some((w) => w.reading)
   const [idx, setIdx] = useState(0)
   const [guessed, setGuessed] = useState<string[]>([])
   const [wrong, setWrong] = useState(0)
@@ -50,11 +53,16 @@ function PlantRound({ pool, lang, onAgain }: { pool: Word[]; lang: string; onAga
   }, [])
 
   const word = order[idx % order.length]
-  const letters = useMemo(() => new Set([...baseLetters(word.term)].filter(isLetter)), [word])
+  const written = writtenForm(word, writing)
+  const keyLang = writingLang(word, writing, lang)
+  const alphabet = useMemo(() => alphabetFor(keyLang, pool), [keyLang, pool])
+  const letters = useMemo(() => new Set([...baseLetters(written)].filter(isLetter)), [written])
+  // Switching between script and transliteration starts the word again.
+  useEffect(() => setGuessed([]), [written])
 
   function guess(raw: string) {
     if (state !== 'play') return
-    const c = baseLetters(lang === 'he' ? toHebrewKeys(raw) : raw)
+    const c = baseLetters(keyLang === 'he' ? toHebrewKeys(raw) : raw)
     if (!isLetter(c) || guessed.includes(c)) return
     const nowGuessed = [...guessed, c]
     setGuessed(nowGuessed)
@@ -127,9 +135,10 @@ function PlantRound({ pool, lang, onAgain }: { pool: Word[]; lang: string; onAga
         )}
       </div>
 
+      {hasReadings && state === 'play' && <WritingToggle lang={lang} mode={writing} />}
       <p className="plant-clue"><T>{word.translations.join(', ')}</T></p>
-      <div className={`plant-word ${state}`} dir={dirOf(lang)}>
-        {[...word.term].map((ch, i) =>
+      <div className={`plant-word ${state}`} dir={dirOf(keyLang)}>
+        {[...written].map((ch, i) =>
           !isLetter(ch) ? (
             <span key={i} className="gap">{ch === ' ' ? ' ' : ch}</span>
           ) : (
@@ -145,7 +154,7 @@ function PlantRound({ pool, lang, onAgain }: { pool: Word[]; lang: string; onAga
           <button className="btn" autoFocus onClick={finish}>{t('המשך')}</button>
         </div>
       ) : (
-        <div className="plant-keys" dir={dirOf(lang)}>
+        <div className="plant-keys" dir={dirOf(keyLang)}>
           {alphabet.map((c) => {
             const used = guessed.includes(c)
             return (

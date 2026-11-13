@@ -116,7 +116,10 @@ const AR_GERESH: Record<string, string> = {
 const FATHA = 'َ', KASRA = 'ِ', DAMMA = 'ُ', SUKUN = 'ْ', SHADDA = 'ّ'
 const HARAKA: Record<string, string> = { a: FATHA, i: KASRA, e: KASRA, u: DAMMA, o: DAMMA, shva: SUKUN }
 
-function vowelledWord(w: string): string {
+/** How the "-e/-a" feminine ending (ة) is written for the voice – kept switchable to compare by ear. */
+export type TaMarbuta = 'kasra' | 'fatha' | 'bare' | 'ha' | 'bareha' | 'fathaha' | 'plain' | 'kasraend' | 'spoken'
+
+function vowelledWord(w: string, ta: TaMarbuta): string {
   const letters = parseWord(w)
   let out = ''
   for (let i = 0; i < letters.length; i++) {
@@ -151,7 +154,25 @@ function vowelledWord(w: string): string {
       out += seat + mark(l.vowel)
       continue
     }
-    if (l.ch === 'ה' && !l.vowel && atEnd && prevVowel) { out += 'ة'; continue }
+    if (l.ch === 'ה' && !l.vowel && atEnd && prevVowel) {
+      // The letter before already got its mark; adjust it to the chosen way of writing the ending.
+      const last = out.slice(-1)
+      if (last === KASRA || last === FATHA) {
+        if (ta === 'fatha') out = out.slice(0, -1) + FATHA
+        if (ta === 'bare') out = out.slice(0, -1)
+        if (ta === 'ha' && last === KASRA) { out += 'ه'; continue }
+        // ه as in informal Levantine writing (جبنه), with no mark or a fatha before it
+        if (ta === 'bareha') { out = out.slice(0, -1) + 'ه'; continue }
+        if (ta === 'fathaha') { out = out.slice(0, -1) + FATHA + 'ه'; continue }
+        // no letter at all after the kasra (جِبْنِ): a short final vowel, which may come out as "-e"
+        if (ta === 'kasraend') { out = out.slice(0, -1) + KASRA; continue }
+        // The rule used: no ة at all, which the voice tends to read as -a or -ah – just the
+        // ending's own vowel, a fatha for "-a" (سَيَّارَ) and a kasra for "-e" (جِبْنِ).
+        if (ta === 'spoken') continue
+      }
+      out += 'ة'
+      continue
+    }
 
     const letter = l.geresh && AR_GERESH[l.ch] ? AR_GERESH[l.ch] : AR[l.ch] ?? ''
     const doubled = l.dagesh && prevVowel && l.ch !== 'ב' && l.ch !== 'כ' && l.ch !== 'ך'
@@ -160,7 +181,7 @@ function vowelledWord(w: string): string {
   return out
 }
 
-/** Fully vowelled Arabic rebuilt from a Hebrew transliteration: לַמַס → لَمَس, בֵּית → بَيْت. */
-export function hebrewToVowelledArabic(hebrew: string): string {
-  return hebrew.normalize('NFC').split(/(\s+)/).map((part) => (/\s/.test(part) ? part : vowelledWord(part))).join('')
+/** Fully vowelled Arabic rebuilt from a Hebrew transliteration: לַמַס → لَمَس, בֵּית → بَيْت, גִ'בְּנֵה → جِبْنِ. */
+export function hebrewToVowelledArabic(hebrew: string, ta: TaMarbuta = 'spoken'): string {
+  return hebrew.normalize('NFC').split(/(\s+)/).map((part) => (/\s/.test(part) ? part : vowelledWord(part, ta))).join('')
 }

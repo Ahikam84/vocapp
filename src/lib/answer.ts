@@ -1,6 +1,6 @@
 export type AnswerResult = 'correct' | 'almost' | 'wrong'
 
-const HEBREW_NIKUD = /[\u0591-\u05C7]/g
+export const HEBREW_NIKUD = /[\u0591-\u05C7]/g
 const PUNCT = /[.,;:!?¿¡"'()\-–—׳״]/g
 const MAQAF = /\u05BE/g
 /** Arabic vowel marks, shadda and the stretching stroke: optional in writing */

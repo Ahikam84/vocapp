@@ -64,3 +64,29 @@ describe('recorded Arabic audio', () => {
     expect(audioKey('هلّأ')).toMatch(/^[0-9a-z]+$/)
   })
 })
+
+describe('writing in transliteration', () => {
+  it('gives the word, or its transliteration without vowel points, and the letters it is typed in', async () => {
+    const { writtenForm, writingLang } = await import('./writing')
+    const he = { term: 'خلاص', reading: "ח'לַאץ" }
+    const en = { term: 'خلاص', reading: 'khalas' }
+    expect(writtenForm(he, 'script')).toBe('خلاص')
+    expect(writtenForm(he, 'reading')).toBe("ח'לאץ")
+    expect(writtenForm(en, 'reading')).toBe('khalas')
+    expect(writingLang(he, 'reading', 'ar')).toBe('he')
+    expect(writingLang(en, 'reading', 'ar')).toBe('en')
+    expect(writingLang({}, 'reading', 'es')).toBe('es')
+    // Built from tiles of the transliteration, it is a right answer
+    expect(checkAnswer(writtenForm(he, 'reading'), acceptedTerms(he)).result).toBe('correct')
+  })
+
+  it('asks no "type the sentence\'s form" questions in transliteration mode', async () => {
+    const { buildTest } = await import('./test')
+    const course = COURSES.find((c) => c.id === 'ar-lev-b1')!
+    const words = courseToWords(course, await course.load())
+    for (let i = 0; i < 5; i++) {
+      const kinds = buildTest(words, words, 'hard', 30, true, true).map((q) => q.kind)
+      expect(kinds).not.toContain('cloze-type')
+    }
+  })
+})

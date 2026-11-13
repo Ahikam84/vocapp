@@ -24,7 +24,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { audioKey } from '../src/lib/audioKey.ts'
-import { hebrewToVowelledArabic } from '../src/lib/translit.ts'
+import { hebrewToVowelledArabic, type TaMarbuta } from '../src/lib/translit.ts'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const outDir = join(root, 'public', 'audio', 'ar')
@@ -197,6 +197,43 @@ async function main() {
     return
   }
 
+  // Re-record, from today's vowelled spelling and in each word's voice, every clip whose text
+  // contains the given letters – e.g. --remake=ة after changing how that ending is vowelled.
+  // Resumes where it stopped; other clips are left alone.
+  const remake = args.find((a) => a.startsWith('--remake='))?.slice(9)
+  if (remake) {
+    const index = JSON.parse(readFileSync(indexFile, 'utf8')) as { voice: string; voiceName: string }
+    const chosen = index.voice.split(',').map((v) => voices.find((x) => x.id === (v.split(':')[1] ?? v))!)
+    const slotOf = (word: string) => parseInt(audioKey(word).slice(-6), 36) % chosen.length
+    const texts = (await courseTexts()).filter((t) => t.text.includes(remake))
+    const tagOf = (say: string) => `r${audioKey(say).slice(0, 6)}`
+    const todo = texts.filter((t) => !existsSync(join(outDir, `${audioKey(t.text)}~${tagOf(t.say)}.mp3`)))
+    console.log(`${todo.length} of ${texts.length} clips containing "${remake}" to record (${todo.reduce((n, t) => n + t.say.length, 0).toLocaleString()} characters).
+`)
+    let done = 0
+    let next = 0
+    const worker = async () => {
+      while (next < todo.length) {
+        const t = todo[next++]
+        const key = audioKey(t.text)
+        const file = `${key}~${tagOf(t.say)}.mp3`
+        writeFileSync(join(outDir, file), await provider.synthesize(t.say, chosen[slotOf(t.word)]))
+        for (const f of readdirSync(outDir)) if (clipKey(f) === key && f !== file) rmSync(join(outDir, f))
+        done++
+        process.stdout.write(`[${done}/${todo.length}] ${t.say}
+`)
+        if (done % 25 === 0) writeIndex(index.voice, index.voiceName)
+      }
+    }
+    try {
+      await Promise.all([worker(), worker()])
+    } finally {
+      writeIndex(index.voice, index.voiceName)
+    }
+    console.log('\nDone.')
+    return
+  }
+
   // Replace one voice by another, recording the vowelled spelling: every word is re-recorded (with
   // vowels, in its own voice), and the examples of the replaced voice's words in the new voice.
   //   --swap=<old voice>:<new voice>      Resumes where it stopped; other clips are left alone.
@@ -259,10 +296,18 @@ Done: ${names}.`)
       if (!reading) { console.log(`(no word "${word}" in the courses)`); continue }
       const key = audioKey(word)
       const voice = voices.find((v) => v.id === ids[parseInt(key.slice(-6), 36) % ids.length])!
-      const say = hebrewToVowelledArabic(reading)
-      writeFileSync(join(dir, `${safeName(word)}-1-now.mp3`), readFileSync(join(outDir, `${index.files?.[key] ?? key}.mp3`)))
-      writeFileSync(join(dir, `${safeName(word)}-2-vowelled.mp3`), await provider.synthesize(say, voice))
-      console.log(`${word}  →  ${say}   (${voice.name})`)
+      writeFileSync(join(dir, `${safeName(word)}-0-now.mp3`), readFileSync(join(outDir, `${index.files?.[key] ?? key}.mp3`)))
+      // With --ta, one clip per way of writing the feminine ending; otherwise just the current vowelling.
+      // --ta=<ways,...>: one clip per way of writing the feminine ending ('plain' = the course's own
+      // unvowelled spelling); the model in use is added to the file name when it isn't the default.
+      const taArg = args.find((a) => a.startsWith('--ta'))
+      const variants = (taArg?.includes('=') ? taArg.split('=')[1].split(',') : taArg ? ['fatha', 'bare', 'ha'] : ['kasra']) as TaMarbuta[]
+      const model = process.env.ELEVENLABS_MODEL ? `-${process.env.ELEVENLABS_MODEL.replace('eleven_', '')}` : ''
+      for (const ta of variants) {
+        const say = ta === 'plain' ? word : hebrewToVowelledArabic(reading, ta)
+        writeFileSync(join(dir, `${safeName(word)}-${ta}${model}.mp3`), await provider.synthesize(say, voice))
+        console.log(`${word}  ${ta}${model}  →  ${say}   (${voice.name.split(' - ')[0]})`)
+      }
     }
     return
   }
