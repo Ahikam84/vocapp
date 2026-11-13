@@ -76,3 +76,15 @@ describe('medals', () => {
     for (const id of ['perfect-day', 'night-owl', 'early-bird', 'course-done', 'polyglot']) expect(got.has(id), id).toBe(true)
   })
 })
+
+describe('medal artwork', () => {
+  it('has an image for every medal', async () => {
+    const { existsSync } = await import('node:fs')
+    const medals = evaluateMedals({ reviews: [], progress: [], words: [], decks: [], goalType: 'xp', goal: 50 })
+    const missing = medals
+      .map((m) => (m.group === 'special' ? m.id : `${m.group}-${m.tier}`))
+      .filter((name) => !existsSync(`src/assets/medals/${name}.webp`))
+    expect(missing).toEqual([])
+    expect(medals.length).toBe(30)
+  })
+})

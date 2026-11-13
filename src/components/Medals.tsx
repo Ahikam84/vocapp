@@ -1,25 +1,18 @@
-import { Award, Brain, CheckCheck, ClipboardCheck, Flame, Globe, GraduationCap, Lock, Moon, Sparkles, Sprout, Sunrise, Target } from 'lucide-react'
+import { Lock } from 'lucide-react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { t } from '../lib/i18n'
-import { loadMedals, type Medal, type MedalIcon } from '../lib/medals'
+import { loadMedals, type Medal } from '../lib/medals'
 import { setSetting, useSettings } from '../lib/settings'
 
-const ICONS: Record<MedalIcon, typeof Sprout> = {
-  sprout: Sprout,
-  brain: Brain,
-  flame: Flame,
-  target: Target,
-  check: CheckCheck,
-  sparkles: Sparkles,
-  moon: Moon,
-  sunrise: Sunrise,
-  graduation: GraduationCap,
-  globe: Globe,
-  clipboard: ClipboardCheck,
-  award: Award,
-}
+/** Medal artwork: "<track>-<tier>.webp" for the four-tier tracks, "<id>.webp" for the special medals. */
+const ART = Object.fromEntries(
+  Object.entries(import.meta.glob('../assets/medals/*.webp', { eager: true, import: 'default' }) as Record<string, string>).map(
+    ([path, url]) => [path.split('/').pop()!.replace('.webp', ''), url],
+  ),
+)
+const artFor = (m: Medal) => ART[m.group === 'special' ? m.id : `${m.group}-${m.tier}`]
 
 export function useMedals(): Medal[] | undefined {
   const settings = useSettings()
@@ -29,15 +22,12 @@ export function useMedals(): Medal[] | undefined {
   )
 }
 
-/** A round medal on a ribbon, in its tier's colour; grey with a lock until earned. */
+/** The medal's artwork; until earned, the same in grey with a lock. */
 export function MedalBadge({ medal, size = 64 }: { medal: Medal; size?: number }) {
-  const Icon = ICONS[medal.icon]
   return (
-    <span className={`medal ${medal.tier} ${medal.earned ? '' : 'locked'}`} style={{ width: size, height: size * 1.2 }} aria-hidden="true">
-      <span className="medal-ribbon" />
-      <span className="medal-disc" style={{ width: size, height: size }}>
-        {medal.earned ? <Icon size={size * 0.45} strokeWidth={2.2} /> : <Lock size={size * 0.36} />}
-      </span>
+    <span className={`medal-art ${medal.earned ? '' : 'locked'}`} style={{ width: size, height: size }} aria-hidden="true">
+      <img src={artFor(medal)} alt="" width={size} height={size} draggable={false} />
+      {!medal.earned && size >= 40 && <span className="medal-lock"><Lock size={Math.round(size * 0.22)} /></span>}
     </span>
   )
 }
