@@ -1,67 +1,96 @@
-/* Flat, minimal look: no borders or shadows on surfaces, soft gray fills, one accent color. */
+/* Soft and warm: a warm paper background, white cards that float on soft shadows, rounded
+   shapes, pastel tiles, and a rounded display face – the look of the cat-and-plant artwork. */
 :root {
-  --bg: #ffffff;
-  --surface: #f3f4f6;
-  --surface-2: #e9ebef;
-  --text: #111418;
-  --muted: #6b7280;
-  --line: #eceef1;
+  --bg: #fffaf4;
+  --surface: #ffffff;
+  --surface-2: #f3ebe0;
+  --field: #f6efe6;
+  --text: #2f3a33;
+  --muted: #6a776f;
+  --line: #efe6da;
   --primary: #0f9f6e;
   --primary-ink: #ffffff;
-  --primary-soft: #e6f6ef;
+  --primary-soft: #dcf5ea;
+  --primary-deep: #0b7d56;
   --water: #2563eb;
   --water-soft: #e8efff;
   --good: #0f9f6e;
-  --good-soft: #e6f6ef;
+  --good-soft: #dcf5ea;
   --almost: #b45309;
-  --almost-soft: #fdf3e2;
-  --bad: #dc2626;
-  --bad-soft: #fdecec;
-  --radius: 16px;
-  --radius-sm: 12px;
+  --almost-soft: #fdf1dc;
+  --bad: #d43d3d;
+  --bad-soft: #fde7e5;
+  /* Pastel tiles and their ink */
+  --mint: #d6f5e7; --mint-ink: #0d4d37;
+  --butter: #fff0c4; --butter-ink: #6a4a00;
+  --peach: #ffe2d1; --peach-ink: #7a3416;
+  --lilac: #ebe4ff; --lilac-ink: #3e2d7a;
+  --shadow: 0 10px 28px rgb(78 60 38 / 0.10);
+  --shadow-sm: 0 4px 14px rgb(78 60 38 / 0.08);
+  --radius: 26px;
+  --radius-sm: 18px;
+  --hero: #0f9f6e; --hero-ink: #ffffff;
   color-scheme: light;
 }
 /* Dark theme: follows the device unless the user picked a theme in Settings (html[data-theme]). */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --bg: #0e1013;
-    --surface: #1a1d22;
-    --surface-2: #24282e;
-    --text: #eef0f3;
-    --muted: #9aa1ac;
-    --line: #22262c;
+    --bg: #141815;
+    --surface: #1e2420;
+    --surface-2: #29302b;
+    --field: #252b27;
+    --text: #eef1ee;
+    --muted: #a3aea7;
+    --line: #2a312c;
     --primary: #34d399;
     --primary-ink: #06281b;
-    --primary-soft: #11291f;
+    --primary-soft: #143a2b;
+    --primary-deep: #0f6e4d;
     --water: #7aa7ff;
     --water-soft: #172238;
     --good: #34d399;
-    --good-soft: #11291f;
+    --good-soft: #143a2b;
     --almost: #f5b453;
     --almost-soft: #2d230f;
     --bad: #f87171;
-    --bad-soft: #321718;
+    --bad-soft: #3a1b1b;
+    --mint: #173d2f; --mint-ink: #b8f0d6;
+    --butter: #3a3115; --butter-ink: #ffe38a;
+    --peach: #40261b; --peach-ink: #ffc7a8;
+    --lilac: #2c2648; --lilac-ink: #d6ccff;
+    --hero: #17694c; --hero-ink: #effcf6;
+    --shadow: 0 10px 28px rgb(0 0 0 / 0.35);
+    --shadow-sm: 0 4px 14px rgb(0 0 0 / 0.3);
     color-scheme: dark;
   }
 }
 :root[data-theme='dark'] {
-  --bg: #0e1013;
-  --surface: #1a1d22;
-  --surface-2: #24282e;
-  --text: #eef0f3;
-  --muted: #9aa1ac;
-  --line: #22262c;
+  --bg: #141815;
+  --surface: #1e2420;
+  --surface-2: #29302b;
+  --field: #252b27;
+  --text: #eef1ee;
+  --muted: #a3aea7;
+  --line: #2a312c;
   --primary: #34d399;
   --primary-ink: #06281b;
-  --primary-soft: #11291f;
+  --primary-soft: #143a2b;
+  --primary-deep: #0f6e4d;
   --water: #7aa7ff;
   --water-soft: #172238;
   --good: #34d399;
-  --good-soft: #11291f;
+  --good-soft: #143a2b;
   --almost: #f5b453;
   --almost-soft: #2d230f;
   --bad: #f87171;
-  --bad-soft: #321718;
+  --bad-soft: #3a1b1b;
+  --mint: #173d2f; --mint-ink: #b8f0d6;
+  --butter: #3a3115; --butter-ink: #ffe38a;
+  --peach: #40261b; --peach-ink: #ffc7a8;
+  --lilac: #2c2648; --lilac-ink: #d6ccff;
+  --hero: #17694c; --hero-ink: #effcf6;
+  --shadow: 0 10px 28px rgb(0 0 0 / 0.35);
+  --shadow-sm: 0 4px 14px rgb(0 0 0 / 0.3);
   color-scheme: dark;
 }
 
@@ -641,3 +670,106 @@ input[type='range'] { width: 160px; padding: 0; background: none; accent-color: 
 .medal-art img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .medal-art.locked img { filter: grayscale(1) contrast(0.85); opacity: 0.4; }
 .medal-lock { position: absolute; inset-inline-end: 4%; bottom: 4%; display: grid; place-items: center; padding: 4px; border-radius: 50%; background: var(--surface); color: var(--muted); box-shadow: 0 0 0 2px var(--bg); }
+
+/* ===================== Soft and warm ===================== */
+/* Cards float on soft shadows instead of sitting in grey boxes. */
+.card, .option, .course-list li, .lang-group, .track, .medal-grid li, .medals-link, .pick-list li, .deck-list li,
+.join-list li, .pair-card, .odd-card, .match-card, .choice, .course-langs, .mistakes li, .study-switch, .known-btn,
+.chip, .writing-toggle, .tile, .plant-keys button, .he-row button, .char-row button, .fall-field, .goal-card,
+.lang-list:not(.lang-group .lang-list) { box-shadow: var(--shadow-sm); }
+.card, .goal-card, .track, .lang-group, .course-list li, .medals-link { box-shadow: var(--shadow); }
+.lang-list:not(.lang-group .lang-list) { background: var(--surface); border-radius: var(--radius); padding: 2px 14px; }
+.lang-list:not(.lang-group .lang-list) li:last-child a { border-bottom: 0; }
+
+.brand { font-size: 1.15rem; color: var(--primary); }
+.study-switch { background: var(--surface); border-radius: 999px; padding: 7px 14px; }
+
+.btn { border-radius: 999px; padding: 10px 22px; }
+.btn:not(.secondary):not(.danger):not(.google-btn) { box-shadow: 0 8px 18px rgb(15 159 110 / 0.25); }
+.btn.secondary { background: var(--surface); box-shadow: var(--shadow-sm); }
+.btn.secondary:hover { background: var(--surface); box-shadow: var(--shadow); }
+.btn.big { min-height: 56px; font-size: 1.1rem; }
+input, textarea, select { background: var(--field); border-radius: var(--radius-sm); }
+input:focus, textarea:focus, select:focus { background: var(--surface); }
+.chip { background: var(--surface); }
+.chip.active { background: var(--primary); color: var(--primary-ink); }
+.badge.level { border-radius: 999px; }
+
+/* Floating bottom bar */
+.tabbar {
+  bottom: calc(12px + env(safe-area-inset-bottom)); inset-inline: 16px; max-width: 520px; margin: 0 auto;
+  padding: 6px; gap: 4px; background: var(--surface); border: 0; border-radius: 999px; box-shadow: var(--shadow);
+}
+.tabbar a { flex: 1; flex-direction: row; justify-content: center; gap: 6px; padding: 10px 6px; border-radius: 999px; }
+.tabbar a span { font-size: 0.8rem; }
+.tabbar a.active { background: var(--primary); color: var(--primary-ink); }
+.content { padding-bottom: 112px; }
+
+/* Home: a green header that runs edge to edge, with the cat, a greeting and a wavy edge */
+.app { overflow-x: clip; }
+.at-home .topbar { background: var(--hero); box-shadow: 0 0 0 100vmax var(--hero); clip-path: inset(0 -100vmax); }
+.at-home .brand { color: var(--hero-ink); }
+.at-home .brand img { background: var(--hero-ink); border-radius: 9px; }
+.at-home .study-switch { background: rgb(255 255 255 / 0.9); color: #0f5a40; box-shadow: none; }
+.at-home .study-switch .study-lang { color: #2f6b55; }
+.at-home .update-banner { margin-top: 8px; }
+.at-home .content { padding-top: 0; }
+.home-hero {
+  position: relative; display: flex; align-items: flex-end; gap: 10px; margin: -1px -16px 22px; padding: 1px 16px 40px;
+  background: var(--hero); color: var(--hero-ink); box-shadow: 0 0 0 100vmax var(--hero); clip-path: inset(0 -100vmax 0 -100vmax);
+}
+.home-hero .mascot { flex-shrink: 0; margin-bottom: -6px; }
+.hero-text { padding-bottom: 14px; min-width: 0; }
+.hero-hello { margin: 0; font-size: 1.55rem; font-weight: 700; line-height: 1.2; }
+.hero-line { margin: 4px 0 0; font-size: 0.98rem; opacity: 0.9; }
+.hero-wave { position: absolute; bottom: -1px; left: 50%; width: 100vw; height: 34px; transform: translateX(-50%); fill: var(--bg); }
+.goal-card { background: var(--surface); padding: 16px 18px; gap: 16px; }
+.goal-card h2 { font-size: 1.15rem; }
+.goal-ring .track { stroke: var(--surface-2); }
+.goal-ring circle { stroke-width: 8; }
+.badge { background: var(--surface-2); }
+
+/* Home cards: white, with a light border and a thicker bottom edge so they look pressable;
+   the main action is green. */
+.home-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
+.home-tile {
+  position: relative; display: flex; flex-direction: column; gap: 1px; padding: 10px 14px; color: var(--text); background: var(--surface);
+  border: 1.5px solid var(--tile-edge); border-bottom-width: 3px; border-radius: 18px; transition: transform 0.1s, border-bottom-width 0.1s;
+  --tile-edge: var(--line);
+}
+.home-tile:active { transform: translateY(2px); border-bottom-width: 1.5px; margin-bottom: 1.5px; }
+.home-tile h2 { margin: 0; font-size: 1.08rem; color: inherit; }
+.home-tile p { margin: 0; font-size: 0.88rem; line-height: 1.35; color: var(--muted); }
+.home-tile .tile-icon { display: grid; place-items: center; width: 36px; height: 36px; flex-shrink: 0; border-radius: 50%; background: var(--primary-soft); color: var(--primary); }
+.home-tile:not(.wide) .tile-icon { margin-bottom: 6px; }
+.home-tile.wide { grid-column: 1 / -1; flex-direction: row; align-items: center; gap: 12px; }
+.home-tile.wide .chev { color: var(--muted); }
+.home-tile.primary { background: var(--primary); color: var(--primary-ink); --tile-edge: var(--primary-deep); }
+.home-tile.primary p, .home-tile.primary .chev { color: inherit; opacity: 0.85; }
+.home-tile.primary .tile-icon { background: rgb(255 255 255 / 0.2); color: inherit; }
+.home-tile .count { font-weight: 700; font-size: 0.9rem; color: var(--almost); background: var(--almost-soft); border-radius: 999px; padding: 3px 10px; }
+.home-tile.disabled { opacity: 0.5; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .home-tile { transition: none; } }
+.stats { margin-top: 18px; padding: 14px 0; border-top: 0; background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-sm); }
+.medals-link { border-radius: 999px; padding: 8px 16px 8px 10px; }
+
+/* Practice */
+.progress { height: 10px; background: var(--surface-2); }
+.exercise .card, .test-q .card { background: var(--mint); color: var(--mint-ink); box-shadow: none; border-radius: 40px 40px 40px 14px; }
+.exercise .card .reading, .exercise .card .muted, .exercise .card .translation, .test-q .card .reading { color: color-mix(in srgb, var(--mint-ink) 72%, transparent); }
+.exercise .card .example { border-top-color: color-mix(in srgb, var(--mint-ink) 18%, transparent); }
+.options { gap: 10px; }
+.option { min-height: 60px; padding: 16px 18px; background: var(--surface); border-radius: 22px; font-size: 1.1rem; }
+.option:hover { background: var(--surface); box-shadow: var(--shadow); }
+.option .key { background: var(--surface-2); border-radius: 8px; }
+.option.right { background: var(--primary); color: var(--primary-ink); box-shadow: 0 10px 22px rgb(15 159 110 / 0.3); }
+.option.right .key { background: rgb(255 255 255 / 0.25); color: inherit; }
+.option.wrong { background: var(--bad-soft); color: var(--bad); box-shadow: none; }
+.tile { border-radius: 16px; background: var(--surface); }
+.tile:hover { background: var(--surface); box-shadow: var(--shadow); }
+.tiles-answer { border-bottom: 3px dashed var(--surface-2); }
+.typing input { border-radius: 22px; }
+.feedback { border-radius: 28px; }
+.feedback.correct { background: var(--surface); box-shadow: var(--shadow); }
+.play-big { box-shadow: 0 10px 24px rgb(15 159 110 / 0.3); }
+.known-btn { background: var(--surface); }

@@ -58,15 +58,35 @@ function StreakBadges({ status }: { status: DailyStatus }) {
   )
 }
 
-/** Home-screen card: the cat, today's goal and the streak. `due` = words waiting for review. */
+/** A greeting for the time of day. */
+function greeting(hour: number): string {
+  return hour >= 5 && hour < 12 ? t('בוקר טוב!') : hour < 17 && hour >= 12 ? t('צהריים טובים!') : hour >= 17 && hour < 22 ? t('ערב טוב!') : t('לילה טוב!')
+}
+
+/** Home screen top: the cat and a greeting on the green header, then today's goal and the streak. `due` = words waiting for review. */
 export function DailyGoalCard({ due }: { due: number }) {
   const status = useDailyStatus()
   if (!status) return null
   const { value, goal, type, done, streak } = status
-  const mood = homeMood({ goalDone: done, answeredToday: status.today.answers, due, hour: new Date().getHours() })
+  const hour = new Date().getHours()
+  const mood = homeMood({ goalDone: done, answeredToday: status.today.answers, due, hour })
+  const left = Math.max(0, goal - value)
   return (
     <>
-    <Mascot mood={mood} size={220} />
+    <section className="home-hero">
+      <Mascot mood={mood} size={150} />
+      <div className="hero-text">
+        <p className="hero-hello">{greeting(hour)}</p>
+        <p className="hero-line">
+          {done
+            ? t('עמדת ביעד היומי!')
+            : t('עוד {n} {unit} ליעד היומי', { n: left, unit: goalUnit(type) })}
+        </p>
+      </div>
+      <svg className="hero-wave" viewBox="0 0 390 34" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0 20 C 70 2, 130 2, 195 18 S 320 36, 390 12 L390 34 L0 34 Z" />
+      </svg>
+    </section>
     <div className={`goal-card ${done ? 'done' : ''}`}>
       <GoalRing value={value} goal={goal} />
       <div className="grow">

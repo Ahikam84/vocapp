@@ -1,6 +1,6 @@
 import { ChevronDown, House, Languages, Library, RefreshCw, Settings } from 'lucide-react'
 import { useEffect } from 'react'
-import { Link, NavLink, Route, Routes } from 'react-router-dom'
+import { Link, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 import { detectUiLang, langName, setUiLang, t } from './lib/i18n'
 import { applyUpdate, useNeedRefresh } from './lib/pwa'
 import { useSettings } from './lib/settings'
@@ -38,6 +38,8 @@ function studyLabel({ decks }: Study) {
 }
 
 export default function App() {
+  // The home screen's header turns green (see .at-home in styles.css).
+  const atHome = useLocation().pathname === '/'
   const study = useStudy()
   const settings = useSettings()
   const needRefresh = useNeedRefresh()
@@ -53,7 +55,7 @@ export default function App() {
   const deck = study?.deck ?? null
 
   return (
-    <div className="app">
+    <div className={`app ${atHome && study ? 'at-home' : ''}`}>
       <header className="topbar">
         <NavLink to="/" className="brand">
           <img src="icon.svg" alt="" width={28} height={28} />

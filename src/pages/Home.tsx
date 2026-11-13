@@ -1,4 +1,4 @@
-import { ChevronLeft, ClipboardCheck, Gamepad2, Repeat2, Sprout, Target } from 'lucide-react'
+import { ChevronLeft, FilePen, Gamepad2, Repeat2, Sprout, Target } from 'lucide-react'
 import { DailyGoalCard } from '../components/Goal'
 import { MedalsLink, NewMedals } from '../components/Medals'
 import { useLiveQuery } from 'dexie-react-hooks'
@@ -20,71 +20,68 @@ export default function Home({ study }: { study: Study }) {
       <DailyGoalCard due={stats.due} />
       <NewMedals />
 
-      <Link to="/review" className={`action-card primary ${stats.due ? '' : 'disabled'}`}>
-        <div className="icon"><Repeat2 size={22} /></div>
-        <div className="grow">
-          <h2>{t('חזרה')}</h2>
-          <p>
-            {stats.due
-              ? t('{n} מילים מחכות לחזרה', { n: stats.due })
-              : stats.dueTomorrow
-                ? t('אין חזרות עכשיו · {n} מחר', { n: stats.dueTomorrow })
-                : t('אין חזרות כרגע')}
-          </p>
-        </div>
-        <ChevronLeft className="chev flip" size={20} />
-      </Link>
-
-      <Link to="/learn" className={`action-card ${stats.newWords ? '' : 'disabled'}`}>
-        <div className="icon"><Sprout size={22} /></div>
-        <div className="grow">
-          <h2>{t('למידת מילים חדשות')}</h2>
-          <p>
-            {stats.newWords === 0
-              ? t('אין מילים חדשות – הוסף עוד')
-              : newLeftToday === 0
-                ? t('עברת את מכסת היום · אפשר להמשיך בכל זאת')
-                : t('{n} מילים ממתינות · עוד {left} היום', { n: stats.newWords, left: newLeftToday })}
-          </p>
-        </div>
-        <ChevronLeft className="chev flip" size={20} />
-      </Link>
-
-      {stats.learned > 0 && (
-        <Link to="/difficult" className="action-card">
-          <div className="icon"><Target size={22} /></div>
-          <div className="grow">
-            <h2>{t('תרגול מילים קשות')}</h2>
+      <div className="home-tiles">
+        {/* The main action is green: review when words are due, otherwise learning new ones. */}
+        <Link to="/review" className={`home-tile wide ${stats.due ? 'primary' : 'disabled'}`}>
+          <span className="tile-icon"><Repeat2 size={20} /></span>
+          <span className="grow">
+            <h2>{t('חזרה')}</h2>
             <p>
-              {stats.difficult ? t('{n} מילים קשות', { n: stats.difficult }) : t('המילים החלשות ביותר')} ·{' '}
-              {t('לא משפיע על לוח החזרות')}
+              {stats.due
+                ? t('{n} מילים מחכות לחזרה', { n: stats.due })
+                : stats.dueTomorrow
+                  ? t('אין חזרות עכשיו · {n} מחר', { n: stats.dueTomorrow })
+                  : t('אין חזרות כרגע')}
             </p>
-          </div>
+          </span>
           <ChevronLeft className="chev flip" size={20} />
         </Link>
-      )}
 
-      {stats.learned > 0 && (
-        <Link to="/games" className="action-card">
-          <div className="icon"><Gamepad2 size={22} /></div>
-          <div className="grow">
+        <Link to="/learn" className={`home-tile wide ${stats.due ? '' : 'primary'} ${stats.newWords ? '' : 'disabled'}`}>
+          <span className="tile-icon"><Sprout size={20} /></span>
+          <span className="grow">
+            <h2>{t('למידת מילים חדשות')}</h2>
+            <p>
+              {stats.newWords === 0
+                ? t('אין מילים חדשות – הוסף עוד')
+                : newLeftToday === 0
+                  ? t('עברת את מכסת היום · אפשר להמשיך בכל זאת')
+                  : t('{n} מילים ממתינות · עוד {left} היום', { n: stats.newWords, left: newLeftToday })}
+            </p>
+          </span>
+          <ChevronLeft className="chev flip" size={20} />
+        </Link>
+
+        {stats.learned > 0 && (
+          <Link to="/games" className="home-tile">
+            <span className="tile-icon"><Gamepad2 size={20} /></span>
             <h2>{t('משחקים')}</h2>
             <p>{t('המילים שלמדת, בדרך משחקית')}</p>
-          </div>
-          <ChevronLeft className="chev flip" size={20} />
-        </Link>
-      )}
+          </Link>
+        )}
 
-      {stats.learned > 0 && (
-        <Link to="/test" className="action-card">
-          <div className="icon"><ClipboardCheck size={22} /></div>
-          <div className="grow">
+        {stats.learned > 0 && (
+          <Link to="/test" className="home-tile">
+            <span className="tile-icon"><FilePen size={20} /></span>
             <h2>{t('מבחן')}</h2>
             <p>{t('בדקו כמה אתם יודעים, עם ציון באחוזים')}</p>
-          </div>
-          <ChevronLeft className="chev flip" size={20} />
-        </Link>
-      )}
+          </Link>
+        )}
+
+        {stats.learned > 0 && (
+          <Link to="/difficult" className="home-tile wide">
+            <span className="tile-icon"><Target size={20} /></span>
+            <span className="grow">
+              <h2>{t('תרגול מילים קשות')}</h2>
+              <p>
+                {stats.difficult ? t('{n} מילים קשות', { n: stats.difficult }) : t('המילים החלשות ביותר')} ·{' '}
+                {t('לא משפיע על לוח החזרות')}
+              </p>
+            </span>
+            <ChevronLeft className="chev flip" size={20} />
+          </Link>
+        )}
+      </div>
 
       <div className="stats">
         <div><b>{stats.total}</b><span>{t('מילים')}</span></div>
