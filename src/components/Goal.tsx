@@ -1,10 +1,13 @@
 import { Flame, PartyPopper, Snowflake } from 'lucide-react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Link } from 'react-router-dom'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { DEFAULT_GOAL, dailyStatus, GOAL_PRESETS, xpSince, type DailyStatus, type GoalType } from '../lib/goals'
 import { t } from '../lib/i18n'
 import { setSetting, useSettings } from '../lib/settings'
+import pot1 from '../assets/mascot/pot1.webp'
+import pot2 from '../assets/mascot/pot2.webp'
+import pot3 from '../assets/mascot/pot3.webp'
 import { homeMood, Mascot } from './Mascot'
 import { NewMedals } from './Medals'
 
@@ -29,16 +32,63 @@ function useDailyStatus(): DailyStatus | undefined {
   )
 }
 
-/** Circle that fills up towards the daily goal. */
-export function GoalRing({ value, goal, size = 64 }: { value: number; goal: number; size?: number }) {
+/** The pot in the middle of the ring grows with the day's progress and is in full bloom at the goal. */
+const GOAL_POTS = [pot1, pot2, pot3]
+
+/** Circle that fills up towards the daily goal; with `plant`, the pot sits inside it. */
+export function GoalRing({ value, goal, size = 64, plant = false }: { value: number; goal: number; size?: number; plant?: boolean }) {
   const r = 26
   const c = 2 * Math.PI * r
   const part = Math.min(1, value / Math.max(1, goal))
-  return (
+  const ring = (
     <svg className={`goal-ring ${part >= 1 ? 'full' : ''}`} width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
       <circle cx="32" cy="32" r={r} className="track" />
       <circle cx="32" cy="32" r={r} className="fill" strokeDasharray={c} strokeDashoffset={c * (1 - part)} transform="rotate(-90 32 32)" />
     </svg>
+  )
+  if (!plant) return ring
+  const pot = GOAL_POTS[part >= 1 ? 2 : part >= 0.5 ? 1 : 0]
+  return (
+    <span className={`goal-ring-plant ${part >= 1 ? 'bloom' : ''}`} style={{ width: size, height: size }}>
+      {ring}
+      <img src={pot} alt="" draggable={false} />
+    </span>
+  )
+}
+
+/** A short burst of confetti, shown once a day on the home screen after the daily goal is reached. */
+function GoalConfetti() {
+  const [show, setShow] = useState(() => {
+    const today = new Date().toDateString()
+    try {
+      if (localStorage.getItem('goal-confetti') === today) return false
+      localStorage.setItem('goal-confetti', today)
+    } catch { /* storage blocked: show it anyway */ }
+    return !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  })
+  useEffect(() => {
+    if (!show) return
+    const timer = setTimeout(() => setShow(false), 2600)
+    return () => clearTimeout(timer)
+  }, [show])
+  if (!show) return null
+  const colors = ['var(--primary)', '#f59e0b', '#f472b6', '#60a5fa', '#a78bfa', '#34d399']
+  return (
+    <div className="confetti" aria-hidden="true">
+      {Array.from({ length: 36 }, (_, i) => (
+        <i
+          key={i}
+          style={{
+            insetInlineStart: `${(i * 37) % 100}%`,
+            background: colors[i % colors.length],
+            animationDelay: `${(i % 9) * 0.07}s`,
+            animationDuration: `${1.5 + ((i * 13) % 7) / 10}s`,
+            ['--drift' as string]: `${((i * 29) % 80) - 40}px`,
+            ['--spin' as string]: `${((i * 53) % 540) + 180}deg`,
+          }}
+        />
+      ))}
+    </div>
   )
 }
 
@@ -63,7 +113,7 @@ function greeting(hour: number): string {
   return hour >= 5 && hour < 12 ? t('בוקר טוב!') : hour < 17 && hour >= 12 ? t('צהריים טובים!') : hour >= 17 && hour < 22 ? t('ערב טוב!') : t('לילה טוב!')
 }
 
-/** Home screen top: the cat and a greeting on the green header, then today's goal and the streak. `due` = words waiting for review. */
+/** Home screen top: the cat and a greeting on the coloured header, then today's goal and the streak. `due` = words waiting for review. */
 export function DailyGoalCard({ due }: { due: number }) {
   const status = useDailyStatus()
   if (!status) return null
@@ -87,8 +137,9 @@ export function DailyGoalCard({ due }: { due: number }) {
         <path d="M0 20 C 70 2, 130 2, 195 18 S 320 36, 390 12 L390 34 L0 34 Z" />
       </svg>
     </section>
+    {done && <GoalConfetti />}
     <div className={`goal-card ${done ? 'done' : ''}`}>
-      <GoalRing value={value} goal={goal} />
+      <GoalRing value={value} goal={goal} size={76} plant />
       <div className="grow">
         <h2>{done ? t('עמדת ביעד היומי!') : t('היעד היומי')}</h2>
         <p>

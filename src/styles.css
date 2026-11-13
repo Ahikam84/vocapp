@@ -1,17 +1,17 @@
 /* Soft and warm: a warm paper background, white cards that float on soft shadows, rounded
    shapes, pastel tiles, and a rounded display face – the look of the cat-and-plant artwork. */
 :root {
-  --bg: #fffaf4;
+  --bg: #f7fbfa;
   --surface: #ffffff;
-  --surface-2: #f3ebe0;
-  --field: #f6efe6;
-  --text: #2f3a33;
-  --muted: #6a776f;
-  --line: #efe6da;
-  --primary: #0f9f6e;
+  --surface-2: #e9f1f1;
+  --field: #eef5f5;
+  --text: #2a3739;
+  --muted: #66777a;
+  --line: #e1ebeb;
+  --primary: #0e8a9a;
   --primary-ink: #ffffff;
-  --primary-soft: #dcf5ea;
-  --primary-deep: #0b7d56;
+  --primary-soft: #d6f1f3;
+  --primary-deep: #0a6c79;
   --water: #2563eb;
   --water-soft: #e8efff;
   --good: #0f9f6e;
@@ -21,31 +21,31 @@
   --bad: #d43d3d;
   --bad-soft: #fde7e5;
   /* Pastel tiles and their ink */
-  --mint: #d6f5e7; --mint-ink: #0d4d37;
+  --mint: #d6f1f3; --mint-ink: #0b4a52;
   --butter: #fff0c4; --butter-ink: #6a4a00;
   --peach: #ffe2d1; --peach-ink: #7a3416;
   --lilac: #ebe4ff; --lilac-ink: #3e2d7a;
-  --shadow: 0 10px 28px rgb(78 60 38 / 0.10);
-  --shadow-sm: 0 4px 14px rgb(78 60 38 / 0.08);
+  --shadow: 0 10px 28px rgb(20 62 68 / 0.10);
+  --shadow-sm: 0 4px 14px rgb(20 62 68 / 0.08);
   --radius: 26px;
   --radius-sm: 18px;
-  --hero: #0f9f6e; --hero-ink: #ffffff;
+  --hero: #0e8a9a; --hero-ink: #ffffff;
   color-scheme: light;
 }
 /* Dark theme: follows the device unless the user picked a theme in Settings (html[data-theme]). */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --bg: #141815;
-    --surface: #1e2420;
-    --surface-2: #29302b;
-    --field: #252b27;
+    --bg: #121819;
+    --surface: #1c2426;
+    --surface-2: #273033;
+    --field: #222b2d;
     --text: #eef1ee;
     --muted: #a3aea7;
-    --line: #2a312c;
-    --primary: #34d399;
-    --primary-ink: #06281b;
-    --primary-soft: #143a2b;
-    --primary-deep: #0f6e4d;
+    --line: #293234;
+    --primary: #3cc8d6;
+    --primary-ink: #04282d;
+    --primary-soft: #113a40;
+    --primary-deep: #0d6a75;
     --water: #7aa7ff;
     --water-soft: #172238;
     --good: #34d399;
@@ -54,28 +54,28 @@
     --almost-soft: #2d230f;
     --bad: #f87171;
     --bad-soft: #3a1b1b;
-    --mint: #173d2f; --mint-ink: #b8f0d6;
+    --mint: #15393e; --mint-ink: #bdeef3;
     --butter: #3a3115; --butter-ink: #ffe38a;
     --peach: #40261b; --peach-ink: #ffc7a8;
     --lilac: #2c2648; --lilac-ink: #d6ccff;
-    --hero: #17694c; --hero-ink: #effcf6;
+    --hero: #12606b; --hero-ink: #ecfbfc;
     --shadow: 0 10px 28px rgb(0 0 0 / 0.35);
     --shadow-sm: 0 4px 14px rgb(0 0 0 / 0.3);
     color-scheme: dark;
   }
 }
 :root[data-theme='dark'] {
-  --bg: #141815;
-  --surface: #1e2420;
-  --surface-2: #29302b;
-  --field: #252b27;
+  --bg: #121819;
+  --surface: #1c2426;
+  --surface-2: #273033;
+  --field: #222b2d;
   --text: #eef1ee;
   --muted: #a3aea7;
-  --line: #2a312c;
-  --primary: #34d399;
-  --primary-ink: #06281b;
-  --primary-soft: #143a2b;
-  --primary-deep: #0f6e4d;
+  --line: #293234;
+  --primary: #3cc8d6;
+  --primary-ink: #04282d;
+  --primary-soft: #113a40;
+  --primary-deep: #0d6a75;
   --water: #7aa7ff;
   --water-soft: #172238;
   --good: #34d399;
@@ -84,11 +84,11 @@
   --almost-soft: #2d230f;
   --bad: #f87171;
   --bad-soft: #3a1b1b;
-  --mint: #173d2f; --mint-ink: #b8f0d6;
+  --mint: #15393e; --mint-ink: #bdeef3;
   --butter: #3a3115; --butter-ink: #ffe38a;
   --peach: #40261b; --peach-ink: #ffc7a8;
   --lilac: #2c2648; --lilac-ink: #d6ccff;
-  --hero: #17694c; --hero-ink: #effcf6;
+  --hero: #12606b; --hero-ink: #ecfbfc;
   --shadow: 0 10px 28px rgb(0 0 0 / 0.35);
   --shadow-sm: 0 4px 14px rgb(0 0 0 / 0.3);
   color-scheme: dark;
@@ -454,7 +454,6 @@ input[type='range'] { width: 160px; padding: 0; background: none; accent-color: 
 .goal-ring circle { fill: none; stroke-width: 7; }
 .goal-ring .track { stroke: var(--surface-2); }
 .goal-ring .fill { stroke: var(--primary); stroke-linecap: round; transition: stroke-dashoffset 0.6s ease; }
-.goal-ring.full .fill { stroke: #f59e0b; }
 .streak-badges { display: flex; flex-direction: column; gap: 6px; align-items: stretch; }
 .badge { display: inline-flex; align-items: center; gap: 4px; font-weight: 700; font-size: 0.95rem; color: var(--muted); padding: 4px 10px; border-radius: 999px; background: var(--bg); }
 .badge.flame.on { color: #f97316; }
@@ -685,7 +684,7 @@ input[type='range'] { width: 160px; padding: 0; background: none; accent-color: 
 .study-switch { background: var(--surface); border-radius: 999px; padding: 7px 14px; }
 
 .btn { border-radius: 999px; padding: 10px 22px; }
-.btn:not(.secondary):not(.danger):not(.google-btn) { box-shadow: 0 8px 18px rgb(15 159 110 / 0.25); }
+.btn:not(.secondary):not(.danger):not(.google-btn) { box-shadow: 0 8px 18px rgb(14 138 154 / 0.25); }
 .btn.secondary { background: var(--surface); box-shadow: var(--shadow-sm); }
 .btn.secondary:hover { background: var(--surface); box-shadow: var(--shadow); }
 .btn.big { min-height: 56px; font-size: 1.1rem; }
@@ -705,13 +704,13 @@ input:focus, textarea:focus, select:focus { background: var(--surface); }
 .tabbar a.active { background: var(--primary); color: var(--primary-ink); }
 .content { padding-bottom: 112px; }
 
-/* Home: a green header that runs edge to edge, with the cat, a greeting and a wavy edge */
+/* Home: a coloured header that runs edge to edge, with the cat, a greeting and a wavy edge */
 .app { overflow-x: clip; }
 .at-home .topbar { background: var(--hero); box-shadow: 0 0 0 100vmax var(--hero); clip-path: inset(0 -100vmax); }
 .at-home .brand { color: var(--hero-ink); }
 .at-home .brand img { background: var(--hero-ink); border-radius: 9px; }
-.at-home .study-switch { background: rgb(255 255 255 / 0.9); color: #0f5a40; box-shadow: none; }
-.at-home .study-switch .study-lang { color: #2f6b55; }
+.at-home .study-switch { background: rgb(255 255 255 / 0.9); color: #0a5560; box-shadow: none; }
+.at-home .study-switch .study-lang { color: #2e6a72; }
 .at-home .update-banner { margin-top: 8px; }
 .at-home .content { padding-top: 0; }
 .home-hero {
@@ -730,7 +729,7 @@ input:focus, textarea:focus, select:focus { background: var(--surface); }
 .badge { background: var(--surface-2); }
 
 /* Home cards: white, with a light border and a thicker bottom edge so they look pressable;
-   the main action is green. */
+   the main action is filled with the main colour. */
 .home-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
 .home-tile {
   position: relative; display: flex; flex-direction: column; gap: 1px; padding: 10px 14px; color: var(--text); background: var(--surface);
@@ -762,7 +761,7 @@ input:focus, textarea:focus, select:focus { background: var(--surface); }
 .option { min-height: 60px; padding: 16px 18px; background: var(--surface); border-radius: 22px; font-size: 1.1rem; }
 .option:hover { background: var(--surface); box-shadow: var(--shadow); }
 .option .key { background: var(--surface-2); border-radius: 8px; }
-.option.right { background: var(--primary); color: var(--primary-ink); box-shadow: 0 10px 22px rgb(15 159 110 / 0.3); }
+.option.right { background: var(--primary); color: var(--primary-ink); box-shadow: 0 10px 22px rgb(14 138 154 / 0.3); }
 .option.right .key { background: rgb(255 255 255 / 0.25); color: inherit; }
 .option.wrong { background: var(--bad-soft); color: var(--bad); box-shadow: none; }
 .tile { border-radius: 16px; background: var(--surface); }
@@ -771,5 +770,26 @@ input:focus, textarea:focus, select:focus { background: var(--surface); }
 .typing input { border-radius: 22px; }
 .feedback { border-radius: 28px; }
 .feedback.correct { background: var(--surface); box-shadow: var(--shadow); }
-.play-big { box-shadow: 0 10px 24px rgb(15 159 110 / 0.3); }
+.play-big { box-shadow: 0 10px 24px rgb(14 138 154 / 0.3); }
 .known-btn { background: var(--surface); }
+
+/* Daily goal ring with the pot inside: the plant grows through the day and blooms at the goal. */
+.goal-ring-plant { position: relative; display: inline-grid; place-items: center; flex-shrink: 0; }
+.goal-ring-plant > * { grid-area: 1 / 1; }
+.goal-ring-plant img { width: 54%; height: 54%; object-fit: contain; margin-top: -2px; }
+.goal-ring-plant.bloom img { width: 60%; height: 60%; animation: bloom-pop 0.6s cubic-bezier(.3, 1.6, .5, 1) both; }
+@keyframes bloom-pop { from { transform: scale(0.6); } to { transform: scale(1); } }
+
+/* Confetti on the home screen once the day's goal is reached */
+.confetti { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 50; }
+.confetti i {
+  position: absolute; top: -16px; width: 8px; height: 13px; border-radius: 2px; opacity: 0;
+  animation: confetti-fall 1.8s cubic-bezier(.25, .6, .45, 1) forwards;
+}
+.confetti i:nth-child(3n) { width: 10px; height: 10px; border-radius: 50%; }
+@keyframes confetti-fall {
+  0% { opacity: 1; transform: translate(0, 0) rotate(0); }
+  85% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--drift), 75vh) rotate(var(--spin)); }
+}
+@media (prefers-reduced-motion: reduce) { .goal-ring-plant.bloom img { animation: none; } }
