@@ -81,8 +81,8 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Home study={study} />} />
             <Route path="/learn" element={<Learn study={study} />} />
-            <Route path="/review" element={<Review study={study} mode="review" />} />
-            <Route path="/difficult" element={<Review study={study} mode="practice" />} />
+            <Route path="/review" element={<Review key="review" study={study} mode="review" />} />
+            <Route path="/difficult" element={<Review key="practice" study={study} mode="practice" />} />
             <Route path="/words" element={<Words study={study} />} />
             <Route path="/words/new" element={<WordForm study={study} />} />
             <Route path="/words/:id" element={<WordForm study={study} />} />

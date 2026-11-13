@@ -24,6 +24,7 @@ import {
   type ItemResult,
   type TestLevel,
   type TestQuestion,
+  withoutAudio,
 } from '../lib/test'
 import { ttsAvailable } from '../lib/tts'
 import { writingModeFor } from '../lib/writing'
@@ -243,7 +244,9 @@ interface Answered {
 }
 
 function Runner({ running, lang, onDone }: { running: Running; lang: { target: string; source: string }; onDone: (results: Answered[], since: number) => void }) {
-  const { questions, timed, ref } = running
+  const { timed, ref } = running
+  // Questions can change on the way: "can't listen now" turns the listening ones into silent ones.
+  const [questions, setQuestions] = useState(running.questions)
   const [n, setN] = useState(0)
   const [answered, setAnswered] = useState<ItemResult[] | null>(null)
   const results = useRef<Answered[]>([])
@@ -275,6 +278,14 @@ function Runner({ running, lang, onDone }: { running: Running; lang: { target: s
     askedAt.current = Date.now()
   }
 
+  /** This and every later listening question, without sound – no penalty, nothing is logged for the swap. */
+  function noAudio() {
+    const next = questions.map((x, i) => (i >= n ? withoutAudio(x) : x))
+    setQuestions(next)
+    setLeft(secondsFor(next[n]))
+    askedAt.current = Date.now()
+  }
+
   const score = answered ? questionScore(answered) : 0
   const wrong = answered?.filter((i) => !i.correct) ?? []
   return (
@@ -285,7 +296,7 @@ function Runner({ running, lang, onDone }: { running: Running; lang: { target: s
         <span className="game-points"><bdi>{n + 1} / {questions.length}</bdi></span>
       </div>
 
-      <TestQuestionView key={n} q={q} langs={lang} answered={answered} timeUp={timed && left <= 0} onAnswer={answer} />
+      <TestQuestionView key={`${n}-${q.kind}`} q={q} langs={lang} answered={answered} timeUp={timed && left <= 0} onAnswer={answer} onNoAudio={noAudio} />
 
       {answered && (
         <div className={`feedback ${score === 1 ? 'correct' : score > 0 ? 'almost' : 'wrong'}`}>

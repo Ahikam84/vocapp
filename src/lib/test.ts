@@ -119,6 +119,14 @@ export function buildTest(words: Word[], pool: Word[], level: TestLevel, count: 
   })
 }
 
+/** The same question without sound, for when the learner can't listen: "what did you hear?" becomes
+ *  "what does it mean?" (same options), and dictation becomes typing the word from its meaning. */
+export function withoutAudio(q: TestQuestion): TestQuestion {
+  if (q.kind === 'listen') return { ...q, kind: 'choice-meaning' }
+  if (q.kind === 'dictation') return { ...q, kind: 'type-term' }
+  return q
+}
+
 /** One word's result within a question (a matching question has four). */
 export interface ItemResult {
   word: Word

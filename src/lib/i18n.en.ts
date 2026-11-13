@@ -481,6 +481,7 @@ export const EN: Record<string, string> = {
   'סימון הכל': 'Select all',
   'סיום': 'Done',
   'בשפות אחרות': 'Other languages',
+  'אי אפשר לשמוע עכשיו': "Can't listen right now",
   'בוקר טוב!': 'Good morning!',
   'צהריים טובים!': 'Good afternoon!',
   'ערב טוב!': 'Good evening!',

@@ -71,7 +71,9 @@ export default function Review({ study, mode }: { study: Study; mode: Mode }) {
       setSettings(s)
       setQueue(items)
     })()
-  }, [study, mode]) // eslint-disable-line react-hooks/exhaustive-deps
+    // Keyed on the course ids, not `study` itself: that object is renewed on every database change
+    // (each answer writes one), which would rebuild the session mid-way – questions jumping and changing.
+  }, [study.deckIds.join(), mode]) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function onDone(outcome: ExerciseOutcome) {
     if (!queue) return

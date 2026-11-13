@@ -66,3 +66,13 @@ describe('tests', () => {
     expect(medals.find((m) => m.id === 'ace')?.earned).toBe(true)
   })
 })
+
+describe("can't listen", () => {
+  it('turns listening questions into silent ones and leaves the rest', async () => {
+    const { withoutAudio } = await import('./test')
+    const word = { id: 'w', deckId: 'd', term: 'perro', translations: ['כלב'], createdAt: 0 }
+    expect(withoutAudio({ kind: 'listen', word, options: [word] })).toMatchObject({ kind: 'choice-meaning', options: [word] })
+    expect(withoutAudio({ kind: 'dictation', word }).kind).toBe('type-term')
+    expect(withoutAudio({ kind: 'cloze', word }).kind).toBe('cloze')
+  })
+})

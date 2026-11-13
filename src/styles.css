@@ -128,7 +128,7 @@ svg { flex-shrink: 0; }
 .tabbar a { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--muted); padding: 2px 16px; }
 .tabbar a span { font-size: 0.72rem; font-weight: 500; }
 .tabbar a.active { color: var(--primary); }
-.app:has(.session) .tabbar { display: none; }
+.app:has(.session) .tabbar, .app:has(.test-run) .tabbar { display: none; }
 
 .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .row.between { justify-content: space-between; }

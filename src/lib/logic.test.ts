@@ -5,6 +5,13 @@ import { LearnSession } from './session'
 import type { Word } from './db'
 
 describe('checkAnswer', () => {
+  it('accepts an answer without the explanation in brackets', () => {
+    expect(checkAnswer('לנצל', ['לנצל (הזדמנות)']).result).toBe('correct')
+    expect(checkAnswer('לנצל (הזדמנות)', ['לנצל (הזדמנות)']).result).toBe('correct')
+    expect(checkAnswer('בן', ['בן (ילד)', 'בת']).result).toBe('correct')
+    expect(checkAnswer('הזדמנות', ['לנצל (הזדמנות)']).result).toBe('wrong')
+  })
+
   it('accepts exact answers ignoring case and punctuation', () => {
     expect(checkAnswer('  Perro! ', ['perro']).result).toBe('correct')
   })

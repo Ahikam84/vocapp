@@ -56,7 +56,18 @@ export function levenshtein(a: string, b: string): number {
  * - correct: identical after normalisation
  * - almost: only accents are missing, the article was left out, or a single-letter typo
  */
-export function checkAnswer(input: string, accepted: string[]): { result: AnswerResult; match: string } {
+/** Each answer, plus the same without its explanation in brackets: "לנצל (הזדמנות)" also accepts "לנצל". */
+function withoutBrackets(accepted: string[]): string[] {
+  const out = [...accepted]
+  for (const a of accepted) {
+    const bare = a.replace(/\s*\([^)]*\)\s*/g, ' ').trim()
+    if (bare && bare !== a.trim()) out.push(bare)
+  }
+  return out
+}
+
+export function checkAnswer(input: string, acceptedAnswers: string[]): { result: AnswerResult; match: string } {
+  const accepted = withoutBrackets(acceptedAnswers)
   const typed = normalize(input)
   if (!typed) return { result: 'wrong', match: accepted[0] }
 

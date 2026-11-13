@@ -1,4 +1,4 @@
-import { Check, Volume2, X } from 'lucide-react'
+import { Check, Volume2, VolumeX, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { acceptedTerms, type AnswerResult, checkAnswer } from '../lib/answer'
 import type { Word } from '../lib/db'
@@ -38,6 +38,8 @@ interface Props {
   /** The time for this question ran out: report whatever was done so far */
   timeUp: boolean
   onAnswer: (items: ItemResult[]) => void
+  /** "Can't listen now": the test swaps its listening questions for silent ones */
+  onNoAudio?: () => void
 }
 
 /** One test question, of any kind. */
@@ -76,6 +78,9 @@ export function TestQuestionView(props: Props) {
         <div className="test-play">
           <button className="play-big" onClick={() => speak(word.term, langs.target)} aria-label={t('השמע שוב')}><Volume2 size={40} /></button>
           {answered && <div dir={dirOf(langs.target)}><Term word={word} className="term huge" /></div>}
+          {!answered && props.onNoAudio && (
+            <button type="button" className="link-btn" onClick={props.onNoAudio}><VolumeX size={16} /> {t('אי אפשר לשמוע עכשיו')}</button>
+          )}
         </div>
       )}
       {(kind === 'cloze' || kind === 'cloze-type') && q.cloze && (
