@@ -128,7 +128,7 @@ svg { flex-shrink: 0; }
 .tabbar a { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--muted); padding: 2px 16px; }
 .tabbar a span { font-size: 0.72rem; font-weight: 500; }
 .tabbar a.active { color: var(--primary); }
-.app:has(.session) .tabbar, .app:has(.test-run) .tabbar { display: none; }
+.app:has(.session) .tabbar, .app:has(.test-run) .tabbar, .app:has(.crossword-game) .tabbar { display: none; }
 
 .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .row.between { justify-content: space-between; }
@@ -793,3 +793,31 @@ input:focus, textarea:focus, select:focus { background: var(--surface); }
   100% { opacity: 0; transform: translate(var(--drift), 75vh) rotate(var(--spin)); }
 }
 @media (prefers-reduced-motion: reduce) { .goal-ring-plant.bloom img { animation: none; } }
+
+/* Crossword */
+.crossword-game { gap: 12px; }
+.crossword-game .writing-toggle { align-self: center; }
+.app:has(.crossword-game) .content { padding-bottom: 24px; }
+.cw-grid {
+  --cell: min(40px, calc((min(100vw, 560px) - 40px) / var(--cols)));
+  display: grid; grid-template-columns: repeat(var(--cols), var(--cell)); grid-template-rows: repeat(var(--rows), var(--cell));
+  gap: 2px; justify-content: center; margin: 4px auto 0;
+}
+.cw-cell {
+  position: relative; display: grid; place-items: center; padding: 0; border: 1.5px solid var(--line); border-radius: 7px;
+  background: var(--surface); color: var(--text); font: inherit; font-weight: 700; font-size: calc(var(--cell) * 0.52); line-height: 1; cursor: pointer;
+}
+.cw-cell small { position: absolute; top: 1px; inset-inline-start: 3px; font-size: max(8px, calc(var(--cell) * 0.24)); font-weight: 600; color: var(--muted); }
+.cw-cell.in-word { background: var(--primary-soft); border-color: color-mix(in srgb, var(--primary) 40%, transparent); }
+.cw-cell.cursor { border-color: var(--primary); box-shadow: inset 0 0 0 1.5px var(--primary); }
+.cw-cell.solved { background: var(--good-soft); color: var(--good); border-color: transparent; }
+.cw-cell.revealed span { color: var(--almost); }
+.cw-cell.missed { background: var(--bad-soft); color: var(--bad); }
+.cw-clue { display: flex; align-items: center; gap: 4px; background: var(--surface); border-radius: var(--radius-sm); padding: 6px; box-shadow: var(--shadow-sm); min-height: 56px; }
+.cw-clue p { flex: 1; margin: 0; text-align: center; font-size: 1.05rem; }
+.cw-clue b { color: var(--primary); margin-inline-end: 4px; white-space: nowrap; }
+.cw-clue .icon-btn { display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 50%; background: none; color: var(--muted); cursor: pointer; }
+.cw-keys button { width: 34px; height: 42px; font-size: 1.05rem; }
+.cw-keys .cw-erase { width: 52px; display: grid; place-items: center; color: var(--muted); }
+.cw-actions .btn { display: inline-flex; align-items: center; gap: 6px; }
+.cw-end { text-align: center; }

@@ -501,4 +501,20 @@ export const EN: Record<string, string> = {
   // App updates
   'יש גרסה חדשה – לחץ לרענון': 'A new version is available – tap to refresh',
   'גרסה: {version}': 'Version: {version}',
+  // Crossword
+  'תשבץ': 'Crossword',
+  'תשבץ חדש בכל פעם מהמילים שלמדת, עם התרגום כהגדרה': 'A new crossword every time from the words you learned, with their translations as clues',
+  'אין מספיק מילים שמתאימות לתשבץ (מילה אחת, עד 10 אותיות). למדו עוד כמה מילים ונסו שוב.': 'Not enough words fit a crossword (one word, up to 10 letters). Learn a few more words and try again.',
+  '{n} מתוך {total} מילים': '{n} of {total} words',
+  '{n} נקודות': '{n} points',
+  'סוף התשבץ': 'End of the crossword',
+  'התשבץ הושלם!': 'Crossword complete!',
+  'הנה הפתרון. האותיות באדום הן אלה שלא הושלמו.': "Here's the solution. Letters in red are the ones you didn't fill in.",
+  'כל הכבוד! פתרת את כל התשבץ.': 'Well done! You solved the whole crossword.',
+  'הגדרה קודמת': 'Previous clue',
+  'ההגדרה הבאה': 'Next clue',
+  'מאוזן': 'across',
+  'מאונך': 'down',
+  'רמז: אות אחת': 'Hint: one letter',
+  'הצג פתרון': 'Show solution',
 }

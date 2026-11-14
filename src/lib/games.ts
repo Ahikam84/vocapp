@@ -4,7 +4,7 @@ import { pickDistractors } from './session'
 import { getSettings, setSetting } from './settings'
 
 /** Word games: quick, playful practice with words that have already been learned. */
-export type GameId = 'pairs' | 'falling' | 'cloze' | 'plant' | 'gender' | 'memory' | 'odd' | 'listen' | 'truefalse'
+export type GameId = 'pairs' | 'falling' | 'cloze' | 'plant' | 'gender' | 'memory' | 'odd' | 'listen' | 'truefalse' | 'crossword'
 
 /** Games where a lower score is better (memory counts moves) */
 export const LOWER_IS_BETTER: GameId[] = ['memory']
@@ -22,7 +22,7 @@ export async function loadGameWords(deckIds: string[]): Promise<Word[]> {
 }
 
 const EXERCISE: Record<GameId, ExerciseType> = {
-  pairs: 'choice-target', falling: 'typing', cloze: 'choice-target', plant: 'tiles', gender: 'choice-target', memory: 'choice-target', odd: 'choice-source', listen: 'audio-choice', truefalse: 'choice-source',
+  pairs: 'choice-target', falling: 'typing', cloze: 'choice-target', plant: 'tiles', gender: 'choice-target', memory: 'choice-target', odd: 'choice-source', listen: 'audio-choice', truefalse: 'choice-source', crossword: 'typing',
 }
 
 /** Each answer counts towards the daily goal (a few XP) but leaves the review schedule alone. */

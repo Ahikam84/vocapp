@@ -1,4 +1,4 @@
-import { ChevronLeft, CircleCheckBig, CloudRain, Headphones, LayoutGrid, Link2, Shapes, Sprout, TextCursorInput, VenusAndMars } from 'lucide-react'
+import { ChevronLeft, CircleCheckBig, Grid3x3, CloudRain, Headphones, LayoutGrid, Link2, Shapes, Sprout, TextCursorInput, VenusAndMars } from 'lucide-react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Link } from 'react-router-dom'
 import { MIN_CLOZE } from '../games/Cloze'
@@ -23,6 +23,7 @@ const GAMES: GameInfo[] = [
   { id: 'falling', icon: CloudRain, title: () => t('מילים נופלות'), text: () => t('כתבו את המילה לפני שהתרגום שלה נוחת') },
   { id: 'cloze', icon: TextCursorInput, title: () => t('השלם את המשפט'), text: () => t('בחרו את המילה שחסרה במשפט') },
   { id: 'plant', icon: Sprout, title: () => t('הצילו את הצמח'), text: () => t('נחשו את המילה אות אחר אות, לפני שהצמח נובל') },
+  { id: 'crossword', icon: Grid3x3, title: () => t('תשבץ'), text: () => t('תשבץ חדש בכל פעם מהמילים שלמדת, עם התרגום כהגדרה') },
   { id: 'listen', icon: Headphones, title: () => t('האזנה'), text: () => t('שמעו מילה, בלי לראות אותה, ובחרו מה היא אומרת') },
   { id: 'truefalse', icon: CircleCheckBig, title: () => t('נכון או לא נכון'), text: () => t('האם זה התרגום הנכון? כמה שיותר בדקה אחת') },
   { id: 'memory', icon: LayoutGrid, title: () => t('זיכרון'), text: () => t('הפכו קלפים ומצאו כל מילה והתרגום שלה') },

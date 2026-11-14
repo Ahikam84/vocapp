@@ -16,6 +16,7 @@ import Memory from './games/Memory'
 import OddOneOut from './games/OddOneOut'
 import Listen from './games/Listen'
 import TrueFalse from './games/TrueFalse'
+import Crossword from './games/Crossword'
 import Test from './pages/Test'
 import Plant from './games/Plant'
 import Pairs from './games/Pairs'
@@ -98,6 +99,7 @@ export default function App() {
             <Route path="/games/memory" element={<Memory study={study} />} />
             <Route path="/games/odd" element={<OddOneOut study={study} />} />
             <Route path="/games/listen" element={<Listen study={study} />} />
+            <Route path="/games/crossword" element={<Crossword study={study} />} />
             <Route path="/games/truefalse" element={<TrueFalse study={study} />} />
             <Route path="/test" element={<Test study={study} />} />
             <Route path="/courses" element={<Courses deck={deck} />} />
