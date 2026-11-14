@@ -286,6 +286,7 @@ Done: ${names}.`)
 
   // Try vowelled recordings of a few words, next to the current clips, without changing anything:
   //   --try="لمس,كتب"  → audio-samples/try/<word>-1-now.mp3 and <word>-2-vowelled.mp3
+  //   --try="<word>" --say="a|b|c" → one clip per given spelling
   const trial = args.find((a) => a.startsWith('--try='))?.slice(6).split(',').map((w) => w.trim()).filter(Boolean)
   if (trial) {
     const index = JSON.parse(readFileSync(indexFile, 'utf8')) as { voice: string; files?: Record<string, string> }
@@ -305,6 +306,20 @@ Done: ${names}.`)
       const taArg = args.find((a) => a.startsWith('--ta'))
       const variants = (taArg?.includes('=') ? taArg.split('=')[1].split(',') : taArg ? ['fatha', 'bare', 'ha'] : ['kasra']) as TaMarbuta[]
       const model = process.env.ELEVENLABS_MODEL ? `-${process.env.ELEVENLABS_MODEL.replace('eleven_', '')}` : ''
+      // --say="a|b": try these exact spellings instead (one word per run).
+      const sayArg = args.find((a) => a.startsWith('--say='))?.slice(6).split('|').map((x) => x.trim()).filter(Boolean)
+      // With --voice=<id>,<id>, each spelling is recorded in each of those voices.
+      const tryVoices = args.find((a) => a.startsWith('--voice='))?.slice(8).split(',').map((id) => voices.find((v) => v.id === id.trim())!).filter(Boolean)
+      if (sayArg) {
+        for (const v of tryVoices?.length ? tryVoices : [voice]) {
+          const name = v.name.split(' - ')[0]
+          for (const [n, say] of sayArg.entries()) {
+            writeFileSync(join(dir, `${safeName(word)}-${safeName(name)}-say${n + 1}.mp3`), await provider.synthesize(say, v))
+            console.log(`${word}  ${name} say${n + 1}  →  ${say}`)
+          }
+        }
+        continue
+      }
       for (const ta of variants) {
         const say = ta === 'plain' ? word : hebrewToVowelledArabic(reading, ta, word)
         writeFileSync(join(dir, `${safeName(word)}-${ta}${model}.mp3`), await provider.synthesize(say, voice))
