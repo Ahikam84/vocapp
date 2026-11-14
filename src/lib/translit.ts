@@ -119,7 +119,15 @@ const HARAKA: Record<string, string> = { a: FATHA, i: KASRA, e: KASRA, u: DAMMA,
 /** How the "-e/-a" feminine ending (ة) is written for the voice – kept switchable to compare by ear. */
 export type TaMarbuta = 'kasra' | 'fatha' | 'bare' | 'ha' | 'bareha' | 'fathaha' | 'plain' | 'kasraend' | 'spoken'
 
-function vowelledWord(w: string, ta: TaMarbuta): string {
+/** The letters of an Arabic word, without vowel marks or punctuation. */
+const bareArabic = (w: string) => w.replace(/[ً-ْٰـ]/g, '').replace(/[^ء-ي]/g, '')
+
+function vowelledWord(w: string, ta: TaMarbuta, arabic?: string): string {
+  const bare = arabic ? bareArabic(arabic) : ''
+  // "God" is said the same everywhere and every voice knows it; rebuilt from letters it lost its h.
+  if (bare.endsWith('الله')) return arabic!
+  // A final ה is the feminine ending only when the Arabic word ends in ة (or has no Arabic to check).
+  const feminine = !bare || bare.endsWith('ة')
   const letters = parseWord(w)
   let out = ''
   for (let i = 0; i < letters.length; i++) {
@@ -154,7 +162,7 @@ function vowelledWord(w: string, ta: TaMarbuta): string {
       out += seat + mark(l.vowel)
       continue
     }
-    if (l.ch === 'ה' && !l.vowel && atEnd && prevVowel) {
+    if (l.ch === 'ה' && !l.vowel && atEnd && prevVowel && feminine) {
       // The letter before already got its mark; adjust it to the chosen way of writing the ending.
       const last = out.slice(-1)
       if (last === KASRA || last === FATHA) {
@@ -182,6 +190,11 @@ function vowelledWord(w: string, ta: TaMarbuta): string {
 }
 
 /** Fully vowelled Arabic rebuilt from a Hebrew transliteration: לַמַס → لَمَس, בֵּית → بَيْت, גִ'בְּנֵה → جِبْنِ. */
-export function hebrewToVowelledArabic(hebrew: string, ta: TaMarbuta = 'spoken'): string {
-  return hebrew.normalize('NFC').split(/(\s+)/).map((part) => (/\s/.test(part) ? part : vowelledWord(part, ta))).join('')
+export function hebrewToVowelledArabic(hebrew: string, ta: TaMarbuta = 'spoken', arabic?: string): string {
+  // The Arabic spelling, word for word when the two line up, tells a real ة from a word that just ends in ه.
+  const plain = arabic?.trim().split(/\s+/)
+  const parts = hebrew.normalize('NFC').trim().split(/(\s+)/)
+  const aligned = plain && plain.length === parts.filter((p) => !/\s/.test(p)).length ? plain : undefined
+  let n = 0
+  return parts.map((part) => (/\s/.test(part) ? part : vowelledWord(part, ta, aligned?.[n++]))).join('')
 }

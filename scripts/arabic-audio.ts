@@ -129,7 +129,7 @@ async function courseTexts(): Promise<{ text: string; word: string; say: string 
     for (const entries of Object.values(words))
       for (const [term, , example, , reading, exampleReading] of entries) {
         const word = term.trim()
-        const vowelled = (r: string | undefined, plain: string) => (r ? hebrewToVowelledArabic(r) : plain)
+        const vowelled = (r: string | undefined, plain: string) => (r ? hebrewToVowelledArabic(r, 'spoken', plain) : plain)
         if (word && !texts.has(word)) texts.set(word, { word, say: vowelled(reading, word) })
         if (example?.trim() && !texts.has(example.trim()))
           texts.set(example.trim(), { word, say: vowelled(exampleReading, example.trim()) })
@@ -198,14 +198,16 @@ async function main() {
   }
 
   // Re-record, from today's vowelled spelling and in each word's voice, every clip whose text
-  // contains the given letters – e.g. --remake=ة after changing how that ending is vowelled.
+  // contains the given letters – e.g. --remake=ة after changing how that ending is vowelled. Several
+  // can be given with "|", and "=text" picks only that exact text: --remake="=الله معك|=والله".
   // Resumes where it stopped; other clips are left alone.
   const remake = args.find((a) => a.startsWith('--remake='))?.slice(9)
   if (remake) {
     const index = JSON.parse(readFileSync(indexFile, 'utf8')) as { voice: string; voiceName: string }
     const chosen = index.voice.split(',').map((v) => voices.find((x) => x.id === (v.split(':')[1] ?? v))!)
     const slotOf = (word: string) => parseInt(audioKey(word).slice(-6), 36) % chosen.length
-    const texts = (await courseTexts()).filter((t) => t.text.includes(remake))
+    const parts = remake.split('|').filter(Boolean)
+    const texts = (await courseTexts()).filter((t) => parts.some((p) => (p.startsWith('=') ? t.text === p.slice(1) : t.text.includes(p))))
     const tagOf = (say: string) => `r${audioKey(say).slice(0, 6)}`
     const todo = texts.filter((t) => !existsSync(join(outDir, `${audioKey(t.text)}~${tagOf(t.say)}.mp3`)))
     console.log(`${todo.length} of ${texts.length} clips containing "${remake}" to record (${todo.reduce((n, t) => n + t.say.length, 0).toLocaleString()} characters).
@@ -304,7 +306,7 @@ Done: ${names}.`)
       const variants = (taArg?.includes('=') ? taArg.split('=')[1].split(',') : taArg ? ['fatha', 'bare', 'ha'] : ['kasra']) as TaMarbuta[]
       const model = process.env.ELEVENLABS_MODEL ? `-${process.env.ELEVENLABS_MODEL.replace('eleven_', '')}` : ''
       for (const ta of variants) {
-        const say = ta === 'plain' ? word : hebrewToVowelledArabic(reading, ta)
+        const say = ta === 'plain' ? word : hebrewToVowelledArabic(reading, ta, word)
         writeFileSync(join(dir, `${safeName(word)}-${ta}${model}.mp3`), await provider.synthesize(say, voice))
         console.log(`${word}  ${ta}${model}  →  ${say}   (${voice.name.split(' - ')[0]})`)
       }

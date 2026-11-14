@@ -3,6 +3,7 @@ import { COURSES } from '../courses'
 import { acceptedTerms, checkAnswer, normalize } from './answer'
 import { audioKey } from './audioKey'
 import { courseToWords, courseWordId } from './courses'
+import { hebrewToVowelledArabic } from './translit'
 
 describe('Arabic courses', () => {
   it('keeps Arabic letters in word ids, and Spanish ids as they were', () => {
@@ -88,5 +89,18 @@ describe('writing in transliteration', () => {
       const kinds = buildTest(words, words, 'hard', 30, true, true).map((q) => q.kind)
       expect(kinds).not.toContain('cloze-type')
     }
+  })
+})
+
+// Marks on one letter (shadda and a vowel) can come in either order; compare them normalised.
+const nfc = (s: string) => s.normalize('NFC')
+
+describe('vowelled spelling for the voice', () => {
+  it('keeps the feminine ending only where the Arabic has ة', () => {
+    expect(nfc(hebrewToVowelledArabic('סַיַּארַה', 'spoken', 'سيارة'))).toBe(nfc('سَيَّارَ'))
+    expect(nfc(hebrewToVowelledArabic('פַוַאכֵּה', 'spoken', 'فواكه'))).toBe(nfc('فَوَاكِه'))
+  })
+  it('leaves الله as it is written', () => {
+    expect(nfc(hebrewToVowelledArabic("אַללַּה יְח'ַלִּיכּ", 'spoken', 'الله يخلّيك'))).toBe(nfc('الله يْخَلِّيك'))
   })
 })
