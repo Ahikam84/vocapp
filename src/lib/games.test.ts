@@ -3,7 +3,7 @@ import { COURSES } from '../courses'
 import { pace } from '../games/Falling'
 import { courseToWords } from './courses'
 import type { Word } from './db'
-import { alphabetFor, baseLetters, clozeFor, genderOf, isRecord, listenOptions, oddQuestion, topicGroups, trueFalseFor } from './games'
+import { alphabetFor, baseLetters, clozeFor, genderOf, isRecord, trickyGender, listenOptions, oddQuestion, topicGroups, trueFalseFor } from './games'
 import { answerXp, XP } from './goals'
 
 const word = (term: string, example?: string): Word => ({ id: term, deckId: 'd', term, translations: ['x'], example, createdAt: 0 })
@@ -38,6 +38,16 @@ describe('games', () => {
     expect(genderOf(word('la mano'))).toEqual({ article: 'la', noun: 'mano' })
     expect(genderOf(word('los zapatos'))).toBeNull()
     expect(genderOf(word('comer'))).toBeNull()
+  })
+
+  it('asks el/la only where the ending gives no clue', () => {
+    expect(trickyGender(word('el perro'))).toBeNull()
+    expect(trickyGender(word('la casa'))).toBeNull()
+    expect(trickyGender(word('la sala de estar'))).toBeNull()
+    expect(trickyGender(word('el programa'))).toEqual({ article: 'el', noun: 'programa' })
+    expect(trickyGender(word('la mano'))).toEqual({ article: 'la', noun: 'mano' })
+    expect(trickyGender(word('el árbol'))).toEqual({ article: 'el', noun: 'árbol' })
+    expect(trickyGender(word('la ciudad'))).toEqual({ article: 'la', noun: 'ciudad' })
   })
 
   it('guesses letters on the base letter', () => {
@@ -88,8 +98,8 @@ describe('games', () => {
     for (const course of COURSES.filter((c) => c.targetLang === 'es')) {
       const words = courseToWords(course, await course.load())
       const cloze = words.filter((w) => clozeFor(w)).length
-      const gender = words.filter((w) => genderOf(w)).length
-      console.log(course.id, words.length, 'sentences:', cloze, 'el/la:', gender)
+      const gender = words.filter((w) => trickyGender(w)).length
+      console.log(course.id, words.length, 'sentences:', cloze, 'tricky el/la:', gender)
       expect(cloze / words.length).toBeGreaterThan(0.3)
       expect(gender).toBeGreaterThan(20)
     }

@@ -2,7 +2,7 @@ import { Timer } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { T } from '../components/common'
 import type { Word } from '../lib/db'
-import { genderOf, loadGameWords, logGameAnswer, recordScore, shuffled } from '../lib/games'
+import { trickyGender, loadGameWords, logGameAnswer, recordScore, shuffled } from '../lib/games'
 import { t } from '../lib/i18n'
 import type { Study } from '../lib/useDeck'
 import { GameOver } from './GameOver'
@@ -21,7 +21,7 @@ export default function Gender({ study }: { study: Study }) {
   useEffect(() => {
     loadGameWords(deckKey.split(',')).then(setPool)
   }, [deckKey])
-  const nouns = useMemo(() => (pool ?? []).filter((w) => genderOf(w)), [pool])
+  const nouns = useMemo(() => (pool ?? []).filter((w) => trickyGender(w)), [pool])
   if (!pool) return null
   if (nouns.length < MIN_GENDER) return <NotEnough count={nouns.length} need={MIN_GENDER} />
   return <GenderRound key={round} nouns={nouns} onAgain={() => setRound((r) => r + 1)} />
@@ -47,7 +47,7 @@ function GenderRound({ nouns, onAgain }: { nouns: Word[]; onAgain: () => void })
   const startedAt = useRef(Date.now())
   const shownAt = useRef(Date.now())
   const busy = useRef(false)
-  const g = genderOf(word)!
+  const g = trickyGender(word)!
 
   useEffect(() => {
     if (!started || over) return

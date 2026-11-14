@@ -127,7 +127,7 @@ export const EN: Record<string, string> = {
   'בחרו את ה-article הנכון לכל מילה, בדקה אחת': 'Pick the right article for each word, in one minute',
   'צריך לפחות {n} מילים שלמדת': 'Needs at least {n} learned words',
   'צריך לפחות {n} מילים שלמדת עם משפט לדוגמה': 'Needs at least {n} learned words with an example sentence',
-  'צריך לפחות {n} שמות עצם שלמדת עם el או la': 'Needs at least {n} learned nouns with el or la',
+  'צריך לפחות {n} שמות עצם שלמדת שהסיום שלהם לא מסגיר אם הם el או la': "Needs at least {n} learned nouns whose ending doesn't give away el or la",
   'למשחק הזה צריך לפחות {n} מילים שלמדת עם משפט לדוגמה. כרגע יש {count}.': 'This game needs at least {n} learned words with an example sentence. You have {count} so far.',
   '{score} מתוך {total}': '{score} of {total}',
   'השלימו את המשפט': 'Complete the sentence',

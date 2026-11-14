@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { MIN_CLOZE } from '../games/Cloze'
 import { MIN_GENDER } from '../games/Gender'
 import { canPlayOdd } from '../games/OddOneOut'
-import { clozeFor, genderOf, loadGameWords, MIN_GAME_WORDS, type GameId } from '../lib/games'
+import { clozeFor, trickyGender, loadGameWords, MIN_GAME_WORDS, type GameId } from '../lib/games'
 import { t } from '../lib/i18n'
 import { useSettings } from '../lib/settings'
 import type { Study } from '../lib/useDeck'
@@ -39,7 +39,7 @@ export default function Games({ study }: { study: Study }) {
     return {
       all: words.length,
       cloze: words.filter((w) => clozeFor(w)).length,
-      gender: words.filter((w) => genderOf(w)).length,
+      gender: words.filter((w) => trickyGender(w)).length,
       odd: canPlayOdd(words),
     }
   }, [study.deckIds.join()])
@@ -50,7 +50,7 @@ export default function Games({ study }: { study: Study }) {
     if (counts.all < MIN_GAME_WORDS) return t('צריך לפחות {n} מילים שלמדת', { n: MIN_GAME_WORDS })
     if (id === 'cloze' && counts.cloze < MIN_CLOZE) return t('צריך לפחות {n} מילים שלמדת עם משפט לדוגמה', { n: MIN_CLOZE })
     if (id === 'odd' && !counts.odd) return t('משתמש בנושאים של הקורסים המוכנים')
-    if (id === 'gender' && counts.gender < MIN_GENDER) return t('צריך לפחות {n} שמות עצם שלמדת עם el או la', { n: MIN_GENDER })
+    if (id === 'gender' && counts.gender < MIN_GENDER) return t('צריך לפחות {n} שמות עצם שלמדת שהסיום שלהם לא מסגיר אם הם el או la', { n: MIN_GENDER })
     return null
   }
 

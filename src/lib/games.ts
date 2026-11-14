@@ -154,6 +154,17 @@ export function genderOf(word: Word): { article: 'el' | 'la'; noun: string } | n
   return m ? { article: m[1].toLowerCase() as 'el' | 'la', noun: m[2] } : null
 }
 
+/**
+ * The el/la nouns worth asking about: the ones the ending doesn't give away. el + -o and la + -a are
+ * left out; el programa, la mano, el árbol, la ciudad stay.
+ */
+export function trickyGender(word: Word): { article: 'el' | 'la'; noun: string } | null {
+  const g = genderOf(word)
+  if (!g) return null
+  const last = stripAccents(g.noun.split(/\s/)[0].toLowerCase()).slice(-1)
+  return (g.article === 'el' && last === 'o') || (g.article === 'la' && last === 'a') ? null : g
+}
+
 // ---- Save the plant (letter guessing) -------------------------------------
 
 const HEBREW_ALPHABET = [...'אבגדהוזחטיכלמנסעפצקרשת']
