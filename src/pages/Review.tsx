@@ -139,7 +139,7 @@ export default function Review({ study, mode }: { study: Study; mode: Mode }) {
       <div className="page center-page">
         <h1>{mode === 'review' ? t('החזרה הושלמה!') : t('התרגול הושלם!')}</h1>
         <p>{t('{right} נכונות מתוך {total} ({pct}%)', { right: score.right, total: score.right + score.wrong, pct })}</p>
-        <SessionReward since={startedAt.current} />
+        <SessionReward since={startedAt.current} invite="learn" />
         <Link className="btn" to="/">{t('לדף הבית')}</Link>
         {undoToast}
       </div>

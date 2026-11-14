@@ -517,4 +517,11 @@ export const EN: Record<string, string> = {
   'מאונך': 'down',
   'רמז: אות אחת': 'Hint: one letter',
   'הצג פתרון': 'Show solution',
+  // Invitations to the games and the test
+  'אפשר להתחיל לשחק!': 'Time to play!',
+  'רוצה לבדוק את עצמך?': 'Want to test yourself?',
+  'למדת כבר {n} מילים, מספיק בשביל המשחקים: זוגות נגד השעון, תשבץ, האזנה ועוד. הם עוזרים לזכור את המילים בדרך כיפית, ולא משנים את לוח החזרות.': "You've learned {n} words, enough for the games: pairs against the clock, crossword, listening and more. They help the words stick in a fun way, and don't change your review schedule.",
+  'במבחן בוחרים כמה שאלות ואיזה סוגים, ובסוף מקבלים ציון ורואים אילו מילים כדאי לחזק. גם המבחן לא משנה את לוח החזרות.': "In a test you choose how many questions and which kinds, then get a score and see which words need more work. The test doesn't change your review schedule either.",
+  'למשחקים': 'To the games',
+  'למבחן': 'To the test',
 }

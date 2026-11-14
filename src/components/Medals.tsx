@@ -59,6 +59,15 @@ export function MedalsLink() {
  * Pop-up for medals earned since they were last seen on this device. The first
  * time it runs it only records what's already earned, so nobody gets 15 at once.
  */
+/** Whether the new-medals pop-up has something to show (other pop-ups wait for it). */
+export function useFreshMedals(): boolean | undefined {
+  const settings = useSettings()
+  const medals = useMedals()
+  if (!medals || !settings) return undefined
+  const seen = settings.medalsSeen
+  return !!seen && medals.some((m) => m.earned && !seen.includes(m.id))
+}
+
 export function NewMedals() {
   const settings = useSettings()
   const medals = useMedals()

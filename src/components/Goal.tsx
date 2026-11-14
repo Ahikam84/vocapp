@@ -9,6 +9,7 @@ import pot1 from '../assets/mascot/pot1.webp'
 import pot2 from '../assets/mascot/pot2.webp'
 import pot3 from '../assets/mascot/pot3.webp'
 import { homeMood, Mascot } from './Mascot'
+import { FeatureInvite, type InviteAfter } from './Invite'
 import { NewMedals } from './Medals'
 
 export function goalUnit(type: GoalType): string {
@@ -156,7 +157,7 @@ export function DailyGoalCard({ due }: { due: number }) {
 }
 
 /** End-of-session box: XP from this session and where the daily goal stands. */
-export function SessionReward({ since }: { since: number }) {
+export function SessionReward({ since, invite }: { since: number; invite?: InviteAfter }) {
   const status = useDailyStatus()
   const xp = useLiveQuery(() => xpSince(since), [since])
   if (!status || xp === undefined) return null
@@ -165,6 +166,7 @@ export function SessionReward({ since }: { since: number }) {
     <div className={`session-reward ${done ? 'done' : ''}`}>
       <GoalPrompt />
       <NewMedals />
+      {invite && <FeatureInvite after={invite} since={since} />}
       <Mascot mood={done ? 'party' : 'water'} size={240} />
       <div className="xp"><bdi dir="ltr">+{xp} XP</bdi></div>
       <div className="row center goal-line">

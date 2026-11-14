@@ -33,7 +33,7 @@ export function GameOver({
           prevBest ? t('השיא שלך: {n}', { n: prevBest }) : null
         )}
       </p>
-      <SessionReward since={since} />
+      <SessionReward since={since} invite="game" />
       <div className="row center">
         <button className="btn" autoFocus onClick={onAgain}>{t('עוד משחק')}</button>
         <Link className="btn secondary" to="/games">{t('לכל המשחקים')}</Link>

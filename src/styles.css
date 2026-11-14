@@ -821,3 +821,8 @@ input:focus, textarea:focus, select:focus { background: var(--surface); }
 .cw-keys .cw-erase { width: 52px; display: grid; place-items: center; color: var(--muted); }
 .cw-actions .btn { display: inline-flex; align-items: center; gap: 6px; }
 .cw-end { text-align: center; }
+
+/* Invitations to the games and the test */
+.modal.invite { text-align: center; }
+.modal.invite .mascot { margin: 0 auto 4px; }
+.modal.invite p { color: var(--muted); line-height: 1.5; }

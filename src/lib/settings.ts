@@ -31,6 +31,8 @@ export interface Settings {
   courseLangs: string[] | null
   /** Per target language: write answers in its script, or in the courses' transliteration */
   writing: Record<string, 'script' | 'reading'>
+  /** When the games and test invitations were shown (or skipped because the user already found them) */
+  invites: { games?: number; test?: number }
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -51,6 +53,7 @@ export const DEFAULT_SETTINGS: Settings = {
   gameBest: {},
   courseLangs: null,
   writing: {},
+  invites: {},
 }
 
 export async function getSettings(): Promise<Settings> {

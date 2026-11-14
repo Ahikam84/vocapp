@@ -151,7 +151,7 @@ function LearnRound({ study, beyondLimit, onAgain, onBeyondLimit }: { study: Stu
           ))}
         </ul>
         <p className="muted">{t('הן יחזרו לחזרה בימים הקרובים, במרווחים שהולכים וגדלים.')}</p>
-        <SessionReward since={startedAt.current} />
+        <SessionReward since={startedAt.current} invite="learn" />
         <div className="row center">
           <button className="btn" onClick={onAgain}>{t('עוד מילים')}</button>
           <Link className="btn secondary" to="/">{t('לדף הבית')}</Link>
