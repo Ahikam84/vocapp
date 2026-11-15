@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import { langName, t } from '../lib/i18n'
 import { setSetting, useSettings } from '../lib/settings'
 import { speak } from '../lib/tts'
-import { setWritingMode, type WritingMode } from '../lib/writing'
+import { canWriteInReading, setWritingMode, type WritingMode } from '../lib/writing'
 
 export function SpeakButton({ text, lang, small }: { text: string; lang: string; small?: boolean }) {
   return (
@@ -174,6 +174,7 @@ export function CourseSelect({ decks, value, onChange }: { decks: { id: string; 
 
 /** Switch between answering in the course's script and in its transliteration (shown on courses that have one). */
 export function WritingToggle({ lang, mode }: { lang: string; mode: WritingMode }) {
+  if (!canWriteInReading(lang)) return null
   return (
     <div className="writing-toggle" role="group" aria-label={t('איך לכתוב')}>
       <button type="button" className={mode === 'script' ? 'on' : ''} aria-pressed={mode === 'script'} onClick={() => setWritingMode(lang, 'script')}>

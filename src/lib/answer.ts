@@ -87,11 +87,12 @@ const TO_FINAL: Record<string, string> = { כ: 'ך', מ: 'ם', נ: 'ן', פ: 'ף
 
 /**
  * Every spelling a typed answer may match: the word, its other accepted forms and – in a course
- * with a Hebrew transliteration – that too, with or without geresh and final letters.
+ * with a Hebrew transliteration – that too, with or without geresh and final letters. `withReading`:
+ * false where answers aren't typed in transliteration (see canWriteInReading).
  */
-export function acceptedTerms(w: { term: string; altTerms?: string[]; reading?: string }): string[] {
+export function acceptedTerms(w: { term: string; altTerms?: string[]; reading?: string }, withReading = true): string[] {
   const out = [w.term, ...(w.altTerms ?? [])]
-  if (w.reading) {
+  if (w.reading && withReading) {
     const bare = w.reading.replace(HEBREW_NIKUD, '')
     for (const r of [bare, bare.replace(/['׳]/g, '')])
       out.push(r, r.replace(/[ךםןףץ]/g, (c) => FINAL_LETTERS[c]), r.replace(/[כמנפצ](?=$|[\s.,!?])/g, (c) => TO_FINAL[c]))

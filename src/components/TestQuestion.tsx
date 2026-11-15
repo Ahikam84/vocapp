@@ -8,7 +8,7 @@ import type { ItemResult, QuestionKind, TestQuestion } from '../lib/test'
 import { speak } from '../lib/tts'
 import { SPECIAL_CHARS, toHebrewKeys } from '../lib/useDeck'
 import { T, Term, WritingToggle } from './common'
-import { useWritingMode, writingLang } from '../lib/writing'
+import { canWriteInReading, useWritingMode, writingLang } from '../lib/writing'
 import { HebrewKeyboard } from './Exercise'
 
 export const PROMPTS: Record<QuestionKind, string> = {
@@ -116,11 +116,11 @@ export function TestQuestionView(props: Props) {
 
       {typesWord && word.reading && !result && <WritingToggle lang={langs.target} mode={writing} />}
       {kind === 'type-term' || kind === 'dictation' ? (
-        <Typing accepted={acceptedTerms(word)} lang={keyLang} learner={keyLang === langs.target} hint={keyLang !== langs.target ? t('הקלידו בתעתיק') : undefined} answered={result} onAnswer={typed} />
+        <Typing accepted={acceptedTerms(word, canWriteInReading(langs.target))} lang={keyLang} learner={keyLang === langs.target} hint={keyLang !== langs.target ? t('הקלידו בתעתיק') : undefined} answered={result} onAnswer={typed} />
       ) : kind === 'cloze-type' ? (
         // The blank is the word as the sentence has it; when that's the word itself, its other spellings
         // (and transliteration) count too
-        <Typing accepted={q.cloze!.bare ? [q.cloze!.answer] : [q.cloze!.answer, ...acceptedTerms(word)]} lang={keyLang} learner={keyLang === langs.target} answered={result} onAnswer={typed} />
+        <Typing accepted={q.cloze!.bare ? [q.cloze!.answer] : [q.cloze!.answer, ...acceptedTerms(word, canWriteInReading(langs.target))]} lang={keyLang} learner={keyLang === langs.target} answered={result} onAnswer={typed} />
       ) : kind === 'type-meaning' ? (
         <Typing accepted={word.translations} lang={langs.source} answered={result} onAnswer={typed} />
       ) : null}

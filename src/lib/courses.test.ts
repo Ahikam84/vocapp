@@ -35,7 +35,8 @@ describe('ready-made courses', () => {
     expect(repeats).toEqual([])
   })
 
-  for (const course of COURSES.filter((c) => c.sourceLang === 'en'))
+  // English versions of courses taught from Hebrew (courses written in English, like Hebrew's own, have none)
+  for (const course of COURSES.filter((c) => c.id.endsWith('-en')))
     it(`${course.id}: has every word of the Hebrew version, all in English`, async () => {
       const hebrew = COURSES.find((c) => c.id === course.id.replace(/-en$/, ''))!
       const he = courseToWords(hebrew, await hebrew.load())
@@ -121,4 +122,16 @@ describe('ready-made courses', () => {
       expect((await db.words.get(id('dos')))!.translations).toEqual(['שתיים שלי'])
     })
   })
+})
+
+describe('Hebrew courses', () => {
+  for (const course of COURSES.filter((c) => c.targetLang === 'he'))
+    it(`${course.id}: Hebrew words and examples, English translations, Latin transliteration`, async () => {
+      for (const w of courseToWords(course, await course.load())) {
+        expect(w.term + w.example, w.term).toMatch(/^[֐-׿\s.,!?;:'"()–\-״׳]+$/)
+        for (const text of [...w.translations, w.exampleTranslation!, ...(w.tags ?? [])])
+          expect(text, w.term).not.toMatch(/[֐-׿]/)
+        expect(`${w.reading} ${w.exampleReading}`, w.term).toMatch(/^[a-z\s.,!?;:'"()–\-]+$/i)
+      }
+    })
 })

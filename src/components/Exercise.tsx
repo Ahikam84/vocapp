@@ -7,7 +7,7 @@ import { dirOf, t } from '../lib/i18n'
 import { speak } from '../lib/tts'
 import { DECOY_LETTERS, HEBREW_KEYBOARD, SPECIAL_CHARS, toHebrewKeys } from '../lib/useDeck'
 import { Meter, SpeakButton, T, Term, WritingToggle } from './common'
-import { useWritingMode, writingLang, writtenForm, type WritingMode } from '../lib/writing'
+import { canWriteInReading, useWritingMode, writingLang, writtenForm, type WritingMode } from '../lib/writing'
 
 export interface ExerciseOutcome {
   correct: boolean
@@ -376,14 +376,14 @@ function Typing({ word, deck, writing, answered, onAnswer }: Props & { writing: 
   function submit() {
     if (answered) return
     if (!value.trim()) return onAnswer('wrong', '')
-    onAnswer(checkAnswer(value, acceptedTerms(word)).result, value)
+    onAnswer(checkAnswer(value, acceptedTerms(word, canWriteInReading(deck.targetLang))).result, value)
   }
 
   /** Updates the text and accepts it right away once it matches exactly – no need to press Check. */
   function update(next: string) {
     if (answered) return
     setValue(next)
-    if (checkAnswer(next, acceptedTerms(word)).result === 'correct') onAnswer('correct', next)
+    if (checkAnswer(next, acceptedTerms(word, canWriteInReading(deck.targetLang))).result === 'correct') onAnswer('correct', next)
   }
 
   return (

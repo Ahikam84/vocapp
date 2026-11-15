@@ -4,6 +4,7 @@ import { T, Term } from '../components/common'
 import { acceptedTerms, checkAnswer } from '../lib/answer'
 import type { Word } from '../lib/db'
 import { loadGameWords, logGameAnswer, MIN_GAME_WORDS, recordScore, shuffled } from '../lib/games'
+import { canWriteInReading } from '../lib/writing'
 import { dirOf, t } from '../lib/i18n'
 import { toHebrewKeys, type Study } from '../lib/useDeck'
 import { GameOver } from './GameOver'
@@ -112,7 +113,7 @@ function FallingRound({ pool, lang, onAgain }: { pool: Word[]; lang: string; onA
     logGameAnswer('falling', drop.word, true, Date.now() - drop.born, almost)
   }
 
-  const accepted = (w: Word) => acceptedTerms(w)
+  const accepted = (w: Word) => acceptedTerms(w, canWriteInReading(lang))
 
   function onType(raw: string) {
     const v = lang === 'he' ? toHebrewKeys(raw) : raw

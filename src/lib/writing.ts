@@ -9,6 +9,13 @@ import { getSettings, setSetting, useSettings } from './settings'
  */
 export type WritingMode = 'script' | 'reading'
 
+/**
+ * Languages whose answers may be typed in transliteration. Spoken Arabic only: in Hebrew courses the
+ * transliteration just shows how a word without vowel points is read, and answers are in Hebrew.
+ */
+const ANSWER_IN_READING = ['ar']
+export const canWriteInReading = (lang: string) => ANSWER_IN_READING.includes(lang)
+
 /** What the learner writes for this word: the word itself, or its transliteration without vowel points. */
 export function writtenForm(word: Pick<Word, 'term' | 'reading'>, mode: WritingMode): string {
   return mode === 'reading' && word.reading ? word.reading.replace(HEBREW_NIKUD, '') : word.term
@@ -21,11 +28,12 @@ export function writingLang(word: Pick<Word, 'reading'>, mode: WritingMode, targ
 }
 
 export function useWritingMode(lang: string): WritingMode {
-  return useSettings()?.writing[lang] ?? 'script'
+  const mode = useSettings()?.writing[lang] ?? 'script'
+  return canWriteInReading(lang) ? mode : 'script'
 }
 
 export async function writingModeFor(lang: string): Promise<WritingMode> {
-  return (await getSettings()).writing[lang] ?? 'script'
+  return canWriteInReading(lang) ? (await getSettings()).writing[lang] ?? 'script' : 'script'
 }
 
 export async function setWritingMode(lang: string, mode: WritingMode) {
