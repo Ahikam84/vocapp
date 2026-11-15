@@ -5,3 +5,4 @@ dev-dist
 *.tsbuildinfo
 audio-samples
 video-build
+__pycache__
