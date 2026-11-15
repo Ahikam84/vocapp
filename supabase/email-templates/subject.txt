@@ -1,0 +1,1 @@
+{{ if eq (printf "%v" .Data.lang) "en" }}Your VocApp sign-in link{{ else }}הקישור שלך להתחברות ל-VocApp{{ end }}

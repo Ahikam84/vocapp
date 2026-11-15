@@ -524,4 +524,13 @@ export const EN: Record<string, string> = {
   'במבחן בוחרים כמה שאלות ואיזה סוגים, ובסוף מקבלים ציון ורואים אילו מילים כדאי לחזק. גם המבחן לא משנה את לוח החזרות.': "In a test you choose how many questions and which kinds, then get a score and see which words need more work. The test doesn't change your review schedule either.",
   'למשחקים': 'To the games',
   'למבחן': 'To the test',
+  // Signing in: welcome screen, invitation, home reminder
+  'ברוכים הבאים ל-VocApp!': 'Welcome to VocApp!',
+  'התחברו כדי שהמילים וההתקדמות יישמרו בענן: הן לא יאבדו אם תחליפו טלפון, ויהיו זמינות בכל מכשיר.': "Sign in to keep your words and progress in the cloud: they won't be lost if you change phones, and they'll be on every device.",
+  'להמשיך בלי חשבון': 'Continue without an account',
+  'אפשר להתחבר גם אחר כך, בהגדרות.': 'You can also sign in later, in Settings.',
+  'לשמור את ההתקדמות?': 'Keep your progress?',
+  'למדת כבר {n} מילים! כרגע הן שמורות רק במכשיר הזה. עם חשבון הן נשמרות בענן: לא יאבדו אם תחליפו טלפון, ויהיו זמינות בכל מכשיר.': "You've learned {n} words! Right now they're kept on this device only. With an account they're saved in the cloud: they won't be lost if you change phones, and they'll be on every device.",
+  'ההתקדמות שמורה רק במכשיר הזה': 'Progress is saved on this device only',
+  'להתחברות': 'Sign in',
 }

@@ -1,4 +1,4 @@
-import { ChevronLeft, FilePen, Gamepad2, Repeat2, Sprout, Target } from 'lucide-react'
+import { ChevronLeft, CloudOff, FilePen, Gamepad2, Repeat2, Sprout, Target } from 'lucide-react'
 import { DailyGoalCard } from '../components/Goal'
 import { MedalsLink, NewMedals } from '../components/Medals'
 import { useLiveQuery } from 'dexie-react-hooks'
@@ -6,10 +6,12 @@ import { Link } from 'react-router-dom'
 import { t } from '../lib/i18n'
 import { useSettings } from '../lib/settings'
 import { studyStats } from '../lib/stats'
+import { useSyncStatus } from '../lib/sync'
 import type { Study } from '../lib/useDeck'
 
 export default function Home({ study }: { study: Study }) {
   const stats = useLiveQuery(() => studyStats(study.deckIds), [study.deckIds.join()])
+  const sync = useSyncStatus()
   const settings = useSettings()
   if (!stats || !settings) return null
 
@@ -89,6 +91,11 @@ export default function Home({ study }: { study: Study }) {
         <div><b>{stats.longTerm}</b><span>{t('בזיכרון ארוך')}</span></div>
       </div>
       <MedalsLink />
+      {sync.state === 'signed-out' && stats.learned > 0 && (
+        <p className="local-only">
+          <CloudOff size={15} /> {t('ההתקדמות שמורה רק במכשיר הזה')} · <Link to="/settings">{t('להתחברות')}</Link>
+        </p>
+      )}
       {stats.known > 0 && (
         <p className="muted center-text">
           <Link to="/words?filter=known">{t('{n} מילים מסומנות כמוכרות', { n: stats.known })}</Link>

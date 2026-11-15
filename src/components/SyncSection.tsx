@@ -15,12 +15,16 @@ const GoogleLogo = () => (
   </svg>
 )
 
-export function SyncSection() {
+/**
+ * Signing in: with Google when it's set up (email behind a link), otherwise by email.
+ * `returnTo`: the page to come back to after Google or the email link (the settings page by default).
+ */
+export function SignIn({ returnTo }: { returnTo?: string }) {
   const status = useSyncStatus()
   const [google, setGoogle] = useState(false)
   useEffect(() => {
-    if (status.state === 'signed-out') isGoogleEnabled().then(setGoogle)
-  }, [status.state])
+    isGoogleEnabled().then(setGoogle)
+  }, [])
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
   const [codeSent, setCodeSent] = useState(false)
@@ -41,6 +45,81 @@ export function SyncSection() {
     }
   }
 
+  return (
+    <div className="sign-in">
+      {google && (
+        <>
+          <button className="btn google-btn" disabled={busy} onClick={() => run(() => signInWithGoogle(returnTo))}>
+            <GoogleLogo /> {t('התחברות עם Google')}
+          </button>
+          {!showEmail && (
+            <p className="or-line">
+              <button className="link-btn" onClick={() => setShowEmail(true)}>{t('התחברות במייל')}</button>
+            </p>
+          )}
+          {showEmail && <p className="or-line muted">{t('או במייל')}</p>}
+        </>
+      )}
+      {google && !showEmail ? null : !codeSent ? (
+        <form
+          className="row"
+          onSubmit={(e) => {
+            e.preventDefault()
+            run(async () => {
+              await sendLoginCode(email.trim(), returnTo)
+              setCodeSent(true)
+            })
+          }}
+        >
+          <input type="email" dir="ltr" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <button className="btn" disabled={busy}>{t('שליחת מייל התחברות')}</button>
+        </form>
+      ) : (
+        <form
+          className="row"
+          onSubmit={(e) => {
+            e.preventDefault()
+            run(() => verifyLoginCode(email.trim(), code.trim()))
+          }}
+        >
+          <input
+            dir="ltr"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            placeholder={t('קוד מהמייל (אם יש)')}
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            required
+          />
+          <button className="btn" disabled={busy}>{t('התחברות')}</button>
+          <button type="button" className="btn secondary" onClick={() => setCodeSent(false)}>{t('מייל אחר')}</button>
+        </form>
+      )}
+      {codeSent && (
+        <p className="muted">
+          {t('שלחנו מייל ל-{email}. לחץ על הקישור שבמייל – הוא יחזיר אותך לאפליקציה מחובר. אם במייל מופיע קוד, אפשר גם להקליד אותו כאן.', { email })}
+        </p>
+      )}
+      {(error || status.error) && <div className="warn">{error ?? status.error}</div>}
+    </div>
+  )
+}
+
+export function SyncSection() {
+  const status = useSyncStatus()
+  const [busy, setBusy] = useState(false)
+
+  async function run(fn: () => Promise<void>) {
+    setBusy(true)
+    try {
+      await fn()
+    } catch (e) {
+      alert(e instanceof Error ? e.message : String(e))
+    } finally {
+      setBusy(false)
+    }
+  }
+
   if (status.state === 'disabled')
     return (
       <>
@@ -54,60 +133,7 @@ export function SyncSection() {
       <>
         <h2>{t('סנכרון בענן')}</h2>
         <p className="muted">{t('התחבר כדי שהמילים וההתקדמות יהיו זמינות בכל מכשיר.')}</p>
-        {google && (
-          <>
-            <button className="btn google-btn" disabled={busy} onClick={() => run(signInWithGoogle)}>
-              <GoogleLogo /> {t('התחברות עם Google')}
-            </button>
-            {!showEmail && (
-              <p className="or-line">
-                <button className="link-btn" onClick={() => setShowEmail(true)}>{t('התחברות במייל')}</button>
-              </p>
-            )}
-            {showEmail && <p className="or-line muted">{t('או במייל')}</p>}
-          </>
-        )}
-        {google && !showEmail ? null : !codeSent ? (
-          <form
-            className="row"
-            onSubmit={(e) => {
-              e.preventDefault()
-              run(async () => {
-                await sendLoginCode(email.trim())
-                setCodeSent(true)
-              })
-            }}
-          >
-            <input type="email" dir="ltr" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
-            <button className="btn" disabled={busy}>{t('שליחת מייל התחברות')}</button>
-          </form>
-        ) : (
-          <form
-            className="row"
-            onSubmit={(e) => {
-              e.preventDefault()
-              run(() => verifyLoginCode(email.trim(), code.trim()))
-            }}
-          >
-            <input
-              dir="ltr"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              placeholder={t('קוד מהמייל (אם יש)')}
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              required
-            />
-            <button className="btn" disabled={busy}>{t('התחברות')}</button>
-            <button type="button" className="btn secondary" onClick={() => setCodeSent(false)}>{t('מייל אחר')}</button>
-          </form>
-        )}
-        {codeSent && (
-          <p className="muted">
-            {t('שלחנו מייל ל-{email}. לחץ על הקישור שבמייל – הוא יחזיר אותך לאפליקציה מחובר. אם במייל מופיע קוד, אפשר גם להקליד אותו כאן.', { email })}
-          </p>
-        )}
-        {(error || status.error) && <div className="warn">{error ?? status.error}</div>}
+        <SignIn />
       </>
     )
 

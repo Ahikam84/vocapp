@@ -6,7 +6,9 @@ import { applyUpdate, useNeedRefresh } from './lib/pwa'
 import { useSettings } from './lib/settings'
 import { applyTheme } from './lib/theme'
 import { setTtsPreferences } from './lib/tts'
+import { useSyncStatus } from './lib/sync'
 import { useStudy, type Study } from './lib/useDeck'
+import { Welcome } from './components/Welcome'
 import Achievements from './pages/Achievements'
 import Courses from './pages/Courses'
 import ClozeGame from './games/Cloze'
@@ -44,6 +46,8 @@ export default function App() {
   const study = useStudy()
   const settings = useSettings()
   const needRefresh = useNeedRefresh()
+  const sync = useSyncStatus()
+  const path = useLocation().pathname
   useEffect(() => {
     if (settings) setTtsPreferences(settings.voices, settings.speechRate)
   }, [settings])
@@ -54,6 +58,9 @@ export default function App() {
   // Set before rendering children so every t() call below uses the chosen language.
   setUiLang(settings.uiLang ?? detectUiLang())
   const deck = study?.deck ?? null
+  // A new learner (no course yet, not signed in) is first asked to sign in – optional, asked once.
+  // Not on a teacher's invitation link, which shows its course first.
+  const welcome = !study && sync.state === 'signed-out' && !settings.welcomeSeen && !path.startsWith('/join/')
 
   return (
     <div className={`app ${atHome && study ? 'at-home' : ''}`}>
@@ -78,7 +85,9 @@ export default function App() {
       )}
 
       <main className="content">
-        {study && deck ? (
+        {welcome ? (
+          <Welcome />
+        ) : study && deck ? (
           <Routes>
             <Route path="/" element={<Home study={study} />} />
             <Route path="/learn" element={<Learn study={study} />} />

@@ -128,7 +128,7 @@ svg { flex-shrink: 0; }
 .tabbar a { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--muted); padding: 2px 16px; }
 .tabbar a span { font-size: 0.72rem; font-weight: 500; }
 .tabbar a.active { color: var(--primary); }
-.app:has(.session) .tabbar, .app:has(.test-run) .tabbar, .app:has(.crossword-game) .tabbar { display: none; }
+.app:has(.session) .tabbar, .app:has(.test-run) .tabbar, .app:has(.crossword-game) .tabbar, .app:has(.welcome) .tabbar { display: none; }
 
 .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .row.between { justify-content: space-between; }
@@ -826,3 +826,15 @@ input:focus, textarea:focus, select:focus { background: var(--surface); }
 .modal.invite { text-align: center; }
 .modal.invite .mascot { margin: 0 auto 4px; }
 .modal.invite p { color: var(--muted); line-height: 1.5; }
+
+/* First launch: sign in, or carry on without an account */
+.welcome { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; max-width: 420px; margin: 0 auto; padding-top: 12px; }
+.welcome h1 { margin: 4px 0 0; }
+.welcome > p { margin: 0; line-height: 1.5; }
+.sign-in { display: flex; flex-direction: column; align-items: stretch; gap: 8px; width: 100%; }
+.welcome .sign-in, .modal .sign-in { margin-top: 8px; }
+.welcome-skip { margin-top: 6px; font-size: 0.95rem; }
+.welcome .small { font-size: 0.8rem; }
+/* Home: a quiet reminder while words are kept on this device only */
+.local-only { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 12px 0 0; font-size: 0.85rem; color: var(--muted); }
+.local-only a { font-weight: 600; }

@@ -32,7 +32,9 @@ export interface Settings {
   /** Per target language: write answers in its script, or in the courses' transliteration */
   writing: Record<string, 'script' | 'reading'>
   /** When the games and test invitations were shown (or skipped because the user already found them) */
-  invites: { games?: number; test?: number }
+  invites: { games?: number; test?: number; account?: number }
+  /** Set once the welcome screen (sign in, or carry on without an account) has been answered */
+  welcomeSeen: boolean
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -54,6 +56,7 @@ export const DEFAULT_SETTINGS: Settings = {
   courseLangs: null,
   writing: {},
   invites: {},
+  welcomeSeen: false,
 }
 
 export async function getSettings(): Promise<Settings> {

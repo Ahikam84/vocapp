@@ -1,5 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { useSyncExternalStore } from 'react'
+import { detectUiLang, uiLang } from './i18n'
+import { getSettings } from './settings'
 import { clearAccountData, db, markRemote, reviveCard, setLocalChangeListener, SYNCED_TABLES, type SyncedTable } from './db'
 
 /**
@@ -148,6 +150,9 @@ export async function syncNow(): Promise<void> {
         await setMeta('userId', user.id)
       }
       setStatus({ state: 'syncing', email: user.email })
+      // Keep the account's language in step with the app's, for the sign-in emails (see supabase/email-templates).
+      const lang = (await getSettings()).uiLang ?? detectUiLang()
+      if (user.user_metadata?.lang !== lang) await supabase.auth.updateUser({ data: { lang } }).catch(() => {})
       await pull()
       await push(user.id)
       setStatus({ state: 'idle', lastSync: Date.now(), error: undefined })
@@ -199,7 +204,17 @@ export function isGoogleEnabled(): Promise<boolean> {
   return googleEnabled
 }
 
-export async function signInWithGoogle() {
+/** Where to land after signing in through Google or the email link (kept across the redirect). */
+const RETURN_KEY = 'vocapp-auth-return'
+function rememberReturn(returnTo?: string) {
+  try {
+    if (returnTo) localStorage.setItem(RETURN_KEY, returnTo)
+    else localStorage.removeItem(RETURN_KEY)
+  } catch { /* storage blocked: land on the settings page */ }
+}
+
+export async function signInWithGoogle(returnTo?: string) {
+  rememberReturn(returnTo)
   const { error } = await supabase!.auth.signInWithOAuth({
     provider: 'google',
     options: { redirectTo: location.origin + location.pathname },
@@ -207,10 +222,12 @@ export async function signInWithGoogle() {
   if (error) throw error
 }
 
-export async function sendLoginCode(email: string) {
+export async function sendLoginCode(email: string, returnTo?: string) {
+  rememberReturn(returnTo)
   const { error } = await supabase!.auth.signInWithOtp({
     email,
-    options: { shouldCreateUser: true, emailRedirectTo: location.origin + location.pathname },
+    // The app's language goes with a new account, so the sign-in emails can be in it (see supabase/email-templates).
+    options: { shouldCreateUser: true, emailRedirectTo: location.origin + location.pathname, data: { lang: uiLang() } },
   })
   if (error) throw error
 }
@@ -218,7 +235,8 @@ export async function sendLoginCode(email: string) {
 /**
  * Google and the email link both return with "#access_token=…" (or "#error=…")
  * in the URL, which clashes with the hash router. Let Supabase read it before
- * the app renders, then land on the settings page where the sync status is shown.
+ * the app renders, then land where sign-in started (the settings page, which shows the sync status,
+ * unless it started elsewhere – and always there after a failure, to show the error).
  */
 export async function completeAuthRedirect() {
   if (!supabase || !/access_token=|error_description=/.test(location.hash)) return
@@ -226,7 +244,12 @@ export async function completeAuthRedirect() {
   const failure = params.get('error_description')
   await supabase.auth.getSession()
   if (failure) setStatus({ state: 'signed-out', error: failure.replace(/\+/g, ' ') })
-  history.replaceState(null, '', location.pathname + '#/settings')
+  let back: string | null = null
+  try {
+    back = localStorage.getItem(RETURN_KEY)
+    localStorage.removeItem(RETURN_KEY)
+  } catch { /* storage blocked */ }
+  history.replaceState(null, '', location.pathname + '#' + (!failure && back ? back : '/settings'))
 }
 
 export async function verifyLoginCode(email: string, token: string) {

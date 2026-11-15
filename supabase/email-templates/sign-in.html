@@ -1,0 +1,21 @@
+{{ $en := eq (printf "%v" .Data.lang) "en" }}
+<div dir="{{ if $en }}ltr{{ else }}rtl{{ end }}" style="background:#f7fbfa;padding:24px 12px;font-family:Arial,Helvetica,sans-serif;color:#2a3739">
+  <div style="max-width:440px;margin:0 auto;background:#ffffff;border-radius:20px;padding:28px 24px;text-align:center">
+    <div style="font-size:24px;font-weight:bold;color:#0e8a9a;margin-bottom:16px">VocApp</div>
+    {{ if $en }}
+    <h1 style="font-size:20px;margin:0 0 12px">Sign in to VocApp</h1>
+    <p style="font-size:16px;line-height:1.5;margin:0 0 20px">Tap the button to sign in. Your words and progress will be saved in the cloud, on every device.</p>
+    <a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#0e8a9a;color:#ffffff;text-decoration:none;font-size:17px;font-weight:bold;padding:13px 28px;border-radius:999px">Sign in</a>
+    <p style="font-size:15px;margin:24px 0 6px">Or type this code in the app:</p>
+    <div dir="ltr" style="font-size:30px;font-weight:bold;letter-spacing:6px;color:#0a6c79">{{ .Token }}</div>
+    <p style="font-size:13px;color:#66777a;line-height:1.5;margin:24px 0 0">The link and the code work for one hour. If you didn't ask to sign in, you can ignore this email.</p>
+    {{ else }}
+    <h1 style="font-size:20px;margin:0 0 12px">התחברות ל-VocApp</h1>
+    <p style="font-size:16px;line-height:1.5;margin:0 0 20px">לחצו על הכפתור כדי להתחבר. המילים וההתקדמות שלכם יישמרו בענן, ויהיו זמינות בכל מכשיר.</p>
+    <a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#0e8a9a;color:#ffffff;text-decoration:none;font-size:17px;font-weight:bold;padding:13px 28px;border-radius:999px">התחברות</a>
+    <p style="font-size:15px;margin:24px 0 6px">או הקלידו את הקוד הזה באפליקציה:</p>
+    <div dir="ltr" style="font-size:30px;font-weight:bold;letter-spacing:6px;color:#0a6c79">{{ .Token }}</div>
+    <p style="font-size:13px;color:#66777a;line-height:1.5;margin:24px 0 0">הקישור והקוד תקפים לשעה. אם לא ביקשתם להתחבר, אפשר פשוט להתעלם מהמייל.</p>
+    {{ end }}
+  </div>
+</div>
