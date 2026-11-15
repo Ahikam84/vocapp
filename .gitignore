@@ -4,3 +4,4 @@ dev-dist
 *.local
 *.tsbuildinfo
 audio-samples
+video-build
