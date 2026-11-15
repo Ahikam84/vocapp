@@ -1,3 +1,4 @@
+import { LangBadge } from '../components/common'
 import { ChevronLeft } from 'lucide-react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Link, useNavigate } from 'react-router-dom'
@@ -52,7 +53,7 @@ export default function StudyPicker({ study }: { study: Study }) {
       <h1>{t('מה לתרגל?')}</h1>
       {sameLang.length > 1 && <p className="muted">{t('אפשר לסמן כמה קורסים באותה שפה – הלמידה, החזרות והסטטיסטיקה יכללו את כולם.')}</p>}
 
-      <h2>{langName(lang)}</h2>
+      <h2 className="lang-title"><LangBadge lang={lang} size={28} />{langName(lang)}</h2>
       <ul className="pick-list">
         {sameLang.map((d) => (
           <li key={d.id} className={selected.has(d.id) ? 'on' : ''}>
@@ -81,7 +82,7 @@ export default function StudyPicker({ study }: { study: Study }) {
           <h2>{t('בשפות אחרות')}</h2>
           {[...others].map(([code, decks]) => (
             <section key={code} className="lang-group">
-              <h3>{langName(code)}</h3>
+              <h3 className="lang-title"><LangBadge lang={code} size={24} />{langName(code)}</h3>
               <ul className="lang-list">
                 {decks.map((d) => (
                   <li key={d.id}>

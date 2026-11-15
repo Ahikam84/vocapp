@@ -186,3 +186,16 @@ export function WritingToggle({ lang, mode }: { lang: string; mode: WritingMode 
     </div>
   )
 }
+
+/** A language's badge: its first letters in its own script, in the app's own soft colour – instead of a flag. */
+const LANG_BADGES: Record<string, string> = {
+  he: 'עב', ar: 'عر', es: 'Es', en: 'En', fr: 'Fr', ca: 'Ca', it: 'It', de: 'De', pt: 'Pt',
+}
+
+export function LangBadge({ lang, size = 34 }: { lang: string; size?: number }) {
+  return (
+    <span className="lang-badge" lang={lang} style={{ width: size, height: size, fontSize: size * 0.4 }} aria-hidden="true">
+      {LANG_BADGES[lang] ?? lang.slice(0, 2).toUpperCase()}
+    </span>
+  )
+}

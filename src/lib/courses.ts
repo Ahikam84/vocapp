@@ -119,13 +119,28 @@ const OLD_COURSE_NAMES: Record<string, string> = {
   'ar-lev-c1': 'ערבית מדוברת C1', 'ar-lev-c2': 'ערבית מדוברת C2',
 }
 
+/**
+ * The language the course names began with until it was dropped ("ספרדית – רמת מתחילים" is now
+ * "רמת מתחילים"): the language already shows next to the course name and as the heading over it.
+ */
+function oldLanguagePrefix(course: CourseInfo): string | null {
+  const english = course.sourceLang === 'en'
+  if (course.targetLang === 'es') return english ? 'Spanish' : 'ספרדית'
+  if (course.targetLang === 'ar') return english ? 'Spoken Arabic' : 'ערבית מדוברת'
+  if (course.targetLang === 'he') return 'Hebrew'
+  return null
+}
+
 /** Give course decks added under an old name the new one – unless the user renamed the deck themselves. */
 export async function renameCourseDecks() {
   for (const course of COURSES) {
-    const old = OLD_COURSE_NAMES[course.id]
-    if (!old) continue
+    const prefix = oldLanguagePrefix(course)
+    // Arabic names keep "spoken" ("מדוברת – רמת מתחילים"); before, the whole language led the name.
+    const level = course.name.replace(/^(מדוברת|Spoken) – /, '')
+    const old = [OLD_COURSE_NAMES[course.id], prefix && `${prefix} – ${level}`, level !== course.name && level].filter(Boolean)
+    if (!old.length) continue
     const deckId = courseDeckId(course.id)
     const deck = await db.decks.get(deckId)
-    if (deck?.name === old) await db.decks.update(deckId, { name: course.name })
+    if (deck && old.includes(deck.name)) await db.decks.update(deckId, { name: course.name })
   }
 }

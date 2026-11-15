@@ -838,3 +838,16 @@ input:focus, textarea:focus, select:focus { background: var(--surface); }
 /* Home: a quiet reminder while words are kept on this device only */
 .local-only { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 12px 0 0; font-size: 0.85rem; color: var(--muted); }
 .local-only a { font-weight: 600; }
+
+/* Language badges: the language's first letters in its own script, instead of a flag */
+:root[data-theme='dark'] .lang-badge { color: var(--primary); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme='light']) .lang-badge { color: var(--primary); } }
+.lang-badge {
+  display: inline-grid; place-items: center; flex-shrink: 0; border-radius: 50%;
+  background: var(--primary-soft); color: var(--primary-deep); font-weight: 700; line-height: 1; letter-spacing: 0.01em;
+}
+.lang-title { display: flex; align-items: center; gap: 10px; }
+.lang-list a .lang-badge { margin-inline-end: 2px; }
+.study-lang { display: inline-flex; }
+.study-lang::after { content: none; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

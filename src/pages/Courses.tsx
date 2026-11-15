@@ -1,3 +1,4 @@
+import { LangBadge } from '../components/common'
 import { ChevronLeft, CircleCheck, Copy, Link2, RefreshCw, Share2, Trash2 } from 'lucide-react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useState } from 'react'
@@ -37,6 +38,7 @@ function LanguagePicker({ hasCourse }: { hasCourse: boolean }) {
           return (
             <li key={code}>
               <Link to={`/courses/${code}`}>
+                <LangBadge lang={code} />
                 <span className="grow">
                   <b>{langName(code)}</b>
                   <span className="muted">
@@ -116,7 +118,7 @@ function LanguageCourses({ lang, current }: { lang: string; current: Deck | null
   return (
     <div className="page form">
       <Link to="/courses" className="back"><ChevronLeft className="flip-back" size={18} /> {t('כל השפות')}</Link>
-      <h1>{langName(lang)}</h1>
+      <h1 className="lang-title"><LangBadge lang={lang} size={38} />{langName(lang)}</h1>
 
       {data.decks.length > 0 && (
         <>

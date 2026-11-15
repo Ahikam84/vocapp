@@ -5,7 +5,7 @@ import type { CourseInfo } from './types'
 export const COURSES: CourseInfo[] = [
   {
     id: 'es-a1',
-    name: 'ספרדית – רמת מתחילים',
+    name: 'רמת מתחילים',
     description: 'המילים הראשונות: ברכות, מספרים, משפחה, אוכל, בית, בגדים, ימים וצבעים, ופעלים בסיסיים',
     level: 'A1',
     sourceLang: 'he',
@@ -14,7 +14,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'es-a2',
-    name: 'ספרדית – רמת מתחילים המשך',
+    name: 'רמת מתחילים המשך',
     description: 'שגרת יום, מזג אוויר, התמצאות בעיר, קניות, לימודים ועבודה, פנאי, רגשות ודיבור על עבר ותכניות',
     level: 'A2',
     sourceLang: 'he',
@@ -23,7 +23,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'es-b1',
-    name: 'ספרדית – רמת בינוניים',
+    name: 'רמת בינוניים',
     description: 'אוצר מילים לרמה בינונית: נסיעות, אוכל, בית, בריאות, קניות וביטויים יומיומיים',
     level: 'B1',
     sourceLang: 'he',
@@ -32,7 +32,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'es-b2',
-    name: 'ספרדית – רמת בינוניים המשך',
+    name: 'רמת בינוניים המשך',
     description: 'אוצר מילים לרמה בינונית-גבוהה: עבודה, חברה, בריאות, יחסים וביטויים נפוצים',
     level: 'B2',
     sourceLang: 'he',
@@ -41,7 +41,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'es-c1',
-    name: 'ספרדית – רמת מתקדמים',
+    name: 'רמת מתקדמים',
     description: 'אוצר מילים מתקדם: מילות קישור, פעלים, ביטויים, חברה, כלכלה ועוד',
     level: 'C1',
     sourceLang: 'he',
@@ -50,7 +50,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'es-c2',
-    name: 'ספרדית – רמת מתקדמים המשך',
+    name: 'רמת מתקדמים המשך',
     description: 'משלב גבוה: שפה ספרותית, משפט וכלכלה, ביטויים ושפה מדוברת מספרד',
     level: 'C2',
     sourceLang: 'he',
@@ -59,7 +59,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'ar-lev-a1',
-    name: 'ערבית מדוברת – רמת מתחילים',
+    name: 'מדוברת – רמת מתחילים',
     description: 'ערבית לבנטינית מדוברת למתחילים: ברכות, כינויים, מספרים, משפחה, אוכל, בית, צבעים, ימים ופעלים בסיסיים. בכתב ערבי עם תעתיק עברי',
     level: 'A1',
     sourceLang: 'he',
@@ -68,7 +68,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'ar-lev-a2',
-    name: 'ערבית מדוברת – רמת מתחילים המשך',
+    name: 'מדוברת – רמת מתחילים המשך',
     description: 'ערבית לבנטינית מדוברת למתחילים, המשך: שגרת יום, שמות החודשים, קניות, תחבורה, לימודים ועבודה, בית, מזג אוויר, חיות, פעלים וביטויים. בכתב ערבי עם תעתיק עברי',
     level: 'A2',
     sourceLang: 'he',
@@ -77,7 +77,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'ar-lev-b1',
-    name: 'ערבית מדוברת – רמת בינוניים',
+    name: 'מדוברת – רמת בינוניים',
     description: 'ערבית לבנטינית מדוברת לרמה בינונית: משפחה, בית, אוכל, עבודה, עיר, בריאות, רגשות וביטויים יומיומיים. בכתב ערבי עם תעתיק עברי',
     level: 'B1',
     sourceLang: 'he',
@@ -86,7 +86,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'ar-lev-b2',
-    name: 'ערבית מדוברת – רמת בינוניים המשך',
+    name: 'מדוברת – רמת בינוניים המשך',
     description: 'ערבית לבנטינית מדוברת לרמה בינונית-גבוהה: הבעת דעה, יחסים, כסף, עבודה, חדשות, טכנולוגיה, בריאות וביטויים. בכתב ערבי עם תעתיק עברי',
     level: 'B2',
     sourceLang: 'he',
@@ -95,7 +95,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'ar-lev-c1',
-    name: 'ערבית מדוברת – רמת מתקדמים',
+    name: 'מדוברת – רמת מתקדמים',
     description: 'ערבית לבנטינית מדוברת לרמה מתקדמת: מילות שיח, רגשות ואופי, חברה, ביורוקרטיה, פתגמים, אירוח וסלנג. בכתב ערבי עם תעתיק עברי',
     level: 'C1',
     sourceLang: 'he',
@@ -104,7 +104,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'ar-lev-c2',
-    name: 'ערבית מדוברת – רמת מתקדמים המשך',
+    name: 'מדוברת – רמת מתקדמים המשך',
     description: 'ערבית לבנטינית מדוברת ברמת שליטה מלאה: טיעון ועמדה, משפט וכלכלה, רגשות עמוקים, פתגמים, ברכות וביטויי נימוס, תרבות וסלנג. בכתב ערבי עם תעתיק עברי',
     level: 'C2',
     sourceLang: 'he',
@@ -114,7 +114,7 @@ export const COURSES: CourseInfo[] = [
   // Hebrew, taught in English
   {
     id: 'he-a1',
-    name: 'Hebrew – Beginners',
+    name: 'Beginners',
     description: 'First words: greetings, questions, numbers, family, food, home, colours, days, body, clothes, places and basic verbs. Hebrew script with Latin transliteration',
     level: 'A1',
     sourceLang: 'en',
@@ -123,7 +123,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'he-a2',
-    name: 'Hebrew – Beginners, continued',
+    name: 'Beginners, continued',
     description: 'Daily routine, months and seasons, weather, shopping, getting around, school and work, free time, feelings and health. Hebrew script with Latin transliteration',
     level: 'A2',
     sourceLang: 'en',
@@ -132,7 +132,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'he-b1',
-    name: 'Hebrew – Intermediate',
+    name: 'Intermediate',
     description: 'Travel, home, career, health, technology, nature, society, key verbs and everyday expressions. Hebrew script with Latin transliteration',
     level: 'B1',
     sourceLang: 'en',
@@ -141,7 +141,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'he-b2',
-    name: 'Hebrew – Intermediate, continued',
+    name: 'Intermediate, continued',
     description: 'Economy, politics and society, relationships, education and science, environment, media and culture, linking words. Hebrew script with Latin transliteration',
     level: 'B2',
     sourceLang: 'en',
@@ -150,7 +150,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'he-c1',
-    name: 'Hebrew – Advanced',
+    name: 'Advanced',
     description: 'Discourse and argument, organisations, law, science and health, feelings in depth, precise adjectives and idioms. Hebrew script with Latin transliteration',
     level: 'C1',
     sourceLang: 'en',
@@ -159,7 +159,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'he-c2',
-    name: 'Hebrew – Advanced, continued',
+    name: 'Advanced, continued',
     description: 'Formal and literary Hebrew, expressions from the sources, bureaucracy, slang and fine shades of meaning. Hebrew script with Latin transliteration',
     level: 'C2',
     sourceLang: 'en',
@@ -169,7 +169,7 @@ export const COURSES: CourseInfo[] = [
   // English versions: the same courses, translated into English.
   {
     id: 'es-a1-en',
-    name: 'Spanish – Beginners',
+    name: 'Beginners',
     description: 'First words: greetings, numbers, family, food, home, clothes, days and colours, and basic verbs',
     level: 'A1',
     sourceLang: 'en',
@@ -178,7 +178,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'es-a2-en',
-    name: 'Spanish – Beginners, continued',
+    name: 'Beginners, continued',
     description: 'Daily routine, weather, getting around town, shopping, school and work, free time, feelings, and talking about the past and plans',
     level: 'A2',
     sourceLang: 'en',
@@ -187,7 +187,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'es-b1-en',
-    name: 'Spanish – Intermediate',
+    name: 'Intermediate',
     description: 'Intermediate vocabulary: travel, food, home, health, shopping and everyday expressions',
     level: 'B1',
     sourceLang: 'en',
@@ -196,7 +196,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'es-b2-en',
-    name: 'Spanish – Intermediate, continued',
+    name: 'Intermediate, continued',
     description: 'Upper-intermediate vocabulary: work, society, health, relationships and common expressions',
     level: 'B2',
     sourceLang: 'en',
@@ -205,7 +205,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'es-c1-en',
-    name: 'Spanish – Advanced',
+    name: 'Advanced',
     description: 'Advanced vocabulary: connectors, verbs, idioms, society, economy and more',
     level: 'C1',
     sourceLang: 'en',
@@ -214,7 +214,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'es-c2-en',
-    name: 'Spanish – Advanced, continued',
+    name: 'Advanced, continued',
     description: 'High register: literary language, law and economics, idioms and colloquial Spanish from Spain',
     level: 'C2',
     sourceLang: 'en',
@@ -223,7 +223,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'ar-lev-a1-en',
-    name: 'Spoken Arabic – Beginners',
+    name: 'Spoken – Beginners',
     description: 'Spoken Levantine Arabic for beginners: greetings, pronouns, numbers, family, food, home, colours, days and basic verbs. Arabic script with Latin transliteration',
     level: 'A1',
     sourceLang: 'en',
@@ -232,7 +232,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'ar-lev-a2-en',
-    name: 'Spoken Arabic – Beginners, continued',
+    name: 'Spoken – Beginners, continued',
     description: 'Daily routine, the Levantine month names, shopping, transport, school and work, home, weather, animals, verbs and expressions. Arabic script with Latin transliteration',
     level: 'A2',
     sourceLang: 'en',
@@ -241,7 +241,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'ar-lev-b1-en',
-    name: 'Spoken Arabic – Intermediate',
+    name: 'Spoken – Intermediate',
     description: 'Spoken Levantine Arabic, intermediate: family, home, food, work, town, health, feelings and everyday expressions. Arabic script with Latin transliteration',
     level: 'B1',
     sourceLang: 'en',
@@ -250,7 +250,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'ar-lev-b2-en',
-    name: 'Spoken Arabic – Intermediate, continued',
+    name: 'Spoken – Intermediate, continued',
     description: 'Giving opinions, relationships, money, work, news, technology, health and expressions. Arabic script with Latin transliteration',
     level: 'B2',
     sourceLang: 'en',
@@ -259,7 +259,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'ar-lev-c1-en',
-    name: 'Spoken Arabic – Advanced',
+    name: 'Spoken – Advanced',
     description: 'Discourse words, feelings and character, society, bureaucracy, proverbs, hospitality and slang. Arabic script with Latin transliteration',
     level: 'C1',
     sourceLang: 'en',
@@ -268,7 +268,7 @@ export const COURSES: CourseInfo[] = [
   },
   {
     id: 'ar-lev-c2-en',
-    name: 'Spoken Arabic – Advanced, continued',
+    name: 'Spoken – Advanced, continued',
     description: 'Argument and stance, law and economy, deep feelings, proverbs, blessings and courtesies, culture and slang. Arabic script with Latin transliteration',
     level: 'C2',
     sourceLang: 'en',

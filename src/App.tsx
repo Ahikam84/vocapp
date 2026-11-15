@@ -1,3 +1,4 @@
+import { LangBadge } from './components/common'
 import { ChevronDown, House, Languages, Library, RefreshCw, Settings } from 'lucide-react'
 import { useEffect } from 'react'
 import { Link, NavLink, Route, Routes, useLocation } from 'react-router-dom'
@@ -71,7 +72,10 @@ export default function App() {
         </NavLink>
         {study && (
           <Link to="/study" className="study-switch" title={t('מה לתרגל')}>
-            <span className="study-lang">{langName(study.deck.targetLang)}</span>
+            <span className="study-lang" title={langName(study.deck.targetLang)}>
+              <LangBadge lang={study.deck.targetLang} size={22} />
+              <span className="sr-only">{langName(study.deck.targetLang)}</span>
+            </span>
             <span dir="auto">{studyLabel(study)}</span>
             <ChevronDown size={16} />
           </Link>

@@ -71,10 +71,14 @@ describe('ready-made courses', () => {
     await db.decks.bulkAdd([
       { id: courseDeckId('es-b1'), name: 'ספרדית B1', sourceLang: 'he', targetLang: 'es', createdAt: 1 },
       { id: courseDeckId('es-b2'), name: 'הספרדית שלי', sourceLang: 'he', targetLang: 'es', createdAt: 1 },
+      { id: courseDeckId('ar-lev-a1'), name: 'ערבית מדוברת – רמת מתחילים', sourceLang: 'he', targetLang: 'ar', createdAt: 1 },
+      { id: courseDeckId('he-a2'), name: 'Hebrew – Beginners, continued', sourceLang: 'en', targetLang: 'he', createdAt: 1 },
     ])
     await renameCourseDecks()
-    expect((await db.decks.get(courseDeckId('es-b1')))!.name).toBe('ספרדית – רמת בינוניים')
+    expect((await db.decks.get(courseDeckId('es-b1')))!.name).toBe('רמת בינוניים')
     expect((await db.decks.get(courseDeckId('es-b2')))!.name).toBe('הספרדית שלי')
+    expect((await db.decks.get(courseDeckId('ar-lev-a1')))!.name).toBe('מדוברת – רמת מתחילים')
+    expect((await db.decks.get(courseDeckId('he-a2')))!.name).toBe('Beginners, continued')
   })
 
   describe('course corrections', () => {
