@@ -99,6 +99,8 @@ describe('vowelled spelling for the voice', () => {
   it('keeps the feminine ending only where the Arabic has ة', () => {
     expect(nfc(hebrewToVowelledArabic('סַיַּארַה', 'spoken', 'سيارة'))).toBe(nfc('سَيَّارَ'))
     expect(nfc(hebrewToVowelledArabic('פַוַאכֵּה', 'spoken', 'فواكه'))).toBe(nfc('فَوَاكِه'))
+    // -e: kasra + ي, so the ending isn't swallowed
+    expect(nfc(hebrewToVowelledArabic("גִ'בְּנֵה", 'spoken', 'جبنة'))).toBe(nfc('جِبْنِي'))
   })
   it('leaves الله as it is written', () => {
     expect(nfc(hebrewToVowelledArabic("אַללַּה יְח'ַלִּיכּ", 'spoken', 'الله يخلّيك'))).toBe(nfc('الله يْخَلِّيك'))

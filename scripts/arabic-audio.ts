@@ -201,7 +201,11 @@ async function main() {
   // contains the given letters – e.g. --remake=ة after changing how that ending is vowelled. Several
   // can be given with "|", and "=text" picks only that exact text: --remake="=الله معك|=والله".
   // Resumes where it stopped; other clips are left alone.
-  const remake = args.find((a) => a.startsWith('--remake='))?.slice(9)
+  // --remake-file=<path>: the exact texts to re-record, one per line (for long lists)
+  const remakeFile = args.find((a) => a.startsWith('--remake-file='))?.slice(14)
+  const remake = remakeFile
+    ? readFileSync(remakeFile, 'utf8').split(String.fromCharCode(10)).map((t) => t.trim()).filter(Boolean).map((t) => '=' + t).join('|')
+    : args.find((a) => a.startsWith('--remake='))?.slice(9)
   if (remake) {
     const index = JSON.parse(readFileSync(indexFile, 'utf8')) as { voice: string; voiceName: string }
     const chosen = index.voice.split(',').map((v) => voices.find((x) => x.id === (v.split(':')[1] ?? v))!)

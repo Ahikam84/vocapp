@@ -174,9 +174,10 @@ function vowelledWord(w: string, ta: TaMarbuta, arabic?: string): string {
         if (ta === 'fathaha') { out = out.slice(0, -1) + FATHA + 'ه'; continue }
         // no letter at all after the kasra (جِبْنِ): a short final vowel, which may come out as "-e"
         if (ta === 'kasraend') { out = out.slice(0, -1) + KASRA; continue }
-        // The rule used: no ة at all, which the voice tends to read as -a or -ah – just the
-        // ending's own vowel, a fatha for "-a" (سَيَّارَ) and a kasra for "-e" (جِبْنِ).
-        if (ta === 'spoken') continue
+        // The rule used: no ة at all, which the voice tends to read as -a or -ah. For "-a" just the
+        // fatha (سَيَّارَ). For "-e", kasra + ي (جِبْنِي): a bare kasra was swallowed, leaving the word
+        // sounding masculine (قضيّة as "qadi"), and nothing written gets closer to the dialect's -e.
+        if (ta === 'spoken') { if (last === KASRA) out += 'ي'; continue }
       }
       out += 'ة'
       continue
@@ -189,7 +190,7 @@ function vowelledWord(w: string, ta: TaMarbuta, arabic?: string): string {
   return out
 }
 
-/** Fully vowelled Arabic rebuilt from a Hebrew transliteration: לַמַס → لَمَس, בֵּית → بَيْت, גִ'בְּנֵה → جِبْنِ. */
+/** Fully vowelled Arabic rebuilt from a Hebrew transliteration: לַמַס → لَمَس, בֵּית → بَيْت, גִ'בְּנֵה → جِبْنِي. */
 export function hebrewToVowelledArabic(hebrew: string, ta: TaMarbuta = 'spoken', arabic?: string): string {
   // The Arabic spelling, word for word when the two line up, tells a real ة from a word that just ends in ه.
   const plain = arabic?.trim().split(/\s+/)
